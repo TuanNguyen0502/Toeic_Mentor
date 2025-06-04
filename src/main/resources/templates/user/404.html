@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<div th:replace="~{user/fragments/head :: head('Toeic Mentor | 404 Not Found Page')}"></div>
+
+    <body>
+
+        <main>
+
+            <!-- header-area start -->
+            <div th:insert="~{user/fragments/header::header}"></div>
+            <!-- header end -->
+
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">                
+                <div class="offcanvas-header">                    
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                
+                <div class="offcanvas-body d-flex flex-column justify-content-center align-items-center">
+                    <nav>
+                        <ul>
+                            <li>
+                                <a href="login.html">Login Form</a>
+                            </li>
+
+                            <li>
+                                <a href="register.html">Create an account</a>
+                            </li>
+
+                            <li>
+                                <a href="password-reset.html">Password Reset</a>
+                            </li>
+
+                            <li>
+                                <a class="active" href="404.html">404 Page</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+            <section class="hero-section hero-bg d-flex justify-content-center align-items-center">
+                <div class="container">
+                    <div class="row">
+
+                        <div class="col-lg-8 col-12 text-center mx-auto">
+                            <h2 class="page-404-title">404</h2>
+
+                            <h3>Page Not Found</h3>
+
+                            <p>The page you are looking for doesn't exist or has been moved.</p>
+
+                            <a class="custom-btn btn mt-4" href="index.html">Back to Home</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- JAVASCRIPT FILES -->
+        <script th:src="@{/asset/js/jquery.min.js}"></script>
+        <script th:src="@{/asset/js/bootstrap.bundle.min.js}"></script>
+        <script th:src="@{/asset/js/countdown.js}"></script>
+        <script th:src="@{/asset/js/init.js}"></script>
+
+    </body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<div th:replace="~{user/fragments/head :: head('Toeic Mentor | Register page')}"></div>
+
+<body>
+
+<main>
+
+    <!-- header-area start -->
+    <div th:insert="~{user/fragments/header::header}"></div>
+    <!-- header end -->
+
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasMenu"
+         aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header">
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body d-flex flex-column justify-content-center align-items-center">
+            <nav>
+                <ul>
+                    <li>
+                        <a th:href="@{/login}">Login Form</a>
+                    </li>
+
+                    <li>
+                        <a class="active" th:href="@{/register}">Create an account</a>
+                    </li>
+
+                    <li>
+                        <a href="password-reset.html">Password Reset</a>
+                    </li>
+
+                    <li>
+                        <a href="404.html">404 Page</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <section class="hero-section d-flex justify-content-center align-items-center">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-lg-6 col-12 mx-auto">
+                    <form class="custom-form" role="form" method="post">
+                        <h2 class="hero-title text-center mb-4 pb-2">Create an account</h2>
+
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-12">
+                                <div class="form-floating">
+                                    <input type="text" name="full-name" id="full-name" class="form-control"
+                                           placeholder="Full Name" required="">
+
+                                    <label for="full-name">Full Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6 col-md-6 col-12">
+                                <div class="form-floating mb-4 p-0">
+                                    <input type="email" name="email" id="email" pattern="[^ @]*@[^ @]*"
+                                           class="form-control" placeholder="Email address" required="">
+
+                                    <label for="email">Email address</label>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12 col-12">
+                                <div class="form-floating p-0">
+                                    <input type="password" name="password" id="password" class="form-control"
+                                           placeholder="Password" required="">
+
+                                    <label for="password">Password</label>
+                                </div>
+                            </div>
+
+                            <div class="row justify-content-center align-items-center">
+                                <div class="col-lg-5 col-md-5 col-5 ms-auto">
+                                    <button type="submit" class="form-control">Submit</button>
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-7">
+                                    <p class="mb-0">Already have an account?
+                                        <a th:href="@{/login}" class="ms-2">Login</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="video-wrap">
+            <video autoplay="" loop="" muted="" class="custom-video" poster="">
+                <source th:src="@{/asset/videos/video.mp4}" type="video/mp4">
+
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </section>
+</main>
+
+<!-- JAVASCRIPT FILES -->
+<script th:src="@{/asset/js/jquery.min.js}"></script>
+<script th:src="@{/asset/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/asset/js/countdown.js}"></script>
+<script th:src="@{/asset/js/init.js}"></script>
+
+</body>
+</html>
