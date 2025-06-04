@@ -17,8 +17,10 @@ public class WeakGrammarPoint {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "grammar_point", nullable = false)
     private String grammarPoint;
 
+    @Column(name = "mistake_count", nullable = false)
     private int mistakeCount;
 
     @ManyToOne

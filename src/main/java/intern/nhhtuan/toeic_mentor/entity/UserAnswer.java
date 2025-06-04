@@ -17,6 +17,7 @@ public class UserAnswer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "is_correct", nullable = false)
     private boolean isCorrect;
 
     @ManyToOne

@@ -20,11 +20,13 @@ public class Test {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String title;
 
-    @Column(length = 1000)
+    @Column(name = "description")
     private String description;
 
+    @Column(name = "is_full_test", nullable = false)
     private boolean isFullTest;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL)

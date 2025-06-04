@@ -23,6 +23,7 @@ public class Question {
     @Column(nullable = false)
     private String content;
 
+    @Column(name = "grammar_point", nullable = false)
     private String grammarPoint;
 
     @ManyToOne

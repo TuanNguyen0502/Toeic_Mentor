@@ -23,6 +23,7 @@ public class UserTestResult {
 
     private int score;
 
+    @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
     @ManyToOne
