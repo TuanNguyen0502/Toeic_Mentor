@@ -11,42 +11,38 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final UserDetailsService userDetailsService;
     private final UserDetailServiceImpl userDetailServiceImpl;
-    private final CustomSuccessHandle customSuccessHandle;
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection for simplicity
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/register", "/forgot-password", "/asset/**")
+                        .requestMatchers("/register", "/forgot-password", "/login", "/loginProcess", "/asset/**")
                         .permitAll()
                         .anyRequest().authenticated()) // Require authentication for all other requests
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/loginProcess")
-                        .usernameParameter("email")
-                        .passwordParameter("password")
-                        .successHandler(customSuccessHandle)
-                        .failureUrl("/login?error")
-                        .permitAll()
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Use stateless sessions
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/home")
+                        .logoutSuccessUrl("/login?logout")
+                        .deleteCookies("jwt") // tự động xóa cookie jwt
                         .permitAll()
                 )
-                .userDetailsService(userDetailServiceImpl);
+                .userDetailsService(userDetailServiceImpl)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -54,7 +50,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setUserDetailsService(userDetailServiceImpl);
         authProvider.setPasswordEncoder(new BCryptPasswordEncoder(10));
         return authProvider;
     }
