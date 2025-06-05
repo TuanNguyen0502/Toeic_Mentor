@@ -4,9 +4,14 @@ import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.LoginRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
 import intern.nhhtuan.toeic_mentor.entity.EGender;
+import intern.nhhtuan.toeic_mentor.service.implement.AuthService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class AuthController {
     private final IUserService userService;
+    private final AuthService authService;
 
     @GetMapping("/register")
     public String getRegisterPage(Model model) {
@@ -50,12 +56,24 @@ public class AuthController {
     public String getLoginPage(Model model,
                                @RequestParam(value = "error", required = false) String error,
                                HttpSession session) {
+        // ✅ Nếu đã đăng nhập, redirect theo role
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+            return isAdmin ? "redirect:/admin" : "redirect:/home";
+        }
+
         LoginRequest loginRequest = new LoginRequest();
         model.addAttribute("loginRequest", loginRequest);
 
         if (error != null) {
             String errorMessage = (String) session.getAttribute("LOGIN_ERROR");
             session.removeAttribute("LOGIN_ERROR"); // tránh lặp lại
+
             if (errorMessage != null && errorMessage.contains("Account is locked")) {
                 model.addAttribute("error", "Account is locked. Please contact administrator.");
             } else {
@@ -64,6 +82,24 @@ public class AuthController {
         }
 
         return "user/login";
+    }
+
+    @PostMapping("/loginProcess")
+    public String postLoginPage(@Validated @ModelAttribute("loginRequest") LoginRequest loginRequest,
+                                BindingResult bindingResult,
+                                HttpServletResponse response,
+                                HttpSession httpSession) {
+        if (bindingResult.hasErrors()) {
+            return "user/login";
+        }
+
+        try {
+            String redirectUrl = authService.loginAndReturnRedirectUrl(loginRequest, response);
+            return "redirect:" + redirectUrl;
+        } catch (RuntimeException e) {
+            httpSession.setAttribute("LOGIN_ERROR", e.getMessage());
+            return "redirect:/login?error";
+        }
     }
 
     @GetMapping("/forgot-password")
