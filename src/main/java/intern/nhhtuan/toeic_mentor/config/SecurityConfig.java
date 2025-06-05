@@ -22,6 +22,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final UserDetailServiceImpl userDetailServiceImpl;
+    private final CustomSuccessHandle customSuccessHandle;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,7 +37,7 @@ public class SecurityConfig {
                         .loginProcessingUrl("/loginProcess")
                         .usernameParameter("email")
                         .passwordParameter("password")
-//                        .successHandler(customSuccessHandle)
+                        .successHandler(customSuccessHandle)
                         .failureUrl("/login?error")
                         .permitAll()
                 )
