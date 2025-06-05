@@ -10,31 +10,9 @@
     <div th:insert="~{user/fragments/header::header}"></div>
     <!-- header end -->
 
-    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasMenu"
-         aria-labelledby="offcanvasMenuLabel">
-        <div class="offcanvas-header">
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-
-        <div class="offcanvas-body d-flex flex-column justify-content-center align-items-center">
-            <nav>
-                <ul>
-                    <li>
-                        <a class="active" href="login.html">Login Form</a>
-                    </li>
-                    <li>
-                        <a href="register.html">Create an account</a>
-                    </li>
-                    <li>
-                        <a href="password-reset.html">Password Reset</a>
-                    </li>
-                    <li>
-                        <a href="404.html">404 Page</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
+    <!-- off-canvas-menu start -->
+    <div th:insert="~{user/fragments/off-canvas-menu::offcanvasMenu}"></div>
+    <!-- off-canvas-menu end -->
 
     <section class="hero-section d-flex justify-content-center align-items-center">
         <div class="container">
@@ -48,29 +26,24 @@
                         <!-- Add error message for BadCredentialsException -->
                         <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
 
+                        <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
                         <div class="form-floating mb-4 p-0">
                             <input type="email" name="email" id="email" pattern="[^ @]*@[^ @]*" class="form-control"
-                                   placeholder="Email address" required="">
-
+                                   placeholder="Email address" required="" th:field="*{email}">
                             <label for="email">Email address</label>
-                            <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
                         </div>
 
+                        <span class="text-danger" th:if="${#fields.hasErrors('password')}"
+                              th:errors="*{password}"></span>
                         <div class="form-floating p-0">
                             <input type="password" name="password" id="password" class="form-control"
-                                   placeholder="Password" required="">
-
+                                   placeholder="Password" required="" th:field="*{password}">
                             <label for="password">Password</label>
-                            <span class="text-danger" th:if="${#fields.hasErrors('password')}"
-                                  th:errors="*{password}"></span>
                         </div>
 
                         <div class="form-check mb-4">
                             <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-
-                            <label class="form-check-label" for="flexCheckDefault">
-                                Remember me
-                            </label>
+                            <label class="form-check-label" for="flexCheckDefault">Remember me</label>
                         </div>
 
                         <div class="row justify-content-center align-items-center">

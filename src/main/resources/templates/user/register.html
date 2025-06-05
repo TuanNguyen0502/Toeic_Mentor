@@ -10,34 +10,9 @@
     <div th:insert="~{user/fragments/header::header}"></div>
     <!-- header end -->
 
-    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasMenu"
-         aria-labelledby="offcanvasMenuLabel">
-        <div class="offcanvas-header">
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-
-        <div class="offcanvas-body d-flex flex-column justify-content-center align-items-center">
-            <nav>
-                <ul>
-                    <li>
-                        <a th:href="@{/login}">Login Form</a>
-                    </li>
-
-                    <li>
-                        <a class="active" th:href="@{/register}">Create an account</a>
-                    </li>
-
-                    <li>
-                        <a href="password-reset.html">Password Reset</a>
-                    </li>
-
-                    <li>
-                        <a href="404.html">404 Page</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
+    <!-- off-canvas-menu start -->
+    <div th:insert="~{user/fragments/off-canvas-menu::offcanvasMenu}"></div>
+    <!-- off-canvas-menu end -->
 
     <section class="hero-section d-flex justify-content-center align-items-center">
         <div class="container">
