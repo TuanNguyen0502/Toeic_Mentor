@@ -3,7 +3,6 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
 import intern.nhhtuan.toeic_mentor.entity.EGender;
 import intern.nhhtuan.toeic_mentor.entity.ERole;
-import intern.nhhtuan.toeic_mentor.entity.Role;
 import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.repository.RoleRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
@@ -29,21 +28,13 @@ public class UserServiceImpl implements IUserService {
     public boolean register(RegisterRequest registerRequest) throws IOException {
         validateEmailUnique(registerRequest);
 
-        if (!isPasswordConfirmed(registerRequest.getPassword(), registerRequest.getConfirmPassword())) {
-            throw new BadCredentialsException("Password not match");
-        }
-
-        Role role = roleRepository.findByName(ERole.ROLE_USER).orElse(null);
-
-        // Build UserEntity
-        User user = User.builder()
-                .email(registerRequest.getEmail())
-                .password(bCryptPasswordEncoder.encode(registerRequest.getPassword()))
-                .role(role)
-                .fullName(registerRequest.getFullName())
-                .gender(EGender.valueOf(registerRequest.getGender()))
-                .isActive(true)
-                .build();
+        User user = new User();
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(bCryptPasswordEncoder.encode(registerRequest.getPassword()));
+        user.setRole(roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new IllegalArgumentException("Role not found")));
+        user.setFullName(registerRequest.getFullName());
+        user.setGender(EGender.valueOf(registerRequest.getGender()));
+        user.setActive(true);
 
         // Xử lý ảnh
         if (registerRequest.getImage() != null && !registerRequest.getImage().isEmpty()) {

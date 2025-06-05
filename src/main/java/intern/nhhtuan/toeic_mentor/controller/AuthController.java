@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.controller;
 
 import intern.nhhtuan.toeic_mentor.dto.request.LoginRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
+import intern.nhhtuan.toeic_mentor.entity.EGender;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class AuthController {
     public String getRegisterPage(Model model) {
         RegisterRequest registerRequest = new RegisterRequest();
         model.addAttribute("registerRequest", registerRequest);
+        model.addAttribute("genders", EGender.values());
         return "user/register";
     }
 
@@ -31,7 +33,7 @@ public class AuthController {
                                    BindingResult bindingResult,
                                    Model model) {
         if (bindingResult.hasErrors()) {
-            return "web/create-account";
+            return "user/register";
         }
         try {
             if (userService.register(registerRequest)) {
@@ -40,7 +42,7 @@ public class AuthController {
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
         }
-        return "web/create-account";
+        return "user/register";
     }
 
     @GetMapping("/login")
