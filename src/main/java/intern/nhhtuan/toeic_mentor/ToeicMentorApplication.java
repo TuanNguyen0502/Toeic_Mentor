@@ -1,12 +1,16 @@
 package intern.nhhtuan.toeic_mentor;
 
+import intern.nhhtuan.toeic_mentor.entity.EGender;
 import intern.nhhtuan.toeic_mentor.entity.ERole;
 import intern.nhhtuan.toeic_mentor.entity.Role;
+import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.repository.RoleRepository;
+import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
 public class ToeicMentorApplication {
@@ -16,14 +20,35 @@ public class ToeicMentorApplication {
     }
 
     @Bean
-    CommandLineRunner initRoles(RoleRepository roleRepository) {
+    CommandLineRunner initData(RoleRepository roleRepository,
+                               UserRepository userRepository) {
         return args -> {
+            // Tạo role nếu chưa có
             for (ERole roleName : ERole.values()) {
                 roleRepository.findByName(roleName).orElseGet(() -> {
                     Role role = new Role();
                     role.setName(roleName);
                     return roleRepository.save(role);
                 });
+            }
+
+            // Tạo user admin mặc định nếu chưa có
+            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+            String adminEmail = "admin@toeic.mentor.com";
+            if (userRepository.findByEmail(adminEmail).isEmpty()) {
+                Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                        .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found"));
+
+                User admin = User.builder()
+                        .email(adminEmail)
+                        .password(bCryptPasswordEncoder.encode("admin123@"))
+                        .role(adminRole)
+                        .fullName("Admin Toeic Mentor")
+                        .gender(EGender.OTHER)
+                        .isActive(true)
+                        .build();
+
+                userRepository.save(admin);
             }
         };
     }

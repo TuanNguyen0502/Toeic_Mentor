@@ -42,6 +42,7 @@ public class UserServiceImpl implements IUserService {
                 .role(role)
                 .fullName(registerRequest.getFullName())
                 .gender(EGender.valueOf(registerRequest.getGender()))
+                .isActive(true)
                 .build();
 
         // Xử lý ảnh
