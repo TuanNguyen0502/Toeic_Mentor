@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
+import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
 import intern.nhhtuan.toeic_mentor.entity.EGender;
 import intern.nhhtuan.toeic_mentor.entity.ERole;
@@ -28,6 +29,11 @@ public class UserServiceImpl implements IUserService {
     public boolean register(RegisterRequest registerRequest) throws IOException {
         validateEmailUnique(registerRequest);
 
+        if (!isPasswordConfirmed(registerRequest.getPassword(), registerRequest.getConfirmPassword())) {
+            throw new BadCredentialsException("Password not match");
+        }
+
+        // Create new User
         User user = new User();
         user.setEmail(registerRequest.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(registerRequest.getPassword()));
@@ -57,6 +63,24 @@ public class UserServiceImpl implements IUserService {
         if (existingUserByEmail != null) {
             throw new BadCredentialsException("Email already exists");
         }
+    }
+
+    @Override
+    public boolean updatePassword(ForgotPasswordRequest forgotPasswordRequest) {
+        // Kiểm tra email có tồn tại không
+        User userEntity = userRepository.findByEmail(forgotPasswordRequest.getEmail()).orElse(null);
+
+        if (userEntity == null) {
+            throw new BadCredentialsException("Email does not exist");
+        }
+
+        if (!isPasswordConfirmed(forgotPasswordRequest.getPassword(), forgotPasswordRequest.getConfirmPassword())) {
+            throw new BadCredentialsException("Password not match");
+        }
+
+        userEntity.setPassword(bCryptPasswordEncoder.encode(forgotPasswordRequest.getPassword()));
+        userRepository.save(userEntity);
+        return true;
     }
 
     public boolean isPasswordConfirmed(String password, String confirmPassword) {

@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.controller;
 
+import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.LoginRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
 import intern.nhhtuan.toeic_mentor.entity.EGender;
@@ -63,5 +64,30 @@ public class AuthController {
         }
 
         return "user/login";
+    }
+
+    @GetMapping("/forgot-password")
+    public String getForgotPasswordPage(Model model) {
+        ForgotPasswordRequest forgotPasswordRequest = new ForgotPasswordRequest();
+        model.addAttribute("forgotPasswordRequest", forgotPasswordRequest);
+        return "user/password-reset";
+    }
+
+    @PostMapping("/forgot-password")
+    public String postForgotPasswordPage(@Validated @ModelAttribute("forgotPasswordRequest") ForgotPasswordRequest forgotPasswordRequest,
+                                         BindingResult bindingResult,
+                                         Model model) {
+        if (bindingResult.hasErrors()) {
+            return "user/password-reset";
+        }
+
+        try {
+            if (userService.updatePassword(forgotPasswordRequest)) {
+                return "redirect:/login";
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        return "user/password-reset";
     }
 }
