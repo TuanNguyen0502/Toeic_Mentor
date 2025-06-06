@@ -19,23 +19,6 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserDetailServiceImpl userDetailsService;
 
-//    public String login(String email, String rawPassword) {
-//        try {
-//            // Xác thực thông tin đăng nhập
-//            authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(email, rawPassword)
-//            );
-//
-//            // Nếu xác thực thành công, load thông tin người dùng
-//            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-//
-//            // Tạo JWT
-//            return jwtService.generateToken(userDetails.getUsername());
-//        } catch (AuthenticationException ex) {
-//            throw new RuntimeException("Email hoặc mật khẩu không chính xác");
-//        }
-//    }
-
     public String loginAndReturnRedirectUrl(LoginRequest loginRequest, HttpServletResponse response) {
         try {
             // 1. Xác thực thông tin đăng nhập
@@ -66,7 +49,7 @@ public class AuthService {
                 }
             }
 
-            return "/home"; // mặc định nếu không phải admin
+            return "/"; // mặc định nếu không phải admin
 
         } catch (AuthenticationException e) {
             throw new RuntimeException("Email hoặc mật khẩu không chính xác");

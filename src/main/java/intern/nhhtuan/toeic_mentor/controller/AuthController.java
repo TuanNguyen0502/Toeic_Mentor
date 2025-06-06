@@ -64,7 +64,7 @@ public class AuthController {
 
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
-            return isAdmin ? "redirect:/admin" : "redirect:/home";
+            return isAdmin ? "redirect:/admin" : "redirect:/";
         }
 
         LoginRequest loginRequest = new LoginRequest();
@@ -125,5 +125,10 @@ public class AuthController {
             model.addAttribute("error", e.getMessage());
         }
         return "user/password-reset";
+    }
+
+    @GetMapping("/")
+    public String index() {
+        return "user/index";
     }
 }

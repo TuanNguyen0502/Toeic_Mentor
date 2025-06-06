@@ -29,7 +29,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection for simplicity
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/register", "/forgot-password", "/login", "/loginProcess", "/asset/**")
+                        .requestMatchers("/register", "/forgot-password", "/login", "/loginProcess", "/asset/**", "/stream", "/")
                         .permitAll()
                         .anyRequest().authenticated()) // Require authentication for all other requests
                 .sessionManagement(session ->
