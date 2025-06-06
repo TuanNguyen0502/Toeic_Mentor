@@ -49,7 +49,7 @@ public class AuthService {
                 }
             }
 
-            return "/"; // mặc định nếu không phải admin
+            return "/chat/" + userDetails.getUsername(); // mặc định nếu không phải admin
 
         } catch (AuthenticationException e) {
             throw new RuntimeException("Email hoặc mật khẩu không chính xác");

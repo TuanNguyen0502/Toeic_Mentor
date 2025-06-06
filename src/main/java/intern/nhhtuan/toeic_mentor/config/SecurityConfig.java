@@ -29,9 +29,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection for simplicity
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/register", "/forgot-password", "/login", "/loginProcess", "/asset/**", "/stream", "/")
+                        .requestMatchers("/register", "/forgot-password", "/login", "/loginProcess", "/asset/**", "/", "/stream")
                         .permitAll()
-                        .anyRequest().authenticated()) // Require authentication for all other requests
+                        .requestMatchers("/chat/*").hasAnyRole("USER", "ADMIN") // Allow access to root for USER and ADMIN roles
+                        .anyRequest().authenticated() // Require authentication for all other requests
+                )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Use stateless sessions
                 )

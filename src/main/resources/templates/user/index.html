@@ -48,6 +48,11 @@
     </form>
 </div>
 
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const userEmail = [[${email}]];
+    /*]]>*/
+</script>
 <script>
     const chatForm = document.getElementById('chat-form');
     const messageInput = document.getElementById('message-input');
@@ -66,7 +71,7 @@
 
         // Fetch streaming data from the server
         try {
-            const response = await fetchStreamWithRetry('/stream?message=' + encodeURIComponent(message));
+            const response = await fetchStreamWithRetry('/stream?message=' + encodeURIComponent(message) + '&email=' + encodeURIComponent(userEmail));
             const reader = response.body.getReader();
             let botMessageElement = addMessageToChat('Bot', '');
             let contentElement = botMessageElement.querySelector('.message-content');
@@ -80,7 +85,9 @@
     async function fetchStreamWithRetry(url, retries = 3) {
         for (let i = 0; i < retries; i++) {
             try {
-                const response = await fetch(url);
+                const response = await fetch(url, {
+                    credentials: 'include' // Send cookies with the request
+                });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return response;
             } catch (e) {

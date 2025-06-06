@@ -42,7 +42,7 @@ public class ToeicMentorApplication {
 //
 //                User admin = User.builder()
 //                        .email(adminEmail)
-//                        .password(bCryptPasswordEncoder.encode("admin123@"))
+//                        .password(bCryptPasswordEncoder.encode("Tuantp2004@"))
 //                        .role(adminRole)
 //                        .fullName("Admin Toeic Mentor")
 //                        .gender(EGender.OTHER)
@@ -50,6 +50,24 @@ public class ToeicMentorApplication {
 //                        .build();
 //
 //                userRepository.save(admin);
+//            }
+//
+//            // Tạo user mặc định nếu chưa có
+//            String userEmail = "user@toeic.mentor.com";
+//            if (userRepository.findByEmail(userEmail).isEmpty()) {
+//                Role adminRole = roleRepository.findByName(ERole.ROLE_USER)
+//                        .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
+//
+//                User user = User.builder()
+//                        .email(userEmail)
+//                        .password(bCryptPasswordEncoder.encode("Tuantp2004@"))
+//                        .role(adminRole)
+//                        .fullName("User Toeic Mentor")
+//                        .gender(EGender.OTHER)
+//                        .isActive(true)
+//                        .build();
+//
+//                userRepository.save(user);
 //            }
 //        };
 //    }
