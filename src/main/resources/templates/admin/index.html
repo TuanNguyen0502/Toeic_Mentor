@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload - Toeic Mentor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .image-preview {
+            max-width: 400px;
+            max-height: 400px;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-container {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .result-container pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-height: 500px;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">TOEIC Image Analysis</h1>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4">Upload TOEIC Image</h2>
+
+            <form id="upload-form" class="space-y-4" enctype="multipart/form-data">
+                <div>
+                    <label for="image-input" class="block text-sm font-medium text-gray-700 mb-2">
+                        Select an image file (PNG format preferred)
+                    </label>
+                    <input
+                        type="file"
+                        id="image-input"
+                        name="image"
+                        accept="image/*"
+                        class="hidden"
+                        required
+                    >
+                    <div class="flex items-center space-x-4">
+                        <label
+                            for="image-input"
+                            class="cursor-pointer bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            Choose File
+                        </label>
+                        <span id="file-name" class="text-sm text-gray-500">No file chosen</span>
+                    </div>
+                </div>
+
+                <div id="image-preview-container" class="flex justify-center hidden"></div>
+
+                <div>
+                    <button
+                        type="submit"
+                        id="submit-button"
+                        disabled
+                        class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Analyze Image
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="loading-container" class="hidden flex flex-col items-center justify-center my-8">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-lg text-gray-700">Processing your image, please wait...</p>
+        </div>
+
+        <div id="result-container" class="bg-white p-6 rounded-lg shadow-md hidden">
+            <h2 class="text-xl font-semibold mb-4">Analysis Result</h2>
+            <div id="result-content" class="result-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('upload-form');
+        const imageInput = document.getElementById('image-input');
+        const submitButton = document.getElementById('submit-button');
+        const fileNameSpan = document.getElementById('file-name');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const loadingContainer = document.getElementById('loading-container');
+        const resultContainer = document.getElementById('result-container');
+        const resultContent = document.getElementById('result-content');
+
+        // Handle file selection
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                // Show file name
+                fileNameSpan.textContent = file.name;
+
+                // Enable submit button
+                submitButton.disabled = false;
+
+                // Show image preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreviewContainer.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview" class="image-preview">
+                    `;
+                    imagePreviewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                resetForm();
+            }
+        });
+
+        // Handle form submission
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const file = imageInput.files[0];
+            if (!file) return;
+
+            // Show loading state
+            submitButton.disabled = true;
+            loadingContainer.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+
+            try {
+                // Upload image
+                const result = await uploadImage(file);
+
+                // Display result
+                displayResult(result);
+            } catch (error) {
+                console.error('Error:', error);
+                displayError('An error occurred while processing the image. Please try again.');
+            } finally {
+                // Hide loading indicator
+                loadingContainer.classList.add('hidden');
+            }
+        });
+
+        // Upload image to the server
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await fetch('/admin/chat/upload-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data.result;
+        }
+
+        // Display the analysis result
+        function displayResult(result) {
+            resultContainer.classList.remove('hidden');
+
+            try {
+                // Try to parse the result as JSON
+                const jsonResult = typeof result === 'string' ? JSON.parse(result) : result;
+
+                // Format the result for display
+                if (Array.isArray(jsonResult)) {
+                    // Format as TOEIC questions
+                    let formattedHtml = '';
+
+                    jsonResult.forEach(question => {
+                        formattedHtml += `
+                            <div class="mb-8 pb-6 border-b border-gray-200">
+                                <h3 class="text-lg font-bold mb-2">Question ${question.question_number}</h3>
+                                <div class="mb-3">${question.question_text}</div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
+                                    <div class="bg-gray-50 p-2 rounded">
+                                        <span class="font-medium">A:</span> ${question.options.A}
+                                    </div>
+                                    <div class="bg-gray-50 p-2 rounded">
+                                        <span class="font-medium">B:</span> ${question.options.B}
+                                    </div>
+                                    <div class="bg-gray-50 p-2 rounded">
+                                        <span class="font-medium">C:</span> ${question.options.C}
+                                    </div>
+                                    <div class="bg-gray-50 p-2 rounded">
+                                        <span class="font-medium">D:</span> ${question.options.D}
+                                    </div>
+                                </div>
+
+                                <div class="bg-green-50 border-l-4 border-green-500 p-3 mb-2">
+                                    <span class="font-medium">Correct answer:</span> ${question.correct_answer}
+                                </div>
+
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    ${question.tags.map(tag =>
+                                        `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">${tag}</span>`
+                                    ).join('')}
+                                </div>
+
+                                ${question.passage ?
+                                    `<div class="mt-4 p-3 bg-gray-50 rounded">
+                                        <div class="font-medium mb-1">Passage:</div>
+                                        <div>${question.passage}</div>
+                                    </div>` : ''}
+                            </div>
+                        `;
+                    });
+
+                    resultContent.innerHTML = formattedHtml;
+                } else {
+                    // Generic JSON display
+                    resultContent.innerHTML = `<pre>${JSON.stringify(jsonResult, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                // Display as plain text if not valid JSON
+                resultContent.textContent = result || 'No results returned';
+            }
+
+            // Scroll to results
+            resultContainer.scrollIntoView({behavior: 'smooth'});
+        }
+
+        // Display error message
+        function displayError(message) {
+            resultContainer.classList.remove('hidden');
+            resultContent.innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <strong class="font-bold">Error!</strong>
+                    <span class="block sm:inline"> ${message}</span>
+                </div>
+            `;
+        }
+
+        // Reset form elements
+        function resetForm() {
+            fileNameSpan.textContent = 'No file chosen';
+            submitButton.disabled = true;
+            imagePreviewContainer.innerHTML = '';
+            imagePreviewContainer.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
+
