@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/register", "/forgot-password", "/login", "/loginProcess", "/asset/**", "/", "/stream")
                         .permitAll()
                         .requestMatchers("/chat/*").hasAnyRole("USER", "ADMIN") // Allow access to root for USER and ADMIN roles
-                        .requestMatchers("/admin", "/admin/*").hasRole("ADMIN") // Allow access to admin routes for ADMIN role
+                        .requestMatchers("/admin", "/admin/**").hasRole("ADMIN") // Allow access to admin routes for ADMIN role
                         .anyRequest().authenticated() // Require authentication for all other requests
                 )
                 .sessionManagement(session ->

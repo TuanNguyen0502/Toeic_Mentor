@@ -13,13 +13,17 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -57,9 +61,8 @@ public class ChatService {
                 .content();
     }
 
-    public String createTest(MultipartFile imageFile) throws IOException {
-        String imageUrl = imageUtil.saveImageLocally(imageFile);
-        return ChatClient.create(chatModel).prompt()
+    public String createTest(InputStream imageInputStream, String contentType) throws IOException {
+        String result = ChatClient.create(chatModel).prompt()
                 .user(user -> user
                         .text("""
                                 Analyze the provided TOEIC Reading image and extract every question into a standardized JSON format.
@@ -94,9 +97,10 @@ public class ChatService {
                                 Return a valid JSON array, where each element represents a single question.
                                 Do not return any extra text or explanation — only the array.
                                 """)
-                        .media(MimeTypeUtils.IMAGE_PNG, new ClassPathResource(imageUrl)))
+                        .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
                 .call()
                 .content();
+        return result;
     }
 
     public Flux<String> getChatHistory(String conversationId) {

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,6 @@ public class ChatController {
 
     @PostMapping("/upload-image")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("image") MultipartFile imageFile) {
-        try {
             if (imageFile.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Image file cannot be empty"));
             }
@@ -29,18 +29,15 @@ public class ChatController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Only PNG files are supported"));
             }
 
-            // Process the image file and get the URL
-            String result = chatService.createTest(imageFile);
+            String result;
+            try (InputStream inputStream = imageFile.getInputStream()) {
+                result = chatService.createTest(inputStream, imageFile.getContentType());
+            } catch (IOException e) {
+                result = "Error uploading image";
+            }
 
-            // Return the URL of the saved image
             Map<String, String> response = new HashMap<>();
             response.put("result", result);
             return ResponseEntity.ok(response);
-
-        } catch (IOException e) {
-            Map<String, String> response = new HashMap<>();
-            response.put("error", "Failed to process the image: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
-        }
     }
 }
