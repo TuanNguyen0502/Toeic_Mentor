@@ -20,16 +20,28 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String content;
+    @Column(name = "question_number", nullable = false)
+    private Integer questionNumber;
 
-    @Column(name = "grammar_point", nullable = false)
-    private String grammarPoint;
+    @Column(name = "question_text", columnDefinition = "TEXT")
+    private String questionText;
+
+    @Column(name = "correct_answer", length = 1)
+    private String correctAnswer;
+
+    @Column(name = "passage", columnDefinition = "TEXT")
+    private String passage;
+
+    @Column(name = "passage_image_url")
+    private String passageImageUrl;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestionTag> tags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestionOption> options = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "test_id")
     private Test test;
-
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
-    private List<Answer> answers = new ArrayList<>();
 }

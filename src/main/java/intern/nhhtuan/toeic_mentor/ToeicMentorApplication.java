@@ -1,17 +1,7 @@
 package intern.nhhtuan.toeic_mentor;
 
-import intern.nhhtuan.toeic_mentor.entity.EGender;
-import intern.nhhtuan.toeic_mentor.entity.ERole;
-import intern.nhhtuan.toeic_mentor.entity.Role;
-import intern.nhhtuan.toeic_mentor.entity.User;
-import intern.nhhtuan.toeic_mentor.repository.RoleRepository;
-import intern.nhhtuan.toeic_mentor.repository.UserRepository;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
 public class ToeicMentorApplication {

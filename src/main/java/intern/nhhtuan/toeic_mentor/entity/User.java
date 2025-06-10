@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
+import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
 import jakarta.persistence.*;
 import lombok.*;
 

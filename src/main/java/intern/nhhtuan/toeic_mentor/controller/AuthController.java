@@ -3,7 +3,7 @@ package intern.nhhtuan.toeic_mentor.controller;
 import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.LoginRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
-import intern.nhhtuan.toeic_mentor.entity.EGender;
+import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
 import intern.nhhtuan.toeic_mentor.service.implement.AuthService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
 import jakarta.servlet.http.HttpServletResponse;

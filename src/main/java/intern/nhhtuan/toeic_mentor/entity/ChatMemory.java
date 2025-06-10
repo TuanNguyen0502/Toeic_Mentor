@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatType;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;

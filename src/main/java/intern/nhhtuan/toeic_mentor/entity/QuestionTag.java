@@ -7,23 +7,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "weak_grammar_points")
+@Table(name = "question_tags")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WeakGrammarPoint {
+public class QuestionTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "grammar_point", nullable = false)
-    private String grammarPoint;
+    @Column(name = "tag", nullable = false)
+    private String tag;
 
-    @Column(name = "mistake_count", nullable = false)
-    private int mistakeCount;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "question_id")
+    private Question question;
 }

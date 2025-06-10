@@ -2,8 +2,8 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
-import intern.nhhtuan.toeic_mentor.entity.EGender;
-import intern.nhhtuan.toeic_mentor.entity.ERole;
+import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
+import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.repository.RoleRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
