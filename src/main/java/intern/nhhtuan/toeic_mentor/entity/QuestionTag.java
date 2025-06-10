@@ -7,28 +7,25 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_answers")
+@Table(name = "question_tags")
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserAnswer {
+@AllArgsConstructor
+public class QuestionTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "is_correct", nullable = false)
-    private boolean isCorrect;
+    @Column(name = "tag", nullable = false)
+    private String tag;
 
-    @ManyToOne
-    @JoinColumn(name = "user_test_result_id")
-    private UserTestResult userTestResult;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     private Question question;
 
-    @ManyToOne
-    @JoinColumn(name = "answer_id")
-    private Answer selectedAnswer;
+    public QuestionTag(String tagStr, Question question) {
+        this.tag = tagStr;
+        this.question = question;
+    }
 }

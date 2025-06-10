@@ -3,7 +3,7 @@ package intern.nhhtuan.toeic_mentor.controller;
 import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.LoginRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
-import intern.nhhtuan.toeic_mentor.entity.EGender;
+import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
 import intern.nhhtuan.toeic_mentor.service.implement.AuthService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,10 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -40,6 +37,7 @@ public class AuthController {
                                    BindingResult bindingResult,
                                    Model model) {
         if (bindingResult.hasErrors()) {
+            model.addAttribute("genders", EGender.values());
             return "user/register";
         }
         try {
@@ -49,6 +47,7 @@ public class AuthController {
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
         }
+        model.addAttribute("genders", EGender.values());
         return "user/register";
     }
 
@@ -64,7 +63,12 @@ public class AuthController {
 
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
-            return isAdmin ? "redirect:/admin" : "redirect:/home";
+            if (isAdmin) {
+                return "redirect:/admin";
+            } else {
+                String email = authentication.getName();
+                return "redirect:/chat/" + email;
+            }
         }
 
         LoginRequest loginRequest = new LoginRequest();
@@ -125,5 +129,16 @@ public class AuthController {
             model.addAttribute("error", e.getMessage());
         }
         return "user/password-reset";
+    }
+
+    @GetMapping("/")
+    public String index() {
+        return "redirect:/login";
+    }
+
+    @GetMapping("/chat/{email}")
+    public String chatbot(@PathVariable String email, Model model) {
+        model.addAttribute("email", email);
+        return "user/index";
     }
 }
