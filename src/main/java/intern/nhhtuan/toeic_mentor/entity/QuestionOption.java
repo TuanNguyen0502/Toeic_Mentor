@@ -26,4 +26,10 @@ public class QuestionOption {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     private Question question;
+
+    public QuestionOption(String key, String value, Question question) {
+        this.key = key;
+        this.value = value;
+        this.question = question;
+    }
 }

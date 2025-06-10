@@ -97,6 +97,16 @@
         <div id="result-container" class="bg-white p-6 rounded-lg shadow-md hidden">
             <h2 class="text-xl font-semibold mb-4">Analysis Result</h2>
             <div id="result-content" class="result-container"></div>
+
+            <div class="mt-6">
+                <button
+                    id="save-button"
+                    class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Save Results to Database
+                </button>
+                <div id="save-status" class="mt-2 text-center hidden"></div>
+            </div>
         </div>
     </div>
 
@@ -109,6 +119,9 @@
         const loadingContainer = document.getElementById('loading-container');
         const resultContainer = document.getElementById('result-container');
         const resultContent = document.getElementById('result-content');
+        const saveButton = document.getElementById('save-button');
+        const saveStatus = document.getElementById('save-status');
+        let currentJsonResult = null;
 
         // Handle file selection
         imageInput.addEventListener('change', function() {
@@ -183,8 +196,19 @@
             resultContainer.classList.remove('hidden');
 
             try {
-                // Try to parse the result as JSON
+                // Clean result if wrapped in markdown code block
+                if (typeof result === 'string') {
+                    result = result.trim();
+                    if (result.startsWith("```json")) {
+                        result = result.replace(/^```json\s*/, '').replace(/```$/, '');
+                    } else if (result.startsWith("```")) {
+                        result = result.replace(/^```\s*/, '').replace(/```$/, '');
+                    }
+                }
+
+                // Parse the cleaned result
                 const jsonResult = typeof result === 'string' ? JSON.parse(result) : result;
+                currentJsonResult = jsonResult; // Lưu JSON gốc để dùng lại khi lưu
 
                 // Format the result for display
                 if (Array.isArray(jsonResult)) {
@@ -195,6 +219,11 @@
                         formattedHtml += `
                             <div class="mb-8 pb-6 border-b border-gray-200">
                                 <h3 class="text-lg font-bold mb-2">Question ${question.question_number}</h3>
+                                ${question.passage ?
+                                `<div class="mt-4 p-3 bg-gray-50 rounded">
+                                            <div class="font-medium mb-1">Passage:</div>
+                                            <div>${question.passage}</div>
+                                        </div>` : ''}
                                 <div class="mb-3">${question.question_text}</div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
@@ -218,15 +247,9 @@
 
                                 <div class="flex flex-wrap gap-2 mt-2">
                                     ${question.tags.map(tag =>
-                                        `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">${tag}</span>`
-                                    ).join('')}
+                            `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">${tag}</span>`
+                        ).join('')}
                                 </div>
-
-                                ${question.passage ?
-                                    `<div class="mt-4 p-3 bg-gray-50 rounded">
-                                        <div class="font-medium mb-1">Passage:</div>
-                                        <div>${question.passage}</div>
-                                    </div>` : ''}
                             </div>
                         `;
                     });
@@ -263,7 +286,43 @@
             imagePreviewContainer.innerHTML = '';
             imagePreviewContainer.classList.add('hidden');
         }
+
+        // Save results to database
+        saveButton.addEventListener('click', async function() {
+            if (!currentJsonResult || !Array.isArray(currentJsonResult)) {
+                displayError('No valid results available to save.');
+                return;
+            }
+
+            // Show loading state
+            saveButton.disabled = true;
+            saveStatus.classList.add('hidden');
+
+            try {
+                // Send results to server
+                const response = await fetch('/admin/chat/upload-json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(currentJsonResult) // Dùng bản JSON gốc
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                saveStatus.textContent = 'Results saved successfully!';
+                saveStatus.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error:', error);
+                displayError('An error occurred while saving the results. Please try again.');
+            } finally {
+                // Hide loading state
+                saveButton.disabled = false;
+            }
+        });
     </script>
 </body>
 </html>
-

@@ -1,6 +1,8 @@
 package intern.nhhtuan.toeic_mentor.controller.admin;
 
+import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.service.implement.ChatService;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController("AdminChatController")
@@ -17,6 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chatService;
+    private final IQuestionService questionService;
 
     @PostMapping("/upload-image")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("image") MultipartFile imageFile) {
@@ -39,5 +43,11 @@ public class ChatController {
             Map<String, String> response = new HashMap<>();
             response.put("result", result);
             return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/upload-json")
+    public ResponseEntity<?> uploadJson(@RequestBody List<QuestionDTO> questions) {
+        questionService.saveQuestionsFromDTO(questions);
+        return ResponseEntity.ok(Map.of("message", "Saved successfully"));
     }
 }

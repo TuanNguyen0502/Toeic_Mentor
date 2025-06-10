@@ -23,4 +23,9 @@ public class QuestionTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     private Question question;
+
+    public QuestionTag(String tagStr, Question question) {
+        this.tag = tagStr;
+        this.question = question;
+    }
 }

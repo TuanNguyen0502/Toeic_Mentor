@@ -94,13 +94,16 @@ public class ChatService {
                                 passage_image_url: Only for Part 7 when the passage text cannot be extracted (use a placeholder like "image_url_here" if needed).
 
                                 Step 3: Return the result
-                                Return a valid JSON array, where each element represents a single question.
-                                Do not return any extra text or explanation — only the array.
+                                Return ONLY the raw JSON array.
+                                Do NOT include any text, explanation, markdown formatting (e.g. triple backticks ```) or surrounding quotes. 
+                                The output MUST be a valid JSON array.
                                 """)
                         .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
                 .call()
                 .content();
-        return result;
+        String cleanResult = result.replaceAll("^```json\\s*", "").replaceAll("```$", "");
+        System.out.println(cleanResult);
+        return cleanResult;
     }
 
     public Flux<String> getChatHistory(String conversationId) {
