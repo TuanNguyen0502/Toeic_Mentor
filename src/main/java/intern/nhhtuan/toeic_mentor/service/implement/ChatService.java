@@ -76,12 +76,13 @@ public class ChatService implements IChatService {
                         "D": <text>
                       },
                       "correct_answer": <A/B/C/D>,
-                      "tags": [<"Part 5/6/7">, <topic>],
+                      "tags": [<topic1>, <topic2>, ...],
                       "passage": <text if available, or null>,
                       "passage_image_url": <URL if passage cannot be extracted, or null>
+                      "part": <number of the part, e.g., 5, 6, or 7>
                     }
                     correct_answer: Analyze and choose the best answer using grammar and context.
-                    tags: Always include the part (e.g., "Part 6") and relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", etc.
+                    tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", "business", "school", "daily", ...
                     passage: Use only for Part 6 and 7. For Part 5, set this to null.
                     passage_image_url: Keep "%s" and do not change it.
                     

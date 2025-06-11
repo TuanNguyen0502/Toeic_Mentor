@@ -220,7 +220,7 @@
                             <div class="mb-8 pb-6 border-b border-gray-200">
                                 <h3 class="text-lg font-bold mb-2">Question ${question.question_number}</h3>
                                 ${question.passage ?
-                                `<div class="mt-4 p-3 bg-gray-50 rounded">
+                            `<div class="mt-4 p-3 bg-gray-50 rounded">
                                             <div class="font-medium mb-1">Passage:</div>
                                             <div>${question.passage}</div>
                                         </div>` : ''}
@@ -245,6 +245,9 @@
                                     <span class="font-medium">Correct answer:</span> ${question.correct_answer}
                                 </div>
 
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Part ${question.part}</span>
+                                </div>
                                 <div class="flex flex-wrap gap-2 mt-2">
                                     ${question.tags.map(tag =>
                             `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">${tag}</span>`

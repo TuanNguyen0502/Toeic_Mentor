@@ -31,6 +31,7 @@ public class QuestionService implements IQuestionService {
             question.setCorrectAnswer(dto.getCorrectAnswer());
             question.setPassage(dto.getPassage());
             question.setPassageImageUrl(dto.getPassageImageUrl());
+            question.setPart(dto.getPart());
 
             // Lưu trước để có ID cho liên kết
             questionRepository.save(question);
