@@ -316,7 +316,12 @@
             // Add event listeners for the radio buttons
             questionElement.querySelectorAll('input[type="radio"]').forEach(radio => {
                 radio.addEventListener('change', (e) => {
+                    // Store answer in userAnswers object for UI tracking
                     userAnswers[index] = e.target.value;
+
+                    // Set the userAnswer field directly in the QuestionResponse object
+                    questions[index].userAnswer = e.target.value;
+
                     updateQuestionNavigation();
                     updateSidebarCounts();
                 });
@@ -452,36 +457,80 @@
         clearInterval(timerInterval);
         hideConfirmationModal();
 
-        // Convert user answers to format for API
-        const answers = Object.keys(userAnswers).map(questionIndex => {
-            return {
-                questionId: questions[questionIndex].id,
-                selectedAnswer: userAnswers[questionIndex]
-            };
-        });
+        // Create a message container for the chatbot's analysis
+        const analysisContainer = document.createElement('div');
+        analysisContainer.className = 'bg-white p-6 rounded-lg shadow-lg mt-4 mb-8';
+        analysisContainer.innerHTML = `
+            <h3 class="text-xl font-bold mb-4">Test Analysis</h3>
+            <div id="analysis-content" class="message-content"></div>
+            <div class="mt-4 text-center hidden" id="back-to-dashboard-container">
+                <button id="analysis-dashboard-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                    Back to Dashboard
+                </button>
+            </div>
+        `;
 
-        // Submit to API
-        fetch(`/api/tests/${testId}/submit`, {
+        // Add loading indicator
+        const analysisContent = analysisContainer.querySelector('#analysis-content');
+        analysisContent.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div><p>Analyzing your test results...</p></div>';
+
+        // Insert the analysis container after the test form
+        document.getElementById('testForm').insertAdjacentElement('afterend', analysisContainer);
+
+        // Hide test form and show analysis container
+        document.getElementById('testForm').classList.add('hidden');
+
+        // Submit the questions array and process the streaming response
+        fetch('/submit-test', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ answers: answers })
-        })
-        .then(response => response.json())
-        .then(result => {
-            // Display results
-            document.getElementById('scoreDisplay').textContent = `${result.correctAnswers}/${questions.length}`;
-            document.getElementById('scoreProgressBar').style.width = `${(result.correctAnswers / questions.length) * 100}%`;
+            body: JSON.stringify(questions)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
 
-            document.getElementById('listeningScore').textContent = `${result.listeningScore}/${result.listeningTotal}`;
-            document.getElementById('readingScore').textContent = `${result.readingScore}/${result.readingTotal}`;
+            // Clear the loading indicator
+            analysisContent.innerHTML = '';
 
-            showResultModal();
-        })
-        .catch(error => {
+            // Process the streaming response
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            // Function to process the stream
+            async function readStream() {
+                try {
+                    while (true) {
+                        const {done, value} = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value, {stream: true});
+                        analysisContent.innerHTML += chunk;
+                        analysisContent.scrollIntoView({behavior: 'smooth', block: 'end'});
+                    }
+
+                    // Show back to dashboard button when stream is complete
+                    document.getElementById('back-to-dashboard-container').classList.remove('hidden');
+                    document.getElementById('analysis-dashboard-btn').addEventListener('click', goToDashboard);
+
+                } catch (error) {
+                    console.error('Error reading stream:', error);
+                    analysisContent.innerHTML += '<p class="text-red-500">Error: Stream interrupted. Please try again.</p>';
+                }
+            }
+
+            // Start processing the stream
+            readStream();
+
+        }).catch(error => {
             console.error('Error submitting test:', error);
-            alert('Failed to submit test. Please try again.');
+            analysisContent.innerHTML = '<p class="text-red-500">Failed to submit test. Please try again.</p>';
+
+            // Show back to dashboard button
+            document.getElementById('back-to-dashboard-container').classList.remove('hidden');
+            document.getElementById('analysis-dashboard-btn').addEventListener('click', goToDashboard);
         });
     }
 

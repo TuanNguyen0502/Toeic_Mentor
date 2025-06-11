@@ -1,5 +1,8 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -129,6 +132,25 @@ public class ChatService implements IChatService {
                 .build();
         List<String> messages = chatMemory.get(conversationId).stream().map(Message::getText).toList();
         return Flux.fromIterable(messages);
+    }
+
+    @Override
+    public String buildToeicAnalysisPrompt(List<QuestionResponse> responses) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(responses);
+
+        return String.format("""
+        Tôi vừa hoàn thành một bài thi TOEIC. Dưới đây là kết quả của tôi:
+
+        ```json
+        %s
+        ```
+
+        Hãy thực hiện các bước sau:
+        1. Chấm điểm (số câu đúng / tổng số)
+        2. Liệt kê và phân tích các câu trả lời sai và phân tích lý do sai
+        3. Đề xuất tài liệu hoặc chiến lược luyện tập phù hợp,  ví dụ: luyện ngữ pháp nào, học thêm chủ điểm gì
+        """, json);
     }
 }
 

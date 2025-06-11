@@ -110,6 +110,7 @@ public class QuestionService implements IQuestionService {
                 question.getId(),
                 question.getQuestionText(),
                 question.getCorrectAnswer(),
+                null,
                 question.getPassage(),
                 question.getPassageImageUrl(),
                 question.getPart(),
