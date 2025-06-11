@@ -1,6 +1,8 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.entity.Question;
 import intern.nhhtuan.toeic_mentor.entity.QuestionOption;
 import intern.nhhtuan.toeic_mentor.entity.QuestionTag;
@@ -12,7 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,5 +57,64 @@ public class QuestionService implements IQuestionService {
                 tagRepository.save(tag);
             }
         }
+    }
+
+    @Override
+    public List<QuestionResponse> generateTest(TestRequest request) {
+        List<Question> matchedQuestions = new ArrayList<>();
+
+        // Validate request
+        for (Integer part : request.getPart()) {
+            if (part < 1 || part > 7) {
+                throw new IllegalArgumentException("Part must be between 1 and 7");
+            }
+            // Fetch questions based on part and topic
+            List<Question> questions;
+            // If no topics are specified, fetch all questions for the part
+            if (request.getTopic().size() == 0) {
+                questions = questionRepository.findByPart(part);
+            } else {
+                // If topics are specified, fetch questions that match both part and topics
+                List<QuestionTag> tags = new ArrayList<>();
+                for (String tag : request.getTopic()) {
+                    tags.addAll(tagRepository.findByTag(tag));
+                }
+                questions = questionRepository.findByPartAndTags(part, tags);
+            }
+            // Add the fetched questions to the matched list
+            matchedQuestions.addAll(questions);
+        }
+
+        // Shuffle and limit
+        Collections.shuffle(matchedQuestions);
+        List<Question> selectedQuestions = matchedQuestions.stream()
+                .limit(request.getQuestion_count())
+                .toList();
+
+        // Convert to DTOs
+        return selectedQuestions.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private QuestionResponse convertToDTO(Question question) {
+        List<QuestionResponse.OptionResponse> options = question.getOptions().stream()
+                .map(opt -> new QuestionResponse.OptionResponse(opt.getKey(), opt.getValue()))
+                .collect(Collectors.toList());
+
+        List<String> tags = question.getTags().stream()
+                .map(QuestionTag::getTag)
+                .collect(Collectors.toList());
+
+        return new QuestionResponse(
+                question.getId(),
+                question.getQuestionText(),
+                question.getCorrectAnswer(),
+                question.getPassage(),
+                question.getPassageImageUrl(),
+                question.getPart(),
+                options,
+                tags
+        );
     }
 }

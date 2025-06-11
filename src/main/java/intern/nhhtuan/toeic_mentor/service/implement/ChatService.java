@@ -80,9 +80,10 @@ public class ChatService implements IChatService {
                       "passage_image_url": <URL if passage cannot be extracted, or null>
                       "part": <number of the part, e.g., 5, 6, or 7>
                     }
+                    question_text: if the question is Part 6 or Part 7 then get then sentence that contains the question, otherwise get the sentence with the blank.
                     correct_answer: Analyze and choose the best answer using grammar and context.
-                    tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", "business", "school", "daily", ...
-                    passage: Use only for Part 6 and 7. For Part 5, set this to null.
+                    tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", ...
+                    passage: Use only for Part 6 and 7, keep the original passage with blanks. For Part 5, set this to null.
                     passage_image_url: Keep "%s" and do not change it.
                     
                     Step 3: Return the result

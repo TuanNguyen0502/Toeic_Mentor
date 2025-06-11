@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take TOEIC Test - Toeic Mentor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" th:href="@{/asset/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/asset/css/bootstrap-icons.css}">
+
+    <style>
+        .question-container {
+            margin-bottom: 2rem;
+        }
+        .passage-container {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .option-label {
+            display: block;
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-label:hover {
+            background-color: #e9ecef;
+        }
+        .option-input:checked + .option-label {
+            background-color: #cfe2ff;
+            border-color: #3b82f6;
+        }
+        .option-input {
+            display: none;
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .timer-container {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+            text-align: center;
+        }
+        .question-navigation {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .question-nav-button {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .question-nav-button:hover {
+            background-color: #e9ecef;
+        }
+        .question-nav-button.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .question-nav-button.answered {
+            background-color: #a7f3d0;
+            border-color: #10b981;
+        }
+        .image-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .image-container img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<!-- off-canvas-menu start -->
+<div th:insert="~{user/fragments/off-canvas-menu::offcanvasMenu}"></div>
+<!-- off-canvas-menu end -->
+
+<div class="container mx-auto py-4 px-4">
+    <h1 class="text-2xl font-bold mb-4 text-center">TOEIC Practice Test</h1>
+
+    <!-- Timer -->
+    <div class="timer-container mb-4">
+        <div class="text-lg font-semibold">Time Remaining: <span id="timer">120:00</span></div>
+    </div>
+
+    <!-- Question Navigation -->
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-2">Question Navigation:</h3>
+        <div class="question-navigation" id="questionNav">
+            <!-- Will be filled by JavaScript -->
+        </div>
+    </div>
+
+    <div class="flex flex-wrap">
+        <!-- Main Content -->
+        <div class="w-full lg:w-3/4 lg:pr-4">
+            <form id="testForm">
+                <div id="questionsContainer">
+                    <!-- Questions will be rendered here -->
+                </div>
+
+                <div class="flex justify-between mt-8 mb-12">
+                    <button type="button" id="prevBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Previous</button>
+                    <button type="button" id="nextBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Next</button>
+                </div>
+
+                <div class="text-center mb-12">
+                    <button type="button" id="submitBtn" class="bg-green-600 text-white px-6 py-3 rounded text-lg font-semibold hover:bg-green-700">
+                        Submit Test
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar - Part Information -->
+        <div class="w-full lg:w-1/4 lg:pl-4">
+            <div class="bg-white p-4 rounded-lg shadow mb-4 sticky top-24">
+                <h3 class="text-lg font-semibold mb-3">Test Information</h3>
+                <div class="mb-2">
+                    <span class="font-medium">Total Questions:</span>
+                    <span id="totalQuestions">0</span>
+                </div>
+                <div class="mb-2">
+                    <span class="font-medium">Answered:</span>
+                    <span id="answeredCount">0</span>
+                </div>
+                <div class="mb-2">
+                    <span class="font-medium">Remaining:</span>
+                    <span id="remainingCount">0</span>
+                </div>
+                <hr class="my-3">
+                <div>
+                    <h4 class="font-semibold mb-2">Part Information:</h4>
+                    <ul class="list-disc pl-5">
+                        <li>Part 1: Photographs</li>
+                        <li>Part 2: Question-Response</li>
+                        <li>Part 3: Conversations</li>
+                        <li>Part 4: Short Talks</li>
+                        <li>Part 5: Incomplete Sentences</li>
+                        <li>Part 6: Text Completion</li>
+                        <li>Part 7: Reading Comprehension</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" id="confirmationModal">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h3 class="text-xl font-bold mb-4">Submit Test?</h3>
+        <p class="mb-6">Are you sure you want to submit your test? You have answered <span id="modalAnsweredCount">0</span> out of <span id="modalTotalQuestions">0</span> questions.</p>
+        <div class="flex justify-end space-x-3">
+            <button id="cancelSubmit" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">Cancel</button>
+            <button id="confirmSubmit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Submit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Result Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" id="resultModal">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full">
+        <h3 class="text-2xl font-bold mb-4 text-center">Test Results</h3>
+        <div class="mb-4">
+            <div class="flex justify-between mb-2">
+                <span class="font-medium">Score:</span>
+                <span id="scoreDisplay" class="font-bold text-xl">0/0</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4">
+                <div class="bg-blue-600 h-4 rounded-full" id="scoreProgressBar" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="mb-6">
+            <h4 class="font-semibold mb-2">Score Breakdown:</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <span class="font-medium">Listening Section:</span>
+                    <span id="listeningScore">0/0</span>
+                </div>
+                <div>
+                    <span class="font-medium">Reading Section:</span>
+                    <span id="readingScore">0/0</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-center">
+            <button id="reviewTestBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mr-3">Review Test</button>
+            <button id="backToDashboardBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">Back to Dashboard</button>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script th:src="@{/asset/js/jquery.min.js}"></script>
+<script th:src="@{/asset/js/bootstrap.bundle.min.js}"></script>
+
+<script th:inline="javascript">
+    // Get questions data from Thymeleaf
+    const questions = /*[[${questions}]]*/ [];
+    // Set default test duration (2 hours) if not provided
+    const testDuration = 120; // in minutes
+</script>
+
+<script>
+    // Global variables
+    let currentQuestionIndex = 0;
+    const userAnswers = {};
+    let timerInterval;
+    let timeRemaining = testDuration * 60; // Convert minutes to seconds
+
+    // Initialize when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up questions
+        renderQuestions();
+        updateQuestionNavigation();
+        updateCurrentQuestion();
+        updateSidebarCounts();
+        startTimer();
+
+        // Set up event listeners
+        document.getElementById('nextBtn').addEventListener('click', goToNextQuestion);
+        document.getElementById('prevBtn').addEventListener('click', goToPrevQuestion);
+        document.getElementById('submitBtn').addEventListener('click', showConfirmationModal);
+        document.getElementById('cancelSubmit').addEventListener('click', hideConfirmationModal);
+        document.getElementById('confirmSubmit').addEventListener('click', submitTest);
+        document.getElementById('reviewTestBtn').addEventListener('click', hideResultModal);
+        document.getElementById('backToDashboardBtn').addEventListener('click', goToDashboard);
+    });
+
+    // Render questions into the DOM
+    function renderQuestions() {
+        const container = document.getElementById('questionsContainer');
+        container.innerHTML = '';
+
+        questions.forEach((question, index) => {
+            const questionElement = document.createElement('div');
+            questionElement.className = 'question-container';
+            questionElement.id = `question-${index}`;
+            questionElement.dataset.part = question.part;
+
+            // Create question header
+            const questionHeader = document.createElement('div');
+            questionHeader.className = 'question-header mb-3';
+            questionHeader.innerHTML = `
+                <h3 class="text-xl font-semibold">Question ${index + 1}</h3>
+                <span class="badge bg-primary">Part ${question.part}</span>
+            `;
+
+            // Create passage container if a passage exists
+            let passageHtml = '';
+            if (question.passage) {
+                passageHtml = `
+                    <div class="passage-container">
+                        <h4 class="font-semibold mb-2">Passage:</h4>
+                        <div class="passage-text">${question.passage}</div>
+                    </div>
+                `;
+            }
+
+            // Create image container if an image URL exists
+            let imageHtml = '';
+            if (question.passageImageUrl) {
+                imageHtml = `
+                    <div class="image-container">
+                        <img src="${question.passageImageUrl}" alt="Question Image" />
+                    </div>
+                `;
+            }
+
+            // Create question text
+            const questionText = `<div class="mb-4">${question.questionText}</div>`;
+
+            // Create options
+            let optionsHtml = '<div class="options-container">';
+            question.options.forEach(option => {
+                optionsHtml += `
+                    <div class="mb-2">
+                        <input type="radio" name="question-${index}" id="q${index}-${option.key}"
+                            value="${option.key}" class="option-input">
+                        <label for="q${index}-${option.key}" class="option-label">
+                            <span class="font-medium">${option.key}:</span> ${option.value}
+                        </label>
+                    </div>
+                `;
+            });
+            optionsHtml += '</div>';
+
+            // Assemble the question element
+            questionElement.innerHTML = questionHeader.outerHTML + passageHtml + imageHtml + questionText + optionsHtml;
+
+            // Add event listeners for the radio buttons
+            questionElement.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    userAnswers[index] = e.target.value;
+                    updateQuestionNavigation();
+                    updateSidebarCounts();
+                });
+            });
+
+            // Initially hide the question
+            questionElement.style.display = 'none';
+            container.appendChild(questionElement);
+        });
+
+        // Update total questions count
+        document.getElementById('totalQuestions').textContent = questions.length;
+        document.getElementById('modalTotalQuestions').textContent = questions.length;
+        document.getElementById('remainingCount').textContent = questions.length;
+    }
+
+    // Update the question navigation buttons
+    function updateQuestionNavigation() {
+        const nav = document.getElementById('questionNav');
+        nav.innerHTML = '';
+
+        questions.forEach((_, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `question-nav-button ${index === currentQuestionIndex ? 'active' : ''} ${userAnswers[index] ? 'answered' : ''}`;
+            button.textContent = index + 1;
+
+            button.addEventListener('click', () => {
+                goToQuestion(index);
+            });
+
+            nav.appendChild(button);
+        });
+    }
+
+    // Show only the current question
+    function updateCurrentQuestion() {
+        // Hide all questions
+        document.querySelectorAll('.question-container').forEach(question => {
+            question.style.display = 'none';
+        });
+
+        // Show the current question
+        const currentQuestion = document.getElementById(`question-${currentQuestionIndex}`);
+        if (currentQuestion) {
+            currentQuestion.style.display = 'block';
+        }
+
+        // Update navigation buttons
+        document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+        document.getElementById('nextBtn').disabled = currentQuestionIndex === questions.length - 1;
+
+        // Update active state in navigation
+        document.querySelectorAll('.question-nav-button').forEach((button, index) => {
+            button.classList.toggle('active', index === currentQuestionIndex);
+        });
+    }
+
+    // Go to a specific question
+    function goToQuestion(index) {
+        if (index >= 0 && index < questions.length) {
+            currentQuestionIndex = index;
+            updateCurrentQuestion();
+        }
+    }
+
+    // Go to the next question
+    function goToNextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            updateCurrentQuestion();
+        }
+    }
+
+    // Go to the previous question
+    function goToPrevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            updateCurrentQuestion();
+        }
+    }
+
+    // Update sidebar statistics
+    function updateSidebarCounts() {
+        const answeredCount = Object.keys(userAnswers).length;
+        const totalQuestions = questions.length;
+        const remainingCount = totalQuestions - answeredCount;
+
+        document.getElementById('answeredCount').textContent = answeredCount;
+        document.getElementById('remainingCount').textContent = remainingCount;
+        document.getElementById('modalAnsweredCount').textContent = answeredCount;
+    }
+
+    // Timer functions
+    function startTimer() {
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            updateTimerDisplay();
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                submitTest();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        document.getElementById('timer').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Modal functions
+    function showConfirmationModal() {
+        document.getElementById('confirmationModal').classList.remove('hidden');
+    }
+
+    function hideConfirmationModal() {
+        document.getElementById('confirmationModal').classList.add('hidden');
+    }
+
+    function showResultModal() {
+        document.getElementById('resultModal').classList.remove('hidden');
+    }
+
+    function hideResultModal() {
+        document.getElementById('resultModal').classList.add('hidden');
+    }
+
+    // Submit test function
+    function submitTest() {
+        clearInterval(timerInterval);
+        hideConfirmationModal();
+
+        // Convert user answers to format for API
+        const answers = Object.keys(userAnswers).map(questionIndex => {
+            return {
+                questionId: questions[questionIndex].id,
+                selectedAnswer: userAnswers[questionIndex]
+            };
+        });
+
+        // Submit to API
+        fetch(`/api/tests/${testId}/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ answers: answers })
+        })
+        .then(response => response.json())
+        .then(result => {
+            // Display results
+            document.getElementById('scoreDisplay').textContent = `${result.correctAnswers}/${questions.length}`;
+            document.getElementById('scoreProgressBar').style.width = `${(result.correctAnswers / questions.length) * 100}%`;
+
+            document.getElementById('listeningScore').textContent = `${result.listeningScore}/${result.listeningTotal}`;
+            document.getElementById('readingScore').textContent = `${result.readingScore}/${result.readingTotal}`;
+
+            showResultModal();
+        })
+        .catch(error => {
+            console.error('Error submitting test:', error);
+            alert('Failed to submit test. Please try again.');
+        });
+    }
+
+    // Navigation functions
+    function goToDashboard() {
+        window.location.href = '/dashboard';
+    }
+</script>
+
+</body>
+</html>

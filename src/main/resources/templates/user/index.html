@@ -100,13 +100,21 @@
 
     async function processStream(reader, contentElement) {
         const decoder = new TextDecoder("utf-8");
+        let fullResponse = ""; // lưu toàn bộ nội dung phản hồi
+
         try {
             while (true) {
                 const {done, value} = await reader.read();
                 if (done) break;
-                contentElement.innerHTML += decoder.decode(value, {stream: true});
+
+                const chunk = decoder.decode(value, {stream: true});
+                fullResponse += chunk;
+                contentElement.innerHTML += chunk;
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
+
+            // Khi toàn bộ response đã đọc xong, kiểm tra xem có JSON hay không
+            extractAndSendJSON(fullResponse);
         } catch (error) {
             console.error('Error processing stream:', error);
             contentElement.innerHTML += '<br>[Error: Stream interrupted. Please try again.]';
@@ -124,6 +132,74 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
         return messageElement;
     }
+
+    function extractAndSendJSON(fullResponse) {
+        const jsonMatch = fullResponse.match(/```json\s*([\s\S]*?)```/);
+
+        if (jsonMatch && jsonMatch[1]) {
+            try {
+                const json = JSON.parse(jsonMatch[1]);
+                console.log("✅ JSON extracted:", json);
+
+                // Create a generate test button
+                const generateButtonDiv = document.createElement('div');
+                generateButtonDiv.className = 'mt-4 flex justify-center';
+                generateButtonDiv.innerHTML = `
+                    <button id="generate-test-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        Generate TOEIC Test
+                    </button>
+                `;
+
+                // Add button to the chat
+                chatMessages.appendChild(generateButtonDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Add click event listener to the button
+                document.getElementById('generate-test-btn').addEventListener('click', function() {
+                    // Display loading state
+                    this.disabled = true;
+                    this.innerHTML = 'Generating...';
+
+                    // Send JSON to backend
+                    fetch('/chat/generate-test', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(json),
+                        redirect: 'follow'
+                    }).then(response => {
+                        if (response.redirected) {
+                            // If server returned a redirect, follow it
+                            window.location.href = response.url;
+                        } else if (response.ok) {
+                            // If we get HTML content directly, load it
+                            return response.text().then(html => {
+                                document.open();
+                                document.write(html);
+                                document.close();
+                            });
+                        } else {
+                            console.error("❌ Failed to generate test");
+                            addMessageToChat('System', 'Failed to generate test. Please try again.');
+                            // Re-enable the button
+                            this.disabled = false;
+                            this.innerHTML = 'Generate TOEIC Test';
+                        }
+                    }).catch(err => {
+                        console.error("❌ Error generating test:", err);
+                        addMessageToChat('System', 'An error occurred while generating the test.');
+                        // Re-enable the button
+                        this.disabled = false;
+                        this.innerHTML = 'Generate TOEIC Test';
+                    });
+                });
+            } catch (e) {
+                console.error("❌ JSON parse error:", e);
+            }
+        }
+    }
+
 </script>
 
 </body>
