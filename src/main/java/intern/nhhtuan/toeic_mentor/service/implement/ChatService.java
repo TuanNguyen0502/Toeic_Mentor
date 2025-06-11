@@ -1,7 +1,6 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
-import intern.nhhtuan.toeic_mentor.util.ImageUtil;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -28,7 +27,7 @@ public class ChatService implements IChatService {
     private final ChatModel chatModel;
     private final JdbcChatMemoryRepository jdbcChatMemoryRepository;
 
-    @Value("classpath:/prompts/system-message.st")
+    @Value("classpath:/prompts/system-message.txt")
     private Resource systemMessageResource;
 
     public ChatService(ChatClient.Builder builder,
