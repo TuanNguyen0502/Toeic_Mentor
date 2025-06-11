@@ -15,6 +15,7 @@ public class ChatController {
     @GetMapping("/stream")
     public Flux<String> chatWithStream(@RequestParam String message,
                                        @RequestParam String email) {
-        return chatService.getChatResponse(message, email);
+        Flux<String> response = chatService.getChatResponse(message, email);
+        return response;
     }
 }
