@@ -135,10 +135,4 @@ public class AuthController {
     public String index() {
         return "redirect:/login";
     }
-
-    @GetMapping("/chat/{email}")
-    public String chatbot(@PathVariable String email, Model model) {
-        model.addAttribute("email", email);
-        return "user/index";
-    }
 }
