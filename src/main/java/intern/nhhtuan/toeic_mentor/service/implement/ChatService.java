@@ -184,8 +184,6 @@ public class ChatService implements IChatService {
             try {
                 // Parse từng chuỗi và add phần tử vào mergedList
                 mergedList.addAll(objectMapper.readValue(jsonResponse, new TypeReference<List<Object>>(){}));
-                mergedList.addAll(objectMapper.readValue(jsonResponse, new TypeReference<List<Object>>(){}));
-                mergedList.addAll(objectMapper.readValue(jsonResponse, new TypeReference<List<Object>>(){}));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Invalid JSON response: " + jsonResponse, e);
             }
