@@ -25,8 +25,8 @@ public class QuestionDTO {
 
     private String passage;
 
-    @JsonProperty("passage_image_url")
-    private String passageImageUrl;
+    @JsonProperty("passage_image_urls")
+    private List<String> passageImageUrls;
 
     private Integer part;
 }

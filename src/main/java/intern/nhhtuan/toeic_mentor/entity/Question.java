@@ -32,11 +32,11 @@ public class Question {
     @Column(name = "passage", columnDefinition = "TEXT")
     private String passage;
 
-    @Column(name = "passage_image_url")
-    private String passageImageUrl;
-
     @Column(name = "part")
     private Integer part;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestionImage> passageImageUrls = new ArrayList<>();
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionTag> tags = new ArrayList<>();

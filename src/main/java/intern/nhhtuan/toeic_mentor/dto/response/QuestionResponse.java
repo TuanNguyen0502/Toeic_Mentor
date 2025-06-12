@@ -17,7 +17,7 @@ public class QuestionResponse {
     private String correctAnswer;
     private String userAnswer;
     private String passage;
-    private String passageImageUrl;
+    private List<String> passageImageUrls;
     private Integer part;
     private List<OptionResponse> options;
     private List<String> tags;

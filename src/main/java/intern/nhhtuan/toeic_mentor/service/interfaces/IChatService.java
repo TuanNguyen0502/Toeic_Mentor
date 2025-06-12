@@ -10,9 +10,11 @@ import java.util.List;
 public interface IChatService {
     Flux<String> getChatResponse(String message, String conversationId);
 
-    String createTest(InputStream imageInputStream, String contentType, String imageUrl);
+    String createTest(InputStream imageInputStream, String contentType, List<String> imageUrls);
 
     String definePart(InputStream imageInputStream, String contentType);
 
     String buildToeicAnalysisPrompt(List<QuestionResponse> responses) throws JsonProcessingException;
+
+    String mergeJsonResponses(List<String> jsonResponses);
 }

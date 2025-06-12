@@ -4,8 +4,10 @@ import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.entity.Question;
+import intern.nhhtuan.toeic_mentor.entity.QuestionImage;
 import intern.nhhtuan.toeic_mentor.entity.QuestionOption;
 import intern.nhhtuan.toeic_mentor.entity.QuestionTag;
+import intern.nhhtuan.toeic_mentor.repository.QuestionImageRepository;
 import intern.nhhtuan.toeic_mentor.repository.QuestionOptionRepository;
 import intern.nhhtuan.toeic_mentor.repository.QuestionRepository;
 import intern.nhhtuan.toeic_mentor.repository.QuestionTagRepository;
@@ -25,6 +27,7 @@ public class QuestionService implements IQuestionService {
     private final QuestionRepository questionRepository;
     private final QuestionOptionRepository optionRepository;
     private final QuestionTagRepository tagRepository;
+    private final QuestionImageRepository imageRepository;
 
     @Transactional
     @Override
@@ -35,11 +38,18 @@ public class QuestionService implements IQuestionService {
             question.setQuestionText(dto.getQuestionText());
             question.setCorrectAnswer(dto.getCorrectAnswer());
             question.setPassage(dto.getPassage());
-            question.setPassageImageUrl(dto.getPassageImageUrl());
             question.setPart(dto.getPart());
 
             // Lưu trước để có ID cho liên kết
             questionRepository.save(question);
+
+            // Lưu images
+            if (dto.getPassageImageUrls() != null) {
+                for (String image : dto.getPassageImageUrls()) {
+                    QuestionImage questionImage = new QuestionImage(image, question);
+                    imageRepository.save(questionImage);
+                }
+            }
 
             // Lưu options
             for (var entry : dto.getOptions().entrySet()) {
@@ -106,13 +116,17 @@ public class QuestionService implements IQuestionService {
                 .map(QuestionTag::getTag)
                 .collect(Collectors.toList());
 
+        List<String> passageImageUrls = question.getPassageImageUrls().stream()
+                .map(QuestionImage::getImage)
+                .toList();
+
         return new QuestionResponse(
                 question.getId(),
                 question.getQuestionText(),
                 question.getCorrectAnswer(),
                 null,
                 question.getPassage(),
-                question.getPassageImageUrl(),
+                passageImageUrls,
                 question.getPart(),
                 options,
                 tags
