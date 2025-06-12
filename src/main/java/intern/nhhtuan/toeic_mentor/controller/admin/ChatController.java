@@ -2,7 +2,7 @@ package intern.nhhtuan.toeic_mentor.controller.admin;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.request.QuestionRequest;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import intern.nhhtuan.toeic_mentor.util.ImageUtil;
@@ -92,7 +92,7 @@ public class ChatController {
     }
 
     @PostMapping("/upload-json")
-    public ResponseEntity<?> uploadJson(@RequestBody List<QuestionDTO> questions) {
+    public ResponseEntity<?> uploadJson(@RequestBody List<QuestionRequest> questions) {
         questionService.saveQuestionsFromDTO(questions);
         return ResponseEntity.ok(Map.of("message", "Saved successfully"));
     }

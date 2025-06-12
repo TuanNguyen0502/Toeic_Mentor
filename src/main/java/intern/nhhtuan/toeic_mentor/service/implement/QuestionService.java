@@ -1,6 +1,6 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
-import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.request.QuestionRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.entity.Question;
@@ -31,8 +31,8 @@ public class QuestionService implements IQuestionService {
 
     @Transactional
     @Override
-    public void saveQuestionsFromDTO(List<QuestionDTO> dtoList) {
-        for (QuestionDTO dto : dtoList) {
+    public void saveQuestionsFromDTO(List<QuestionRequest> dtoList) {
+        for (QuestionRequest dto : dtoList) {
             Question question = new Question();
             question.setQuestionNumber(dto.getQuestionNumber());
             question.setQuestionText(dto.getQuestionText());

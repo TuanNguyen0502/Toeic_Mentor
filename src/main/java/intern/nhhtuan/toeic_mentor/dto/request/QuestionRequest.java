@@ -1,4 +1,4 @@
-package intern.nhhtuan.toeic_mentor.dto;
+package intern.nhhtuan.toeic_mentor.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class QuestionDTO {
+public class QuestionRequest {
     @JsonProperty("question_number")
     private Integer questionNumber;
 
