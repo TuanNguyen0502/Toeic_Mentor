@@ -24,8 +24,11 @@ public class ChatController {
 
     @PostMapping("/submit-test")
     public Flux<String> submitTest(@RequestBody List<QuestionResponse> questions) throws JsonProcessingException {
+        // Build the prompt for TOEIC analysis based on the submitted questions
         String prompt = chatService.buildToeicAnalysisPrompt(questions);
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Determine the email of the authenticated user or use "anonymous" if not authenticated
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
         return chatService.getChatResponse(prompt, email);
     }

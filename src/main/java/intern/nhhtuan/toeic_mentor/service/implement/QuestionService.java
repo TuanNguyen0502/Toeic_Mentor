@@ -53,11 +53,7 @@ public class QuestionService implements IQuestionService {
 
             // Lưu options
             for (var entry : dto.getOptions().entrySet()) {
-                QuestionOption option = new QuestionOption(
-                        entry.getKey(),
-                        entry.getValue(),
-                        question
-                );
+                QuestionOption option = new QuestionOption(entry.getKey(), entry.getValue(), question);
                 optionRepository.save(option);
             }
 

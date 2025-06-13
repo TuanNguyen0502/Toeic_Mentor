@@ -164,6 +164,7 @@ public class ChatService implements IChatService {
     @Override
     public String buildToeicAnalysisPrompt(List<QuestionResponse> responses) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
+        // Convert the list of QuestionResponse to JSON
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(responses);
 
         return String.format("""
@@ -199,8 +200,7 @@ public class ChatService implements IChatService {
     @Override
     public String mergeJsonResponses(List<String> jsonResponses) {
         ObjectMapper objectMapper = new ObjectMapper();
-
-        List<Object> mergedList = new ArrayList<>();
+        List<Object> mergedList = new ArrayList<>(); // Danh sách để lưu trữ các phần tử đã được phân tích từ các chuỗi JSON
 
         for (String jsonResponse : jsonResponses) {
             try {
@@ -211,8 +211,9 @@ public class ChatService implements IChatService {
             }
         }
 
-        String mergedJsonString;
+        String mergedJsonString; // Chuỗi JSON cuối cùng sẽ chứa tất cả các phần tử đã được phân tích
         try {
+            // Chuyển đổi mergedList thành chuỗi JSON
             mergedJsonString = objectMapper.writeValueAsString(mergedList);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Invalid JSON response: ", e);
