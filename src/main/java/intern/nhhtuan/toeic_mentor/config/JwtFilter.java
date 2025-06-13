@@ -39,16 +39,22 @@ public class JwtFilter extends OncePerRequestFilter {
             System.out.println("JWT extraction failed: " + e.getMessage());
         }
 
+        // If JWT is valid and the user is not authenticated, set the authentication in the context
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Load user details from the UserDetailServiceImpl
             UserDetails userDetails = applicationContext.getBean(UserDetailServiceImpl.class)
                     .loadUserByUsername(email);
 
+            // Check if the JWT is valid
             if (jwtService.isTokenValid(jwt, userDetails)) {
+                // Create an authentication token and set it in the security context
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
+                // Set the authentication in the security context
+                // This is necessary for the security context to recognize the user as authenticated
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
