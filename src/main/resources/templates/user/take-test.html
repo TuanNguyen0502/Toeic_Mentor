@@ -463,6 +463,14 @@
 
     // Submit test function
     function submitTest() {
+        // Check if all questions are answered
+        const unanswered = Array.from(document.querySelectorAll('.question-container')).some(qBlock => {
+            return !qBlock.querySelector('input[type="radio"]:checked');
+        });
+        if (unanswered) {
+            alert('Please answer all questions before submitting the test.');
+            return;
+        }
         clearInterval(timerInterval);
         hideConfirmationModal();
 
