@@ -153,12 +153,13 @@ public class ChatService implements IChatService {
                 .content();
     }
 
-    public Flux<String> getChatHistory(String conversationId) {
+    @Override
+    public List<String> getChatHistory(String conversationId) {
         ChatMemory chatMemory = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(jdbcChatMemoryRepository)
                 .build();
         List<String> messages = chatMemory.get(conversationId).stream().map(Message::getText).toList();
-        return Flux.fromIterable(messages);
+        return messages;
     }
 
     @Override

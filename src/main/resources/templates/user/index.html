@@ -63,6 +63,24 @@
     const messageInput = document.getElementById('message-input');
     const chatMessages = document.getElementById('chat-messages');
 
+    // Load chat history on page load
+    document.addEventListener('DOMContentLoaded', async function () {
+        if (!userEmail) return;
+        try {
+            const response = await fetch(`/history?email=${encodeURIComponent(userEmail)}`);
+            if (response.ok) {
+                const history = await response.json();
+                // history is expected to be a flat array of messages (List<String>)
+                history.forEach((msg, idx) => {
+                    const sender = idx % 2 === 0 ? 'User' : 'Bot';
+                    addMessageToChat(sender, msg);
+                });
+            }
+        } catch (e) {
+            console.error('Failed to load chat history:', e);
+        }
+    });
+
     chatForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         const message = messageInput.value;

@@ -2,7 +2,7 @@ package intern.nhhtuan.toeic_mentor.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
-import intern.nhhtuan.toeic_mentor.service.implement.ChatService;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class ChatController {
-    private final ChatService chatService;
+    private final IChatService chatService;
 
     @GetMapping("/stream")
     public Flux<String> chatWithStream(@RequestParam String message,
@@ -31,5 +31,10 @@ public class ChatController {
         // Determine the email of the authenticated user or use "anonymous" if not authenticated
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
         return chatService.getChatResponse(prompt, email);
+    }
+
+    @GetMapping("/history")
+    public List<String> getChatHistory(@RequestParam String email) {
+        return chatService.getChatHistory(email);
     }
 }

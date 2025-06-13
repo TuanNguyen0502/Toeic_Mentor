@@ -14,6 +14,8 @@ public interface IChatService {
 
     String definePart(InputStream imageInputStream, String contentType);
 
+    List<String> getChatHistory(String conversationId);
+
     String buildToeicAnalysisPrompt(List<QuestionResponse> responses) throws JsonProcessingException;
 
     String mergeJsonResponses(List<String> jsonResponses);
