@@ -41,10 +41,34 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Scroll to Top Button */
+        #scrollToTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 1000;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-size: 2rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto p-6">
+        <div class="flex justify-end space-x-4 mb-4">
+            <a href="/chat/admin@toeic.mentor.com" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">Chat</a>
+            <a href="/logout" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">Logout</a>
+        </div>
         <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">TOEIC Image Analysis</h1>
 
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
@@ -243,42 +267,43 @@
 
                     jsonResult.forEach(question => {
                         formattedHtml += `
-                            <div class="mb-8 pb-6 border-b border-gray-200">
+                            <div class="mb-6 pb-4 border-b border-gray-200">
                                 <h3 class="text-lg font-bold mb-2">Question ${question.question_number}</h3>
                                 ${question.passage ?
-                                    `<div class="mt-4 p-3 bg-gray-50 rounded">
+                                    `<div class="mt-2 p-2 bg-gray-50 rounded">
                                         <div class="font-medium mb-1">Passage:</div>
                                         <div>${question.passage}</div>
                                     </div>` : ''}
                                 <!-- Show passage images if available -->
                                 ${Array.isArray(question.passage_image_urls) && question.passage_image_urls.length > 0 ?
-                                    `<div class="flex flex-wrap gap-4 mt-2 mb-4">
+                                    `<div class="flex flex-wrap gap-2 mt-1 mb-2">
                                         ${question.passage_image_urls.map(url =>
-                                            `<img src="${url}" alt="Passage Image" class="image-preview" style="max-width:350px;max-height:350px;">`
+                                            `<img src="${url}" alt="Passage Image" class="image-preview" style="max-width:200px;max-height:200px;">`
                                         ).join('')}
                                     </div>` : ''}
-                                <div class="mb-3">${question.question_text}</div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
-                                    <div class="bg-gray-50 p-2 rounded">
+                                <div class="mb-2">${question.question_text}</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-1 mb-2">
+                                    <div class="bg-gray-50 p-1 rounded">
                                         <span class="font-medium">A:</span> ${question.options.A}
                                     </div>
-                                    <div class="bg-gray-50 p-2 rounded">
+                                    <div class="bg-gray-50 p-1 rounded">
                                         <span class="font-medium">B:</span> ${question.options.B}
                                     </div>
-                                    <div class="bg-gray-50 p-2 rounded">
+                                    <div class="bg-gray-50 p-1 rounded">
                                         <span class="font-medium">C:</span> ${question.options.C}
                                     </div>
-                                    <div class="bg-gray-50 p-2 rounded">
+                                    <div class="bg-gray-50 p-1 rounded">
                                         <span class="font-medium">D:</span> ${question.options.D}
                                     </div>
                                 </div>
-                                <div class="bg-green-50 border-l-4 border-green-500 p-3 mb-2">
-                                    <span class="font-medium">Correct answer:</span> ${question.correct_answer}
+                                <div class="bg-green-50 border-l-4 border-green-500 p-2 mb-1">
+                                    <span class="font-medium">Correct answer:</span>
+                                    <input type="text" class="ml-2 px-2 py-1 border rounded w-12" maxlength="1" value="${question.correct_answer}" data-question-number="${question.question_number}" style="text-transform:uppercase;" oninput="this.value = this.value.replace(/[^A-Da-d]/g, '').toUpperCase();">
                                 </div>
-                                <div class="flex flex-wrap gap-2 mt-2">
+                                <div class="flex flex-wrap gap-1 mt-1">
                                     <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Part ${question.part}</span>
                                 </div>
-                                <div class="flex flex-wrap gap-2 mt-2">
+                                <div class="flex flex-wrap gap-1 mt-1">
                                     ${question.tags.map(tag =>
                                         `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">${tag}</span>`
                                     ).join('')}
@@ -355,6 +380,25 @@
                 // Hide loading state
                 saveButton.disabled = false;
             }
+        });
+    </script>
+
+    <!-- Floating Scroll to Top Button -->
+    <button id="scrollToTopBtn" title="Go to top" style="display:none;position:fixed;bottom:32px;right:32px;z-index:1000;background:#2563eb;color:white;border:none;border-radius:50%;width:48px;height:48px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:2rem;cursor:pointer;align-items:center;justify-content:center;">
+        &#8679;
+    </button>
+    <script>
+        // Scroll to Top Button Logic
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 200) {
+                scrollToTopBtn.style.display = 'flex';
+            } else {
+                scrollToTopBtn.style.display = 'none';
+            }
+        });
+        scrollToTopBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     </script>
 </body>
