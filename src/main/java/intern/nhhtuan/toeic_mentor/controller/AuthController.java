@@ -55,12 +55,11 @@ public class AuthController {
     public String getLoginPage(Model model,
                                @RequestParam(value = "error", required = false) String error,
                                HttpSession session) {
-        // ✅ Nếu đã đăng nhập, redirect theo role
+        // Nếu đã đăng nhập, redirect theo role
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         if (authentication != null && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken)) {
-
+            // Kiểm tra xem người dùng có phải là ADMIN hay không
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
             if (isAdmin) {
