@@ -82,14 +82,14 @@ public class QuestionService implements IQuestionService {
             List<Question> questions;
             // If no topics are specified, fetch all questions for the part
             if (request.getTopic().size() == 0) {
-                questions = questionRepository.findByPart(part);
+                questions = questionRepository.findDistinctByPart(part);
             } else {
                 // If topics are specified, fetch questions that match both part and topics
                 List<QuestionTag> tags = new ArrayList<>();
                 for (String tag : request.getTopic()) {
                     tags.addAll(tagRepository.findByTag(tag));
                 }
-                questions = questionRepository.findByPartAndTags(part, tags);
+                questions = questionRepository.findDistinctByPartAndTags(part, tags);
             }
             // Add the fetched questions to the matched list
             matchedQuestions.addAll(questions);
