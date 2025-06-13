@@ -10,7 +10,7 @@ import java.util.List;
 public interface IChatService {
     Flux<String> getChatResponse(String message, String conversationId);
 
-    String createTest(InputStream imageInputStream, String contentType, List<String> imageUrls);
+    String createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent);
 
     String definePart(InputStream imageInputStream, String contentType);
 

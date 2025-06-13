@@ -30,18 +30,19 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", "Image file cannot be empty"));
         }
 
-        List<String> imageUrls = new ArrayList<>(); // Store URLs of uploaded images
-
+        List<String> imageUrls = new ArrayList<>(); // Store URLs of uploaded images=
         List<Integer> indexOfPart7NoQuestion = new ArrayList<>(); // Store indices of images that are PART_7_NO_QUESTION
+        StringBuilder part7PreviousContent = new StringBuilder(); // Store previous content for PART_7
+
         for (MultipartFile imageFile : imageFiles) {
             // Check if the uploaded file is empty
             if (imageFile.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Image file cannot be empty"));
             }
             // Check if the uploaded file is a PNG or JPEG image
-            if (!Objects.equals(imageFile.getContentType(), MediaType.IMAGE_PNG_VALUE) ||
+            if (!Objects.equals(imageFile.getContentType(), MediaType.IMAGE_PNG_VALUE) &&
                     !Objects.equals(imageFile.getContentType(), MediaType.IMAGE_JPEG_VALUE)) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Only PNG files are supported"));
+                return ResponseEntity.badRequest().body(Map.of("error", "Only PNG and JPEG files are supported"));
             }
 
             try (InputStream inputStream = imageFile.getInputStream()) {
@@ -55,6 +56,9 @@ public class ChatController {
                 // so it won't be processed further
                 if (part.contains("PART_7_NO_QUESTION")) {
                     indexOfPart7NoQuestion.add(imageFiles.indexOf(imageFile));
+                    // Store the previous content for PART_7_NO_QUESTION
+                    String temp = part.replace("PART_7_NO_QUESTION_", "");
+                    part7PreviousContent.append(temp);
                 }
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Error processing image file"));
@@ -73,7 +77,7 @@ public class ChatController {
         for (MultipartFile imageFile : imageFiles) {
             try (InputStream inputStream = imageFile.getInputStream()) {
                 // Create a test with the image input stream and content type
-                String chatbotResponse = chatService.createTest(inputStream, imageFile.getContentType(), imageUrls);
+                String chatbotResponse = chatService.createTest(inputStream, imageFile.getContentType(), imageUrls, part7PreviousContent.toString());
                 chatbotResponses.add(chatbotResponse);
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Error processing image file"));

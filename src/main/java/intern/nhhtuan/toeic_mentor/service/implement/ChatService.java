@@ -59,7 +59,7 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public String createTest(InputStream imageInputStream, String contentType, List<String> imageUrls) {
+    public String createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent) {
         // Prepare the prompt with the image URLs
         // Convert the list of image URLs to a JSON string
         ObjectMapper mapper = new ObjectMapper();
@@ -96,16 +96,18 @@ public class ChatService implements IChatService {
                     }
                     Field instructions:
                     - question_text: For Part 6 and 7, extract the actual question sentence. For Part 5, use the sentence with the blank.
+                    - If the image belongs to Part 7, combine that passage with the visual content in the image when extracting and answering the questions.
+                    - Additional passage text (if applicable): %s
                     - correct_answer: Analyze and choose the best answer using grammar and context.
-                    tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", ...
-                    passage: Use only for Part 6 and 7, keep the original passage with blanks. For Part 5, set this to null.
-                    passage_image_url: For Part 7, replace with: %s. For Part 5 and 6, set to null.
+                    - tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", ...
+                    - passage: Use only for Part 6 and 7, keep the original passage with blanks. For Part 7, combine the detected passage from the image and the input above (if provided) For Part 5, set this to null.
+                    - passage_image_url: For Part 7, replace with: %s. For Part 5 and 6, set to null.
                     
                     Step 3: Return the result
                     Return ONLY the raw JSON array.
                     Do NOT include any text, explanation, markdown formatting (e.g. triple backticks ```) or surrounding quotes.
                     The output MUST be a valid JSON array.
-                    """.formatted(imageUrlsJson, imageUrlsJson);
+                    """.formatted(imageUrlsJson, part7PreviousContent, imageUrlsJson);
         String result = ChatClient.create(chatModel).prompt()
                 .user(user -> user
                         .text(prompt)
@@ -134,13 +136,17 @@ public class ChatService implements IChatService {
                                 
                                 Your task:
                                 1. Analyze the content in the image.
-                                2. Return exactly one of the following values based on your analysis:
+                                2. If the image belongs to PART_5, PART_6, or PART_7, return only one of these values:
                                 - PART_5
                                 - PART_6
                                 - PART_7
-                                - PART_7_NO_QUESTION
                                 
-                                Do not return any explanation or extra text — only one of the values above.
+                                3. If the image is PART_7_NO_QUESTION, return the following:
+                                - A single plain text string, beginning with the line: PART_7_NO_QUESTION_
+                                - Followed immediately by the full text of the passage(s) detected in the image.
+                                
+                                Do not return any explanation, markdown, formatting, or structured JSON or extra text.
+                                Return only a single plain text string based on the above.
                                 """)
                         .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
                 .call()
