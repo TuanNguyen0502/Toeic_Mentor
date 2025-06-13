@@ -152,7 +152,8 @@
             <div class="message-content">${content}</div>
         `;
         chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Scroll to bottom when a new message is added
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         return messageElement;
     }
 
@@ -223,6 +224,43 @@
         }
     }
 
+</script>
+
+<!-- Floating Scroll to Top Button -->
+<button id="scrollToTopBtn" title="Go to top" style="display:none;position:fixed;bottom:90px;right:32px;z-index:1000;background:#2563eb;color:white;border:none;border-radius:50%;width:48px;height:48px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:2rem;cursor:pointer;align-items:center;justify-content:center;">
+    &#8679;
+</button>
+<!-- Floating Scroll to Bottom Button -->
+<button id="scrollToBottomBtn" title="Go to bottom" style="display:none;position:fixed;bottom:32px;right:32px;z-index:1000;background:#059669;color:white;border:none;border-radius:50%;width:48px;height:48px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:2rem;cursor:pointer;align-items:center;justify-content:center;">
+    &#8681;
+</button>
+<script>
+    // Scroll to Top/Bottom Button Logic
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 200) {
+            scrollToTopBtn.style.display = 'flex';
+        } else {
+            scrollToTopBtn.style.display = 'none';
+        }
+        // Always show scrollToBottomBtn if page is scrollable and not at the bottom
+        if (document.body.scrollHeight > window.innerHeight && (window.innerHeight + window.scrollY) < (document.body.scrollHeight - 10)) {
+            scrollToBottomBtn.style.display = 'flex';
+        } else {
+            scrollToBottomBtn.style.display = 'none';
+        }
+    });
+    // Show scrollToBottomBtn on initial load if needed
+    if (document.body.scrollHeight > window.innerHeight) {
+        scrollToBottomBtn.style.display = 'flex';
+    }
+    scrollToTopBtn.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    scrollToBottomBtn.addEventListener('click', function() {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
 </script>
 
 </body>
