@@ -27,8 +27,10 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public boolean register(RegisterRequest registerRequest) throws IOException {
-        validateEmailUnique(registerRequest);
+        // Kiểm tra email đã tồn tại chưa
+        validateEmailUnique(registerRequest.getEmail());
 
+        // Kiểm tra mật khẩu và xác nhận mật khẩu khớp nhau không
         if (!isPasswordConfirmed(registerRequest.getPassword(), registerRequest.getConfirmPassword())) {
             throw new BadCredentialsException("Password not match");
         }
@@ -44,12 +46,14 @@ public class UserServiceImpl implements IUserService {
 
         // Xử lý ảnh
         if (registerRequest.getImage() != null && !registerRequest.getImage().isEmpty()) {
+            // Kiểm tra định dạng ảnh hợp lệ
             if (imageUtil.isValidSuffixImage(Objects.requireNonNull(registerRequest.getImage().getOriginalFilename()))) {
                 user.setAvatarUrl(imageUtil.saveImage(registerRequest.getImage()));
             } else {
                 throw new IllegalArgumentException("Invalid image format.");
             }
         } else {
+            // Nếu không có ảnh, sử dụng ảnh mặc định
             user.setAvatarUrl("https://res.cloudinary.com/toeic-mentor/image/upload/v1749023234/default-user_szbwye.jpg");
         }
 
@@ -58,8 +62,8 @@ public class UserServiceImpl implements IUserService {
         return true;
     }
 
-    public void validateEmailUnique(RegisterRequest registerRequest) {
-        User existingUserByEmail = userRepository.findByEmail(registerRequest.getEmail()).orElse(null);
+    public void validateEmailUnique(String email) {
+        User existingUserByEmail = userRepository.findByEmail(email).orElse(null);
         if (existingUserByEmail != null) {
             throw new BadCredentialsException("Email already exists");
         }
@@ -73,7 +77,6 @@ public class UserServiceImpl implements IUserService {
         if (userEntity == null) {
             throw new BadCredentialsException("Email does not exist");
         }
-
         if (!isPasswordConfirmed(forgotPasswordRequest.getPassword(), forgotPasswordRequest.getConfirmPassword())) {
             throw new BadCredentialsException("Password not match");
         }
