@@ -173,10 +173,26 @@ public class ChatService implements IChatService {
         %s
         ```
 
-        Hãy thực hiện các bước sau:
-        1. Chấm điểm (số câu đúng / tổng số)
-        2. Liệt kê và phân tích các câu trả lời sai và phân tích lý do sai
-        3. Đề xuất tài liệu hoặc chiến lược luyện tập phù hợp,  ví dụ: luyện ngữ pháp nào, học thêm chủ điểm gì
+        Vui lòng thực hiện các bước sau:
+        1. Bước 1: Chấm điểm
+        - Hiển thị số câu đúng / tổng số câu hỏi.
+        - Tính phần trăm chính xác.
+        
+        2. Bước 2: Phân tích các câu trả lời sai
+        - Liệt kê danh sách các câu sai (số câu, part, câu hỏi, đáp án đúng, đáp án tôi chọn).
+        - Phân tích lý do vì sao đáp án tôi chọn là sai (ví dụ: sai ngữ pháp, chọn sai vì không hiểu từ vựng, hiểu sai nội dung đoạn văn, v.v.).
+        - Nếu cần, phân tích cấu trúc câu hỏi hoặc ngữ cảnh đoạn văn để giải thích thêm.
+        
+        3. Bước 3: Đề xuất luyện tập cá nhân hóa
+        - Dựa trên các lỗi sai ở Bước 2, đề xuất các chủ điểm cần cải thiện. Ví dụ:
+        + Ngữ pháp (mạo từ, thì động từ, đại từ, liên từ, v.v.)
+        + Từ vựng (từ đồng nghĩa, collocations, v.v.)
+        + Kỹ năng đọc hiểu (scan, skim, suy luận,...)
+        + ...
+        - Gợi ý cụ thể dạng bài tập nên luyện thêm (ví dụ: luyện Part 5 ngữ pháp, luyện đọc email Part 7,...)
+        - Nếu có thể, gợi ý tài liệu hoặc website/nguồn học đáng tin cậy.
+        
+        Hiển thị kết quả rõ ràng, dễ đọc.
         """, json);
     }
 
