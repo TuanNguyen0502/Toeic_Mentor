@@ -38,8 +38,9 @@ public class ChatController {
             if (imageFile.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Image file cannot be empty"));
             }
-            // Check if the uploaded file is a PNG
-            if (!Objects.equals(imageFile.getContentType(), MediaType.IMAGE_PNG_VALUE)) {
+            // Check if the uploaded file is a PNG or JPEG image
+            if (!Objects.equals(imageFile.getContentType(), MediaType.IMAGE_PNG_VALUE) ||
+                    !Objects.equals(imageFile.getContentType(), MediaType.IMAGE_JPEG_VALUE)) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Only PNG files are supported"));
             }
 
