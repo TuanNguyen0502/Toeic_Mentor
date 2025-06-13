@@ -126,6 +126,14 @@
 
         // Handle file selection
         imageInput.addEventListener('change', function() {
+            if (imageInput.files.length > 3) {
+                alert('You can select a maximum of 3 images.');
+                imageInput.value = '';
+                fileNameSpan.textContent = '';
+                imagePreviewContainer.innerHTML = '';
+                return;
+            }
+
             const files = Array.from(this.files);
             if (files.length > 0) {
                 // Show file names
