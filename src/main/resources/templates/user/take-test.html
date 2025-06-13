@@ -88,8 +88,10 @@
             margin-bottom: 1.5rem;
         }
         .image-container img {
-            max-width: 100%;
-            max-height: 400px;
+            max-width: 90vw;
+            max-height: 600px;
+            width: auto;
+            height: auto;
             border-radius: 0.5rem;
         }
     </style>
@@ -282,12 +284,12 @@
                 `;
             }
 
-            // Create image container if an image URL exists
+            // Create image container if an image URL or list exists
             let imageHtml = '';
-            if (question.passageImageUrl) {
+            if (Array.isArray(question.passageImageUrls) && question.passageImageUrls.length > 0) {
                 imageHtml = `
-                    <div class="image-container">
-                        <img src="${question.passageImageUrl}" alt="Question Image" />
+                    <div class="image-container" style="display: flex; flex-direction: row; gap: 32px; justify-content: center; align-items: flex-start; overflow-x: auto;">
+                        ${question.passageImageUrls.map(url => `<img src="${url}" alt="Question Image" style="margin-bottom: 0; max-width: 1000px; max-height: 700px; width: auto; height: auto; object-fit: contain;" />`).join('')}
                     </div>
                 `;
             }
@@ -538,6 +540,14 @@
     function goToDashboard() {
         window.location.href = '/dashboard';
     }
+
+    // Warn user before leaving/reloading the page during the test
+    window.addEventListener('beforeunload', function (e) {
+        const message = 'Are you sure you want to leave? Your test progress will be lost!';
+        e.preventDefault();
+        e.returnValue = message;
+        return message;
+    });
 </script>
 
 </body>
