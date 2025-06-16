@@ -16,7 +16,11 @@ public interface IChatService {
 
     List<String> getChatHistory(String conversationId);
 
+    List<String> getConversationIdsByEmail(String email);
+
     String buildToeicAnalysisPrompt(List<QuestionResponse> responses) throws JsonProcessingException;
 
     String mergeJsonResponses(List<String> jsonResponses);
+
+    void deleteByConversationId(String conversationId);
 }

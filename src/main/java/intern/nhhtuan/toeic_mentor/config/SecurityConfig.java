@@ -29,7 +29,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection for simplicity
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/register", "/forgot-password", "/login", "/loginProcess", "/asset/**", "/", "/stream", "/submit-test")
+                        .requestMatchers("/register", "/forgot-password", "/login", "/loginProcess", "/asset/**", "/", "/stream", "/submit-test", "/conversation-ids", "/conversation")
                         .permitAll()
                         .requestMatchers("/chat", "/chat/*").hasAnyRole("USER", "ADMIN") // Allow access to root for USER and ADMIN roles
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN") // Allow access to admin routes for ADMIN role

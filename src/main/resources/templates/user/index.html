@@ -20,46 +20,60 @@
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col">
-<div class="container mx-auto p-4 flex-1 flex flex-col">
-    <h1 class="text-2xl font-bold mb-4 text-center text-gray-800">Toeic Mentor's Chatbot</h1>
-
-    <div class="flex justify-end mb-4">
-        <form th:action="@{/logout}" method="post">
-            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
-                Logout
-            </button>
-        </form>
+<div class="flex flex-row h-full">
+    <!-- Sidebar -->
+    <div id="sidebar" class="w-64 bg-white shadow-lg p-4 hidden md:block">
+        <button id="add-conversation-btn" class="w-full bg-green-500 text-white px-4 py-2 rounded mb-4 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+            + Add Conversation
+        </button>
+        <button id="show-conversations-btn" class="w-full bg-blue-500 text-white px-4 py-2 rounded mb-4 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Show Conversations
+        </button>
+        <ul id="conversation-list" class="space-y-2"></ul>
     </div>
+    <!-- Main Content -->
+    <div class="container mx-auto p-4 flex-1 flex flex-col">
+        <h1 class="text-2xl font-bold mb-4 text-center text-gray-800">Toeic Mentor's Chatbot</h1>
 
-    <!-- Chat messages area -->
-    <div class="flex-1 overflow-y-auto mb-4 p-4 bg-white rounded-lg shadow" id="chat-messages-container" style="margin-bottom:100px;">
-        <div id="chat-messages" class="space-y-4"></div>
-    </div>
+        <div class="flex justify-end mb-4">
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Logout
+                </button>
+            </form>
+        </div>
 
-    <!-- Message input area (floating at bottom) -->
-    <div class="w-full max-w-2xl mx-auto fixed bottom-0 left-1/2 -translate-x-1/2 z-50 bg-gray-100 pb-4 pt-2">
-        <form id="chat-form" class="flex items-center">
-            <input
-                    type="text"
-                    id="message-input"
-                    name="message"
-                    placeholder="Type your message..."
-                    class="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-            >
-            <button
-                    type="submit"
-                    class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-                Send
-            </button>
-        </form>
+        <!-- Chat messages area -->
+        <div class="flex-1 overflow-y-auto mb-4 p-4 bg-white rounded-lg shadow" id="chat-messages-container" style="margin-bottom:100px;">
+            <div id="chat-messages" class="space-y-4"></div>
+        </div>
+
+        <!-- Message input area (floating at bottom) -->
+        <div class="w-full max-w-2xl mx-auto fixed bottom-0 left-1/2 -translate-x-1/2 z-50 bg-gray-100 pb-4 pt-2">
+            <form id="chat-form" class="flex items-center">
+                <input
+                        type="text"
+                        id="message-input"
+                        name="message"
+                        placeholder="Type your message..."
+                        class="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                >
+                <button
+                        type="submit"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    Send
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
 <script th:inline="javascript">
     /*<![CDATA[*/
     const conversationId = [[${conversationId}]];
+    const userEmail = [[${#authentication?.name}]];
     /*]]>*/
 </script>
 <script>
@@ -69,9 +83,11 @@
 
     // Load chat history on page load
     document.addEventListener('DOMContentLoaded', async function () {
-        if (!conversationId) return;
+        // Always use window.conversationId
+        window.conversationId = conversationId;
+        if (!window.conversationId) return;
         try {
-            const response = await fetch(`/history?conversationId=${encodeURIComponent(conversationId)}`);
+            const response = await fetch(`/conversation?conversationId=${encodeURIComponent(window.conversationId)}`);
             if (response.ok) {
                 const history = await response.json();
                 // history is expected to be a flat array of messages (List<String>)
@@ -82,6 +98,111 @@
             }
         } catch (e) {
             console.error('Failed to load chat history:', e);
+        }
+
+        // Sidebar: Show Conversations logic
+        const showBtn = document.getElementById('show-conversations-btn');
+        const convList = document.getElementById('conversation-list');
+        if (showBtn && userEmail) {
+            showBtn.addEventListener('click', async function() {
+                showBtn.disabled = true;
+                showBtn.innerText = 'Loading...';
+                try {
+                    const res = await fetch(`/conversation-ids?email=${encodeURIComponent(userEmail)}`);
+                    if (res.ok) {
+                        const ids = await res.json();
+                        convList.innerHTML = '';
+                        if (ids.length === 0) {
+                            convList.innerHTML = '<li class="text-gray-500">No conversations found.</li>';
+                        } else {
+                            ids.forEach(id => {
+                                const li = document.createElement('li');
+                                li.className = 'flex items-center justify-between cursor-pointer hover:bg-blue-100 p-2 rounded';
+                                const span = document.createElement('span');
+                                // Show only the part after <email>_ or <email> if default
+                                let displayName = id;
+                                if (id === userEmail) {
+                                    displayName = userEmail;
+                                } else if (id.startsWith(userEmail + '_')) {
+                                    displayName = id.substring((userEmail + '_').length);
+                                }
+                                span.innerText = displayName;
+                                // Always use id for conversationId, not displayName
+                                li.onclick = async function() {
+                                    window.conversationId = id;
+                                    window.history.replaceState({}, '', `?conversationId=${encodeURIComponent(id)}`);
+                                    const chatMessages = document.getElementById('chat-messages');
+                                    if (chatMessages) chatMessages.innerHTML = '';
+                                    try {
+                                        const response = await fetch(`/conversation?conversationId=${encodeURIComponent(id)}`);
+                                        if (response.ok) {
+                                            const history = await response.json();
+                                            history.forEach((msg, idx) => {
+                                                const sender = idx % 2 === 0 ? 'User' : 'Bot';
+                                                addMessageToChat(sender, msg);
+                                            });
+                                        }
+                                    } catch (e) {
+                                        console.error('Failed to load chat history:', e);
+                                    }
+                                };
+                                li.appendChild(span);
+                                // Only show delete button if id is not the default (email only)
+                                if (id !== userEmail) {
+                                    const delBtn = document.createElement('button');
+                                    delBtn.innerHTML = '🗑️';
+                                    delBtn.title = 'Delete Conversation';
+                                    delBtn.className = 'ml-2 text-red-500 hover:text-red-700 focus:outline-none';
+                                    delBtn.onclick = async function(e) {
+                                        e.stopPropagation();
+                                        if (!confirm('Are you sure you want to delete this conversation?')) return;
+                                        await fetch(`/conversation?conversationId=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                                        // Redirect to default conversation (email only)
+                                        window.conversationId = userEmail;
+                                        window.history.replaceState({}, '', `?conversationId=${encodeURIComponent(userEmail)}`);
+                                        const chatMessages = document.getElementById('chat-messages');
+                                        if (chatMessages) chatMessages.innerHTML = '';
+                                        // Optionally reload conversation list
+                                        showBtn.click();
+                                    };
+                                    li.appendChild(delBtn);
+                                }
+                                convList.appendChild(li);
+                            });
+                        }
+                    } else {
+                        convList.innerHTML = '<li class="text-red-500">Failed to load conversations.</li>';
+                    }
+                } catch (e) {
+                    convList.innerHTML = '<li class="text-red-500">Error loading conversations.</li>';
+                }
+                showBtn.disabled = false;
+                showBtn.innerText = 'Show Conversations';
+            });
+        }
+
+        // Sidebar: Add Conversation logic
+        const addBtn = document.getElementById('add-conversation-btn');
+        if (addBtn && userEmail) {
+            addBtn.addEventListener('click', async function() {
+                const conversationName = prompt('Enter a name for the new conversation:');
+                if (!conversationName) {
+                    return;
+                }
+                // Sanitize name (remove spaces, special chars)
+                const sanitized = conversationName.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+                if (!sanitized) {
+                    alert('Invalid conversation name.');
+                    return;
+                }
+                const newConversationId = `${userEmail}_${sanitized}`;
+                // Set conversationId in URL and clear messages
+                window.history.replaceState({}, '', `?conversationId=${encodeURIComponent(newConversationId)}`);
+                const chatMessages = document.getElementById('chat-messages');
+                if (chatMessages) chatMessages.innerHTML = '';
+                // Set global conversationId variable
+                window.conversationId = newConversationId;
+            });
         }
     });
 
@@ -98,7 +219,7 @@
 
         // Fetch streaming data from the server
         try {
-            const response = await fetchStreamWithRetry('/stream?message=' + encodeURIComponent(message) + '&conversationId=' + encodeURIComponent(conversationId));
+            const response = await fetchStreamWithRetry('/stream?message=' + encodeURIComponent(message) + '&conversationId=' + encodeURIComponent(window.conversationId));
             const reader = response.body.getReader();
             let botMessageElement = addMessageToChat('Bot', '');
             let contentElement = botMessageElement.querySelector('.message-content');
@@ -156,8 +277,11 @@
             <div class="message-content">${content}</div>
         `;
         chatMessages.appendChild(messageElement);
-        // Scroll to bottom when a new message is added
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        // Scroll chat messages area to bottom
+        const chatMessagesContainer = document.getElementById('chat-messages-container');
+        if (chatMessagesContainer) {
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        }
         return messageElement;
     }
 
@@ -228,43 +352,6 @@
         }
     }
 
-</script>
-
-<!-- Floating Scroll to Top Button -->
-<button id="scrollToTopBtn" title="Go to top" style="display:none;position:fixed;bottom:90px;right:32px;z-index:1000;background:#2563eb;color:white;border:none;border-radius:50%;width:48px;height:48px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:2rem;cursor:pointer;align-items:center;justify-content:center;">
-    &#8679;
-</button>
-<!-- Floating Scroll to Bottom Button -->
-<button id="scrollToBottomBtn" title="Go to bottom" style="display:none;position:fixed;bottom:32px;right:32px;z-index:1000;background:#059669;color:white;border:none;border-radius:50%;width:48px;height:48px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:2rem;cursor:pointer;align-items:center;justify-content:center;">
-    &#8681;
-</button>
-<script>
-    // Scroll to Top/Bottom Button Logic
-    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-    const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
-    window.addEventListener('scroll', function() {
-        if (window.scrollY > 200) {
-            scrollToTopBtn.style.display = 'flex';
-        } else {
-            scrollToTopBtn.style.display = 'none';
-        }
-        // Always show scrollToBottomBtn if page is scrollable and not at the bottom
-        if (document.body.scrollHeight > window.innerHeight && (window.innerHeight + window.scrollY) < (document.body.scrollHeight - 10)) {
-            scrollToBottomBtn.style.display = 'flex';
-        } else {
-            scrollToBottomBtn.style.display = 'none';
-        }
-    });
-    // Show scrollToBottomBtn on initial load if needed
-    if (document.body.scrollHeight > window.innerHeight) {
-        scrollToBottomBtn.style.display = 'flex';
-    }
-    scrollToTopBtn.addEventListener('click', function() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-    scrollToBottomBtn.addEventListener('click', function() {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    });
 </script>
 
 </body>

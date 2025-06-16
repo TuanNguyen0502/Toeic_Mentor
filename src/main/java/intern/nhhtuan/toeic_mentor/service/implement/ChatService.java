@@ -8,6 +8,7 @@ import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.chat.messages.Message;
@@ -31,6 +32,7 @@ public class ChatService implements IChatService {
     private final ChatClient chatClient;
     private final ChatModel chatModel;
     private final JdbcChatMemoryRepository jdbcChatMemoryRepository;
+    private final ChatMemoryRepository chatMemoryRepository;
 
     @Value("classpath:/prompts/system-message.txt")
     private Resource systemMessageResource;
@@ -39,15 +41,17 @@ public class ChatService implements IChatService {
 
     public ChatService(ChatClient.Builder builder,
                        JdbcChatMemoryRepository jdbcChatMemoryRepository,
-                       ChatModel chatModel) {
+                       ChatModel chatModel,
+                       ChatMemoryRepository chatMemoryRepository) {
         this.jdbcChatMemoryRepository = jdbcChatMemoryRepository;
-        this.chatModel = chatModel;
         ChatMemory chatMemory = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(jdbcChatMemoryRepository)
                 .build();
         this.chatClient = builder
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
+        this.chatModel = chatModel;
+        this.chatMemoryRepository = chatMemoryRepository;
     }
 
     @Override
@@ -138,6 +142,14 @@ public class ChatService implements IChatService {
     }
 
     @Override
+    public List<String> getConversationIdsByEmail(String email) {
+        List<String> conversationIds = chatMemoryRepository.findConversationIds();
+        return conversationIds.stream()
+                .filter(id -> id.contains(email)) // Filter conversation IDs that contain the user's email
+                .toList();
+    }
+
+    @Override
     public String buildToeicAnalysisPrompt(List<QuestionResponse> responses) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         // Convert the list of QuestionResponse to JSON
@@ -196,6 +208,19 @@ public class ChatService implements IChatService {
         }
 
         return mergedJsonString;
+    }
+
+    public List<Message> findByConversationId(String conversationId) {
+        return chatMemoryRepository.findByConversationId(conversationId);
+    }
+
+    public List<String> findConversationIds() {
+        return chatMemoryRepository.findConversationIds();
+    }
+
+    @Override
+    public void deleteByConversationId(String conversationId) {
+        chatMemoryRepository.deleteByConversationId(conversationId);
     }
 }
 

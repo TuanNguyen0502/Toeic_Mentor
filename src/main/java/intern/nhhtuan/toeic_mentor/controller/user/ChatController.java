@@ -33,8 +33,18 @@ public class ChatController {
         return chatService.getChatResponse(prompt, email);
     }
 
-    @GetMapping("/history")
+    @GetMapping("/conversation")
     public List<String> getChatHistory(@RequestParam String conversationId) {
         return chatService.getChatHistory(conversationId);
+    }
+
+    @GetMapping("/conversation-ids")
+    public List<String> getConversationIds(@RequestParam String email) {
+        return chatService.getConversationIdsByEmail(email);
+    }
+
+    @DeleteMapping("/conversation")
+    public void deleteConversation(@RequestParam String conversationId) {
+        chatService.deleteByConversationId(conversationId);
     }
 }
