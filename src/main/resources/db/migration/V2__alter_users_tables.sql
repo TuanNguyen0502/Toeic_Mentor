@@ -1,0 +1,1 @@
+ALTER TABLE `toeic-mentor`.`users` CHANGE COLUMN `email` `email` VARCHAR(200) NOT NULL ;
