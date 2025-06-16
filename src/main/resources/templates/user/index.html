@@ -202,6 +202,49 @@
                 if (chatMessages) chatMessages.innerHTML = '';
                 // Set global conversationId variable
                 window.conversationId = newConversationId;
+                // Immediately add the new conversation button to sidebar
+                const convList = document.getElementById('conversation-list');
+                if (convList) {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between cursor-pointer hover:bg-blue-100 p-2 rounded';
+                    const span = document.createElement('span');
+                    span.innerText = sanitized;
+                    li.onclick = async function() {
+                        window.conversationId = newConversationId;
+                        window.history.replaceState({}, '', `?conversationId=${encodeURIComponent(newConversationId)}`);
+                        if (chatMessages) chatMessages.innerHTML = '';
+                        try {
+                            const response = await fetch(`/conversation?conversationId=${encodeURIComponent(newConversationId)}`);
+                            if (response.ok) {
+                                const history = await response.json();
+                                history.forEach((msg, idx) => {
+                                    const sender = idx % 2 === 0 ? 'User' : 'Bot';
+                                    addMessageToChat(sender, msg);
+                                });
+                            }
+                        } catch (e) {
+                            console.error('Failed to load chat history:', e);
+                        }
+                    };
+                    li.appendChild(span);
+                    // Add delete button
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = '🗑️';
+                    delBtn.title = 'Delete Conversation';
+                    delBtn.className = 'ml-2 text-red-500 hover:text-red-700 focus:outline-none';
+                    delBtn.onclick = async function(e) {
+                        e.stopPropagation();
+                        if (!confirm('Are you sure you want to delete this conversation?')) return;
+                        await fetch(`/conversation?conversationId=${encodeURIComponent(newConversationId)}`, { method: 'DELETE' });
+                        window.conversationId = userEmail;
+                        window.history.replaceState({}, '', `?conversationId=${encodeURIComponent(userEmail)}`);
+                        if (chatMessages) chatMessages.innerHTML = '';
+                        // Remove this li from the list
+                        li.remove();
+                    };
+                    li.appendChild(delBtn);
+                    convList.appendChild(li);
+                }
             });
         }
     });
