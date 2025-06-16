@@ -134,8 +134,7 @@ public class ChatService implements IChatService {
         ChatMemory chatMemory = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(jdbcChatMemoryRepository)
                 .build();
-        List<String> messages = chatMemory.get(conversationId).stream().map(Message::getText).toList();
-        return messages;
+        return chatMemory.get(conversationId).stream().map(Message::getText).toList();
     }
 
     @Override

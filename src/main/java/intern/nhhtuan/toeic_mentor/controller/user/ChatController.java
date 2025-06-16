@@ -18,8 +18,8 @@ public class ChatController {
 
     @GetMapping("/stream")
     public Flux<String> chatWithStream(@RequestParam String message,
-                                       @RequestParam String email) {
-        return chatService.getChatResponse(message, email);
+                                       @RequestParam String conversationId) {
+        return chatService.getChatResponse(message, conversationId);
     }
 
     @PostMapping("/submit-test")
@@ -34,7 +34,7 @@ public class ChatController {
     }
 
     @GetMapping("/history")
-    public List<String> getChatHistory(@RequestParam String email) {
-        return chatService.getChatHistory(email);
+    public List<String> getChatHistory(@RequestParam String conversationId) {
+        return chatService.getChatHistory(conversationId);
     }
 }

@@ -20,13 +20,13 @@ public class UserController {
     @GetMapping("")
     public String index() {
         Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return "redirect:/chat/" + email;
+        String conversationId = authentication.getName();
+        return "redirect:/chat/" + conversationId;
     }
 
-    @GetMapping("/{email}")
-    public String chatbot(@PathVariable String email, Model model) {
-        model.addAttribute("email", email);
+    @GetMapping("/{conversationId}")
+    public String chatbot(@PathVariable String conversationId, Model model) {
+        model.addAttribute("email", conversationId);
         return "user/index";
     }
 

@@ -59,7 +59,7 @@
 
 <script th:inline="javascript">
     /*<![CDATA[*/
-    const userEmail = [[${email}]];
+    const conversationId = [[${conversationId}]];
     /*]]>*/
 </script>
 <script>
@@ -69,9 +69,9 @@
 
     // Load chat history on page load
     document.addEventListener('DOMContentLoaded', async function () {
-        if (!userEmail) return;
+        if (!conversationId) return;
         try {
-            const response = await fetch(`/history?email=${encodeURIComponent(userEmail)}`);
+            const response = await fetch(`/history?conversationId=${encodeURIComponent(conversationId)}`);
             if (response.ok) {
                 const history = await response.json();
                 // history is expected to be a flat array of messages (List<String>)
@@ -98,7 +98,7 @@
 
         // Fetch streaming data from the server
         try {
-            const response = await fetchStreamWithRetry('/stream?message=' + encodeURIComponent(message) + '&email=' + encodeURIComponent(userEmail));
+            const response = await fetchStreamWithRetry('/stream?message=' + encodeURIComponent(message) + '&conversationId=' + encodeURIComponent(conversationId));
             const reader = response.body.getReader();
             let botMessageElement = addMessageToChat('Bot', '');
             let contentElement = botMessageElement.querySelector('.message-content');
