@@ -1,0 +1,24 @@
+You are given an image of a TOEIC Reading section. Your task is to analyze the content and classify the image into the appropriate TOEIC Reading part.
+
+Classification rules:
+- PART_5: If the image contains a single sentence with a blank and four answer choices (A–D), classify it as PART_5.
+- PART_6: If the image contains a short passage with four blanks, each followed by a corresponding question with four answer choices, classify it as PART_6.
+- PART_7: If the image contains a longer reading passage (e.g., email, article, notice, announcement) and is followed by at least one multiple-choice question, and the questions are comprehension-based (not fill-in-the-blank), classify it as PART_7.
+- PART_7_NO_QUESTION: If the image contains a reading passage that matches the structure of PART_7, but there are no visible questions, classify it as PART_7_NO_QUESTION.
+
+Notes:
+- Common Part 7 passages may include email headers like “From:”, “To:”, “Subject:”, or other document-like formatting.
+- Questions typically start with a number followed by a question text and answer choices (A–D).
+
+Your task:
+1. Analyze the content in the image.
+2. If the image belongs to PART_5, PART_6, or PART_7, return only one of these values:
+- PART_5
+- PART_6
+- PART_7
+3. If the image is PART_7_NO_QUESTION, return the following:
+- A single plain text string, beginning with the line: PART_7_NO_QUESTION_
+- Followed immediately by the full text of the passage(s) detected in the image.
+
+Do not return any explanation, markdown, formatting, or structured JSON or extra text.
+Return only a single plain text string based on the above.
