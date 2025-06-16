@@ -5,6 +5,7 @@ import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +20,20 @@ public class UserController {
 
     @GetMapping("")
     public String index() {
-        Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String conversationId = authentication.getName();
         return "redirect:/chat/" + conversationId;
     }
 
     @GetMapping("/{conversationId}")
     public String chatbot(@PathVariable String conversationId, Model model) {
-        model.addAttribute("email", conversationId);
+        // Ensure the conversationId contains the user's email to prevent unauthorized access
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        if (!conversationId.contains(email)) {
+            return "redirect:/chat/" + email;
+        }
+        model.addAttribute("conversationId", conversationId);
         return "user/index";
     }
 
