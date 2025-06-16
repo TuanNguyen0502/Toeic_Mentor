@@ -43,8 +43,4 @@ public class Question {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionOption> options = new ArrayList<>();
-
-    @ManyToOne
-    @JoinColumn(name = "test_id")
-    private Test test;
 }
