@@ -7,8 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
+import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -16,10 +18,34 @@ import java.util.List;
 public class ChatController {
     private final IChatService chatService;
 
-    @GetMapping("/stream")
+    @PostMapping("/stream")
     public Flux<String> chatWithStream(@RequestParam String message,
-                                       @RequestParam String conversationId) {
-        return chatService.getChatResponse(message, conversationId);
+                                   @RequestParam(required = false) String conversationId,
+                                   @RequestParam(value = "image", required = false) MultipartFile image) {
+        if (conversationId == null) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+            conversationId = chatService.generateConversationId(message, email);
+        }
+
+        final String finalConversationId = conversationId;
+        Flux<String> response;
+
+        if (image == null || image.isEmpty()) {
+            response = chatService.getChatResponse(message, finalConversationId);
+        } else {
+            try (InputStream inputStream = image.getInputStream()) {
+                response = chatService.getChatResponse(message, finalConversationId, inputStream, image.getContentType());
+            } catch (Exception e) {
+                response = Flux.error(new RuntimeException("Error processing image input stream", e));
+            }
+        }
+
+        // Send conversationId as first message
+        return Flux.concat(
+            Flux.just("ConversationId: " + finalConversationId + "\n"),
+            response
+        );
     }
 
     @PostMapping("/submit-test")
@@ -46,14 +72,6 @@ public class ChatController {
     @DeleteMapping("/conversation")
     public void deleteConversation(@RequestParam String conversationId) {
         chatService.deleteByConversationId(conversationId);
-    }
-
-    @GetMapping("/conversation-name")
-    public String generateConversationName(@RequestParam String message) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // Determine the email of the authenticated user or use "anonymous" if not authenticated
-        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
-        return chatService.generateConversationId(message, email);
     }
 
     @PutMapping("/conversation-name")

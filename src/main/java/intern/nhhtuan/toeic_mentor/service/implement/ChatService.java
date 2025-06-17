@@ -66,6 +66,18 @@ public class ChatService implements IChatService {
     }
 
     @Override
+    public Flux<String> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
+        return ChatClient.create(chatModel).prompt()
+                .system(systemMessageResource)
+                .user(user -> user
+                        .text(message)
+                        .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .stream()
+                .content();
+    }
+
+    @Override
     public String createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent) {
         // Prepare the prompt with the image URLs
         // Convert the list of image URLs to a JSON string
