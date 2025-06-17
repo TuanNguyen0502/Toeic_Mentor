@@ -2,11 +2,15 @@ package intern.nhhtuan.toeic_mentor.entity;
 
 import intern.nhhtuan.toeic_mentor.entity.enums.EChatType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "SPRING_AI_CHAT_MEMORY")
+@Getter
+@Setter
 public class ChatMemory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

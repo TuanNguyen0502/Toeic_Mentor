@@ -33,18 +33,40 @@ public class ChatController {
         return chatService.getChatResponse(prompt, email);
     }
 
-    @GetMapping("/conversation")
-    public List<String> getChatHistory(@RequestParam String conversationId) {
-        return chatService.getChatHistory(conversationId);
-    }
-
     @GetMapping("/conversation-ids")
     public List<String> getConversationIds(@RequestParam String email) {
         return chatService.getConversationIdsByEmail(email);
     }
 
+    @GetMapping("/conversation")
+    public List<String> getChatHistory(@RequestParam String conversationId) {
+        return chatService.getChatHistory(conversationId);
+    }
+
     @DeleteMapping("/conversation")
     public void deleteConversation(@RequestParam String conversationId) {
         chatService.deleteByConversationId(conversationId);
+    }
+
+    @GetMapping("/conversation-name")
+    public String generateConversationName(@RequestParam String message) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Determine the email of the authenticated user or use "anonymous" if not authenticated
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+        return chatService.generateConversationId(message, email);
+    }
+
+    @PutMapping("/conversation-name")
+    public String updateConversationName(@RequestParam String conversationId, @RequestParam String newName) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Determine the email of the authenticated user or use "anonymous" if not authenticated
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+        String newConversationId = email + "_" + newName;
+        boolean result = chatService.renameConversation(conversationId, newConversationId);
+        if (result) {
+            return newConversationId;
+        } else {
+            return "Failed to update conversation name. Please check the conversation.";
+        }
     }
 }

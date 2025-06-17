@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
+import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.chat.messages.Message;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
 
@@ -76,44 +77,44 @@ public class ChatService implements IChatService {
             throw new RuntimeException(e);
         }
         String prompt = """
-                    Analyze the provided TOEIC Reading image and extract every question into a standardized JSON format.
-                    
-                    Step 1: Identify the question part
-                    For each question, determine its TOEIC Reading part based on structure:
-                    - If the question is a single sentence with a blank and four answer choices, assign "Part 5".
-                    - If there is a short passage with 4 blanks and 4 questions, assign "Part 6".
-                    - If there is a longer passage (e.g., email, article, notice, advertisement) with multiple comprehension questions, assign "Part 7".
-                    
-                    Step 2: For each question, extract the following fields:
-                    {
-                      "question_number": <number>,
-                      "question_text": <text of the question>,
-                      "options": {
-                        "A": <text>,
-                        "B": <text>,
-                        "C": <text>,
-                        "D": <text>
-                      },
-                      "correct_answer": <A/B/C/D>,
-                      "tags": [<topic1>, <topic2>, ...],
-                      "passage": <text if available, or null>,
-                      "passage_image_urls": <if Part 7, use this: %s; if Part 5 or 6, set to null>,
-                      "part": <number of the part, e.g., 5, 6, or 7>
-                    }
-                    Field instructions:
-                    - question_text: For Part 6 and 7, extract the actual question sentence. For Part 5, use the sentence with the blank.
-                    - If the image belongs to Part 7, combine that passage with the visual content in the image when extracting and answering the questions.
-                    - Additional passage text (if applicable): %s
-                    - correct_answer: Analyze and choose the best answer using grammar and context.
-                    - tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", ...
-                    - passage: Use only for Part 6 and 7, keep the original passage with blanks. For Part 7, combine the detected passage from the image and the input above (if provided) For Part 5, set this to null.
-                    - passage_image_url: For Part 7, replace with: %s. For Part 5 and 6, set to null.
-                    
-                    Step 3: Return the result
-                    Return ONLY the raw JSON array.
-                    Do NOT include any text, explanation, markdown formatting (e.g. triple backticks ```) or surrounding quotes.
-                    The output MUST be a valid JSON array.
-                    """.formatted(imageUrlsJson, part7PreviousContent, imageUrlsJson);
+                Analyze the provided TOEIC Reading image and extract every question into a standardized JSON format.
+                
+                Step 1: Identify the question part
+                For each question, determine its TOEIC Reading part based on structure:
+                - If the question is a single sentence with a blank and four answer choices, assign "Part 5".
+                - If there is a short passage with 4 blanks and 4 questions, assign "Part 6".
+                - If there is a longer passage (e.g., email, article, notice, advertisement) with multiple comprehension questions, assign "Part 7".
+                
+                Step 2: For each question, extract the following fields:
+                {
+                  "question_number": <number>,
+                  "question_text": <text of the question>,
+                  "options": {
+                    "A": <text>,
+                    "B": <text>,
+                    "C": <text>,
+                    "D": <text>
+                  },
+                  "correct_answer": <A/B/C/D>,
+                  "tags": [<topic1>, <topic2>, ...],
+                  "passage": <text if available, or null>,
+                  "passage_image_urls": <if Part 7, use this: %s; if Part 5 or 6, set to null>,
+                  "part": <number of the part, e.g., 5, 6, or 7>
+                }
+                Field instructions:
+                - question_text: For Part 6 and 7, extract the actual question sentence. For Part 5, use the sentence with the blank.
+                - If the image belongs to Part 7, combine that passage with the visual content in the image when extracting and answering the questions.
+                - Additional passage text (if applicable): %s
+                - correct_answer: Analyze and choose the best answer using grammar and context.
+                - tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", ...
+                - passage: Use only for Part 6 and 7, keep the original passage with blanks. For Part 7, combine the detected passage from the image and the input above (if provided) For Part 5, set this to null.
+                - passage_image_url: For Part 7, replace with: %s. For Part 5 and 6, set to null.
+                
+                Step 3: Return the result
+                Return ONLY the raw JSON array.
+                Do NOT include any text, explanation, markdown formatting (e.g. triple backticks ```) or surrounding quotes.
+                The output MUST be a valid JSON array.
+                """.formatted(imageUrlsJson, part7PreviousContent, imageUrlsJson);
         String result = ChatClient.create(chatModel).prompt()
                 .user(user -> user
                         .text(prompt)
@@ -143,7 +144,11 @@ public class ChatService implements IChatService {
 
     @Override
     public List<String> getConversationIdsByEmail(String email) {
-        List<String> conversationIds = chatMemoryRepository.findConversationIds();
+        List<String> conversationIds = chatMemoryRepository.findAll()
+                .stream()
+                .map(intern.nhhtuan.toeic_mentor.entity.ChatMemory::getConversationId)
+                .distinct()
+                .toList();
         return conversationIds.stream()
                 .filter(id -> id.contains(email)) // Filter conversation IDs that contain the user's email
                 .toList();
@@ -156,33 +161,33 @@ public class ChatService implements IChatService {
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(responses);
 
         return String.format("""
-        Tôi vừa hoàn thành một bài thi TOEIC. Dưới đây là kết quả của tôi:
-
-        ```json
-        %s
-        ```
-
-        Vui lòng thực hiện các bước sau:
-        1. Bước 1: Chấm điểm
-        - Hiển thị số câu đúng / tổng số câu hỏi.
-        - Tính phần trăm chính xác.
-        
-        2. Bước 2: Phân tích các câu trả lời sai
-        - Liệt kê danh sách các câu sai (số câu, part, câu hỏi, đáp án đúng, đáp án tôi chọn).
-        - Phân tích lý do vì sao đáp án tôi chọn là sai (ví dụ: sai ngữ pháp, chọn sai vì không hiểu từ vựng, hiểu sai nội dung đoạn văn, v.v.).
-        - Nếu cần, phân tích cấu trúc câu hỏi hoặc ngữ cảnh đoạn văn để giải thích thêm.
-        
-        3. Bước 3: Đề xuất luyện tập cá nhân hóa
-        - Dựa trên các lỗi sai ở Bước 2, đề xuất các chủ điểm cần cải thiện. Ví dụ:
-        + Ngữ pháp (mạo từ, thì động từ, đại từ, liên từ, v.v.)
-        + Từ vựng (từ đồng nghĩa, collocations, v.v.)
-        + Kỹ năng đọc hiểu (scan, skim, suy luận,...)
-        + ...
-        - Gợi ý cụ thể dạng bài tập nên luyện thêm (ví dụ: luyện Part 5 ngữ pháp, luyện đọc email Part 7,...)
-        - Nếu có thể, gợi ý tài liệu hoặc website/nguồn học đáng tin cậy.
-        
-        Hiển thị kết quả rõ ràng, dễ đọc.
-        """, json);
+                Tôi vừa hoàn thành một bài thi TOEIC. Dưới đây là kết quả của tôi:
+                
+                ```json
+                %s
+                ```
+                
+                Vui lòng thực hiện các bước sau:
+                1. Bước 1: Chấm điểm
+                - Hiển thị số câu đúng / tổng số câu hỏi.
+                - Tính phần trăm chính xác.
+                
+                2. Bước 2: Phân tích các câu trả lời sai
+                - Liệt kê danh sách các câu sai (số câu, part, câu hỏi, đáp án đúng, đáp án tôi chọn).
+                - Phân tích lý do vì sao đáp án tôi chọn là sai (ví dụ: sai ngữ pháp, chọn sai vì không hiểu từ vựng, hiểu sai nội dung đoạn văn, v.v.).
+                - Nếu cần, phân tích cấu trúc câu hỏi hoặc ngữ cảnh đoạn văn để giải thích thêm.
+                
+                3. Bước 3: Đề xuất luyện tập cá nhân hóa
+                - Dựa trên các lỗi sai ở Bước 2, đề xuất các chủ điểm cần cải thiện. Ví dụ:
+                + Ngữ pháp (mạo từ, thì động từ, đại từ, liên từ, v.v.)
+                + Từ vựng (từ đồng nghĩa, collocations, v.v.)
+                + Kỹ năng đọc hiểu (scan, skim, suy luận,...)
+                + ...
+                - Gợi ý cụ thể dạng bài tập nên luyện thêm (ví dụ: luyện Part 5 ngữ pháp, luyện đọc email Part 7,...)
+                - Nếu có thể, gợi ý tài liệu hoặc website/nguồn học đáng tin cậy.
+                
+                Hiển thị kết quả rõ ràng, dễ đọc.
+                """, json);
     }
 
     @Override
@@ -193,7 +198,8 @@ public class ChatService implements IChatService {
         for (String jsonResponse : jsonResponses) {
             try {
                 // Parse từng chuỗi và add phần tử vào mergedList
-                mergedList.addAll(objectMapper.readValue(jsonResponse, new TypeReference<List<Object>>(){}));
+                mergedList.addAll(objectMapper.readValue(jsonResponse, new TypeReference<List<Object>>() {
+                }));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Invalid JSON response: " + jsonResponse, e);
             }
@@ -210,17 +216,52 @@ public class ChatService implements IChatService {
         return mergedJsonString;
     }
 
-    public List<Message> findByConversationId(String conversationId) {
-        return chatMemoryRepository.findByConversationId(conversationId);
-    }
-
-    public List<String> findConversationIds() {
-        return chatMemoryRepository.findConversationIds();
-    }
-
     @Override
+    @Transactional
     public void deleteByConversationId(String conversationId) {
         chatMemoryRepository.deleteByConversationId(conversationId);
     }
-}
 
+    @Override
+    public String generateConversationId(String message, String email) {
+        String prompt = String.format("""
+                    You are an assistant that generates a concise and meaningful title for a conversation based on the user’s initial question.
+                
+                    Instructions:
+                    1. Analyze the user's question and determine the main topic or purpose.
+                    2. Generate a short and clear conversation title using 2–5 words (lowercase, hyphen-separated if needed, no special characters).
+                    3. Return the final result in this format: <email>_<generated-title>
+                
+                    Input:
+                    Email: %s
+                    User question: "%s"
+                
+                    Output:
+                    <email>_<generated-title>
+                """, email, message);
+        return ChatClient.create(chatModel).prompt()
+                .user(user -> user
+                        .text(prompt))
+                .call()
+                .content();
+    }
+
+    @Override
+    public boolean renameConversation(String oldConversationId, String newConversationId) {
+        // Check if the new conversation ID already exists
+        if (chatMemoryRepository.existsChatMemoryByConversationId(newConversationId)) {
+            return false; // New conversation ID already exists, cannot rename
+        }
+
+        // Rename the conversation by updating the conversation ID in the repository
+        List<intern.nhhtuan.toeic_mentor.entity.ChatMemory> chatMemories = chatMemoryRepository.findAllByConversationId(oldConversationId);
+        if (chatMemories.isEmpty()) {
+            return false; // No conversation found with the old ID
+        }
+        for (intern.nhhtuan.toeic_mentor.entity.ChatMemory chatMemory : chatMemories) {
+            chatMemory.setConversationId(newConversationId);
+        }
+        chatMemoryRepository.saveAll(chatMemories); // Save the updated chat memories
+        return true; // Successfully renamed
+    }
+}

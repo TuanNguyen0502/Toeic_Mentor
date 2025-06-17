@@ -23,4 +23,8 @@ public interface IChatService {
     String mergeJsonResponses(List<String> jsonResponses);
 
     void deleteByConversationId(String conversationId);
+
+    String generateConversationId(String message, String email);
+
+    boolean renameConversation(String oldConversationId, String newConversationId);
 }
