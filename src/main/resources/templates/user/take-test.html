@@ -498,12 +498,25 @@
         document.getElementById('testForm').classList.add('hidden');
 
         // Submit the questions array and process the streaming response
+        const answerRequests = questions.map(q => ({
+            id: q.id,
+            questionText: q.questionText,
+            correctAnswer: q.correctAnswer,
+            userAnswer: q.userAnswer,
+            part: q.part,
+            options: q.options.map(opt => ({
+                key: opt.key,
+                value: opt.value
+            })),
+            tags: q.tags || []
+        }));
+
         fetch('/submit-test', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(questions)
+            body: JSON.stringify(answerRequests)
         }).then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');

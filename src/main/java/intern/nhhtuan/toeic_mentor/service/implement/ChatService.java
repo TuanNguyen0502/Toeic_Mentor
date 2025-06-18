@@ -3,7 +3,7 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
+import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
@@ -167,39 +167,75 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public String buildToeicAnalysisPrompt(List<QuestionResponse> responses) throws JsonProcessingException {
+    public String buildTestAnalysisPrompt(List<AnswerRequest> answerRequests) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         // Convert the list of QuestionResponse to JSON
-        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(responses);
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(answerRequests);
 
         return String.format("""
-                Tôi vừa hoàn thành một bài thi TOEIC. Dưới đây là kết quả của tôi:
+                You are an expert TOEIC evaluator and personalized language coach.
+                This is user's TOEIC test results in JSON format, follow these steps precisely:
                 
                 ```json
                 %s
                 ```
                 
-                Vui lòng thực hiện các bước sau:
-                1. Bước 1: Chấm điểm
-                - Hiển thị số câu đúng / tổng số câu hỏi.
-                - Tính phần trăm chính xác.
+                ---
                 
-                2. Bước 2: Phân tích các câu trả lời sai
-                - Liệt kê danh sách các câu sai (số câu, part, câu hỏi, đáp án đúng, đáp án tôi chọn).
-                - Phân tích lý do vì sao đáp án tôi chọn là sai (ví dụ: sai ngữ pháp, chọn sai vì không hiểu từ vựng, hiểu sai nội dung đoạn văn, v.v.).
-                - Nếu cần, phân tích cấu trúc câu hỏi hoặc ngữ cảnh đoạn văn để giải thích thêm.
+                Step 1: Score the test
+                - Count the number of correct answers.
+                - Display the score as: "<Correct>/<Total> correct answers".
+                - Calculate and show the accuracy rate as a percentage.
                 
-                3. Bước 3: Đề xuất luyện tập cá nhân hóa
-                - Dựa trên các lỗi sai ở Bước 2, đề xuất các chủ điểm cần cải thiện. Ví dụ:
-                + Ngữ pháp (mạo từ, thì động từ, đại từ, liên từ, v.v.)
-                + Từ vựng (từ đồng nghĩa, collocations, v.v.)
-                + Kỹ năng đọc hiểu (scan, skim, suy luận,...)
-                + ...
-                - Gợi ý cụ thể dạng bài tập nên luyện thêm (ví dụ: luyện Part 5 ngữ pháp, luyện đọc email Part 7,...)
-                - Nếu có thể, gợi ý tài liệu hoặc website/nguồn học đáng tin cậy.
+                ---
                 
-                Hiển thị kết quả rõ ràng, dễ đọc.
+                Step 2: Analyze incorrect responses
+                For each incorrect answer, provide the following information in a clear list format:
+                - Question number
+                - TOEIC Part (e.g., Part 5, 6, or 7)
+                - Question text
+                - User’s selected answer
+                - Correct answer
+                - Error analysis:
+                  • Explain why the selected answer is incorrect.
+                  • Identify the nature of the mistake (e.g., grammar error, vocabulary misunderstanding, incorrect inference).
+                  • Include brief context or sentence breakdowns if necessary (e.g., subject-verb agreement, misplaced modifier, etc.).
+                
+                ---
+                
+                Step 3: Personalized study recommendations
+                Based on patterns of errors in Step 2, recommend targeted areas for improvement:
+                - Grammar topics (e.g., articles, verb tenses, transitions, pronouns, modifiers).
+                - Vocabulary skills (e.g., synonyms, collocations, word forms).
+                - Reading skills (e.g., scanning, skimming, inference).
+                - Suggest specific TOEIC Parts and question types to focus on for practice.
+                - If possible, suggest reliable resources (e.g., websites, books, YouTube channels) for self-study.
+                
+                ---
+                
+                Format the output to be highly readable, using headings and bullet points.
+                Keep the tone helpful and focused on improvement.
+                Do not include unnecessary explanations or repeat the input JSON.
                 """, json);
+    }
+
+    @Override
+    public Flux<String> analyzeTestResult(List<AnswerRequest> answerRequests, String conversationId) {
+        String prompt;
+        try {
+            prompt = buildTestAnalysisPrompt(answerRequests);
+        } catch (JsonProcessingException e) {
+            return Flux.error(new RuntimeException("Error building TOEIC analysis prompt", e));
+        }
+
+        String systemMessage = prompt;
+        String userMessage = "I’ve just completed a TOEIC test. Please evaluate my performance according to the steps provided earlier.";
+        return chatClient.prompt()
+                .system(systemMessage)
+                .user(userMessage)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .stream()
+                .content();
     }
 
     @Override
