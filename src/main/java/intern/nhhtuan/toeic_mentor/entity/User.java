@@ -4,6 +4,9 @@ import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @EqualsAndHashCode(callSuper = true)
@@ -38,4 +41,7 @@ public class User extends TrackingDate {
 
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Test> tests = new ArrayList<>();
 }

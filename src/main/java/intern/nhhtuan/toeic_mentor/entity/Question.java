@@ -32,8 +32,9 @@ public class Question {
     @Column(name = "passage", columnDefinition = "TEXT")
     private String passage;
 
-    @Column(name = "part")
-    private Integer part;
+    @ManyToOne
+    @JoinColumn(name = "part_id", referencedColumnName = "id")
+    private Part part;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionImage> passageImageUrls = new ArrayList<>();
