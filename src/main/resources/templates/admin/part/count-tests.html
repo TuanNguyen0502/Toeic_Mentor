@@ -34,7 +34,7 @@
                         <!-- main-content-wrap -->
                         <div class="main-content-wrap">
                             <div class="flex items-center flex-wrap justify-between gap20 mb-27">
-                                <h3>All Parts</h3>
+                                <h3>Count Test</h3>
                                 <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
                                     <li>
                                         <a th:href="@{/admin}">
@@ -53,17 +53,76 @@
                                         <i class="icon-chevron-right"></i>
                                     </li>
                                     <li>
-                                        <div class="text-tiny">All Parts</div>
+                                        <div class="text-tiny">Count Test</div>
                                     </li>
                                 </ul>
                             </div>
-                            <!-- all-category -->
+                            <!-- new-category -->
                             <div class="wg-box">
-                                <div class="flex items-center justify-between gap10 flex-wrap">
-                                    <a class="tf-button style-1 w208" th:href="@{/admin/parts/count-tests}"><i
-                                            class="icon-plus"></i>Count Test</a>
+                                <div class="block-warning" th:if="${error}">
+                                    <i class="icon-alert-octagon"></i>
+                                    <div class="body-title-2" th:text="${error}"></div>
                                 </div>
-                            <!-- part-list -->
+                                <form action="/admin/parts/count-tests" method="post"
+                                      class="form-new-product form-style-1" th:object="${testCountRequest}">
+                                    <fieldset class="name">
+                                        <div class="body-title">Parts<span class="tf-color-1">*</span></div>
+                                        <div class="checkbox-group">
+                                            <div th:each="part : ${ePart}" class="checkbox-item">
+                                                <input type="checkbox"
+                                                       th:field="*{parts}"
+                                                       th:value="${part}"
+                                                       th:id="${'part-' + part.name()}"/>
+                                                <label th:for="${'part-' + part.name()}"
+                                                       th:text="${part.name()}"></label>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Percent<span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="number" name="percent"
+                                               tabindex="0" aria-required="true" required="required"
+                                               th:field="*{percent}" step="1"
+                                               oninput="handleAmountInput(this)">
+                                        <div class="block-warning" th:if="${#fields.hasErrors('percent')}">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" th:errors="*{percent}"></div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Answer status<span class="tf-color-1">*</span></div>
+                                        <div class="select">
+                                            <select class="" th:field="*{status}">
+                                                <option th:each="status : ${eStatus}"
+                                                        th:value="${status}"
+                                                        th:text="${status.name()}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Type<span class="tf-color-1">*</span></div>
+                                        <div class="select">
+                                            <select class="" th:field="*{type}">
+                                                <option th:each="type : ${eType}"
+                                                        th:value="${type}"
+                                                        th:text="${type.name()}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </fieldset>
+
+                                    <div class="bot">
+                                        <div></div>
+                                        <button class="tf-button w208" type="submit">Count</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- /new-category -->
+                            <!-- test-count-list -->
                             <div class="wg-box">
                                 <div class="flex items-center justify-between gap10 flex-wrap">
                                     <div class="wg-filter flex-grow">
@@ -87,9 +146,6 @@
                                         <li style="width: 15%; min-width: 150px;">
                                             <div class="body-title">Name</div>
                                         </li>
-                                        <li style="width: 32%; min-width: 150px;">
-                                            <div class="body-title">Questions</div>
-                                        </li>
                                         <li style="width:33%; min-width: 120px;">
                                             <div class="body-title">Tests</div>
                                         </li>
@@ -98,27 +154,25 @@
                                         </li>
                                     </ul>
                                     <ul class="list">
-                                        <li class="user-item gap14" th:each="part : ${parts}">
+                                        <li class="user-item gap14" th:each="part : ${testCountResponseList}">
                                             <div class="flex items-center justify-between gap20 flex-grow">
                                                 <div class="body-text"
                                                      style="width: 10%; min-width: 120px;margin-left: 10px"
-                                                     th:text="${part.getId()}"></div>
+                                                     th:text="${part.getPartId()}"></div>
                                                 <div class="body-text body-title-2" style="width: 15%; min-width: 150px"
-                                                     th:text="${part.getName()}"></div>
+                                                     th:text="${part.getPartName()}"></div>
                                                 <div class="body-text" style="width: 33%; min-width: 150px"
-                                                     th:text="${part.getQuestionCount()}"></div>
-                                                <div class="body-text" style="width: 33%; min-width: 150px"
-                                                     th:text="${part.getTestCount()}"></div>
+                                                     th:text="${part.getTests()}"></div>
                                             </div>
                                             <div class="list-icon-function" style="width: 10%">
                                                 <div class="item eye">
                                                     <a class="icon-eye"
-                                                       th:href="@{/admin/part/{id}(id=${part.getId()})}"></a>
+                                                       th:href="@{/admin/part/{id}(id=${part.getPartId()})}"></a>
                                                 </div>
-<!--                                                <div class="item edit">-->
-<!--                                                    <a class="icon-edit"-->
-<!--                                                       th:href="@{'/staff/orders/' + ${eachOrder.id} + '?status=true'}"></a>-->
-<!--                                                </div>-->
+                                                <!--                                                <div class="item edit">-->
+                                                <!--                                                    <a class="icon-edit"-->
+                                                <!--                                                       th:href="@{'/staff/orders/' + ${eachOrder.id} + '?status=true'}"></a>-->
+                                                <!--                                                </div>-->
                                             </div>
                                         </li>
                                     </ul>
@@ -130,7 +184,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <!-- /order-list -->
+                            <!-- /test-count-list -->
                         </div>
                         <!-- /main-content-wrap -->
                     </div>
@@ -151,10 +205,27 @@
 
 <!-- Javascript -->
 <div th:insert="~{admin/fragments/script::script}"></div>
+<script>
+    function handleAmountInput(input) {
+        let val = input.value;
+
+        // Only allow integers
+        val = val.replace(/[^0-9]/g, '');
+
+        // COUPON: between 2 and 100
+        if (val !== '') {
+            let num = parseInt(val);
+            if (num < 1) num = 1;
+            if (num > 100) num = 100;
+            val = num;
+        }
+
+        input.value = val;
+    }
+</script>
 
 </body>
-<script th:src="@{/admin/asset/js/pagination.js}"></script>
-<script th:src="@{/admin/asset/js/search.js}"></script>
 
-<!-- Mirrored from themesflat.co/html/remos/part-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:48 GMT -->
+
+<!-- Mirrored from themesflat.co/html/remos/count-tests.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:47 GMT -->
 </html>

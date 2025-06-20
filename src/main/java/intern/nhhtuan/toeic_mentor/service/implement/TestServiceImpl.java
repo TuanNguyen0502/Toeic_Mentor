@@ -1,10 +1,13 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
 import intern.nhhtuan.toeic_mentor.entity.Answer;
 import intern.nhhtuan.toeic_mentor.entity.Part;
 import intern.nhhtuan.toeic_mentor.entity.Test;
 import intern.nhhtuan.toeic_mentor.entity.TestPart;
+import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.repository.TestRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.*;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +29,20 @@ public class TestServiceImpl implements ITestService {
     private final IPartService partService;
 
     @Override
-    public int countCorrectByCombinePartsAndPercent(List<Long> partIds, int percent) {
+    public List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest) {
+        List<Long> partIds = partService.getIdsByPartName(testCountRequest.getParts()); // Get part ids by EPart names
+
         // Get tests that contains all parts in partIds
-        List<Test> tests = testPartService.findTestsByCombinePartIds(partIds);
+        List<Test> tests = testPartService.findTestsByCombinePartNames(partIds);
         if (tests.isEmpty()) {
-            return 0;
+            return List.of(TestCountResponse.builder()
+                    .partName("No tests found for the specified parts")
+                    .tests(0)
+                    .build());
         }
 
         // Count correct answers for each test
-        int correctCount = 0;
+        int testCount = 0;
         for (Test test : tests) {
             // Get total questions in the test that belong to the specified parts
             long totalQuestionsByPart = test.getAnswers() // Get all answers for the test
@@ -45,18 +53,27 @@ public class TestServiceImpl implements ITestService {
 
             if (totalQuestionsByPart == 0) continue; // Skip if no questions in the specified parts
 
-            long totalCorrectByPart = test.getAnswers() // Get all answers for the test
+            // Get total correct answers in the test that belong to the specified parts
+            long totalAnswersByPart = test.getAnswers() // Get all answers for the test
                     .stream()
                     // If the answer's question part is in partIds and the answer is correct
-                    .filter(answer -> partIds.contains(answer.getQuestion().getPart().getId()) && answerService.isCorrect(answer.getId()))
+                    .filter(answer -> partIds.contains(answer.getQuestion().getPart().getId()) && answerService.checkByStatus(answer.getId(), testCountRequest.getStatus()))
                     .count();
             // Check if the percentage of correct answers meets the requirement
-            if ((totalCorrectByPart * 100 / totalQuestionsByPart) >= percent) {
-                correctCount++;
+            if ((totalAnswersByPart * 100 / totalQuestionsByPart) >= testCountRequest.getPercent()) {
+                testCount++;
             }
         }
 
-        return correctCount;
+        StringBuilder partName = new StringBuilder();
+        for (EPart ePart : testCountRequest.getParts()) {
+            partName.append(ePart.name()).append(", ");
+        }
+        partName = new StringBuilder(partName.substring(0, partName.length() - 2));
+        return List.of(TestCountResponse.builder()
+                .partName(partName.toString())
+                .tests(testCount)
+                .build());
     }
 
     @Override

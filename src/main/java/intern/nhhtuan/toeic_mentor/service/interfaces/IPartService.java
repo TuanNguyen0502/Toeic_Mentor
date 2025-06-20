@@ -12,4 +12,6 @@ public interface IPartService {
     int getTotalParts();
 
     Part findByName(Integer name);
+
+    List<Long> getIdsByPartName(List<EPart> parts);
 }

@@ -42,6 +42,15 @@ public class PartServiceImpl implements IPartService {
         return partRepository.findByName(getPartName(name));
     }
 
+    @Override
+    public List<Long> getIdsByPartName(List<EPart> parts) {
+        return partRepository.findAll()
+                .stream()
+                .filter(part -> parts.contains(part.getName()))
+                .map(Part::getId)
+                .toList();
+    }
+
     public EPart getPartName(Integer part) {
         return Arrays.stream(EPart.values())
                 .filter(p -> p.name().contains(part.toString()))
