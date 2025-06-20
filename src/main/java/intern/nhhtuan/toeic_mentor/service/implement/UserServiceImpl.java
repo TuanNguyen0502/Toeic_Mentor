@@ -26,6 +26,16 @@ public class UserServiceImpl implements IUserService {
     private final ImageUtil imageUtil;
 
     @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new BadCredentialsException("User not found with email: " + email));
+    }
+
+    @Override
+    public int getTotalUsers() {
+        return userRepository.findAll().size();
+    }
+
+    @Override
     public boolean register(RegisterRequest registerRequest) throws IOException {
         // Kiểm tra email đã tồn tại chưa
         validateEmailUnique(registerRequest.getEmail());

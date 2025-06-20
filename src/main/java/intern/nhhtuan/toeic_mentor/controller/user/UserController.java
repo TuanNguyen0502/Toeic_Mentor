@@ -21,7 +21,8 @@ public class UserController {
     @GetMapping("")
     public String index() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String conversationId = authentication.getName();
+        // Determine the email of the authenticated user or use "anonymous" if not authenticated
+        String conversationId = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
         return "redirect:/chat/" + conversationId;
     }
 
@@ -29,7 +30,8 @@ public class UserController {
     public String chatbot(@PathVariable String conversationId, Model model) {
         // Ensure the conversationId contains the user's email to prevent unauthorized access
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
+        // Determine the email of the authenticated user or use "anonymous" if not authenticated
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
         if (!conversationId.contains(email)) {
             return "redirect:/chat/" + email;
         }

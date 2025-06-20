@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
+import intern.nhhtuan.toeic_mentor.service.interfaces.ITestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,11 +19,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatController {
     private final IChatService chatService;
+    private final ITestService testService;
 
     @PostMapping("/stream")
     public Flux<String> chatWithStream(@RequestParam String message,
-                                   @RequestParam(required = false) String conversationId,
-                                   @RequestParam(value = "image", required = false) MultipartFile image) {
+                                       @RequestParam(required = false) String conversationId,
+                                       @RequestParam(value = "image", required = false) MultipartFile image) {
         if (conversationId == null) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
@@ -44,16 +46,24 @@ public class ChatController {
 
         // Send conversationId as first message
         return Flux.concat(
-            Flux.just("ConversationId: " + finalConversationId + "\n"),
-            response
+                Flux.just("ConversationId: " + finalConversationId + "\n"),
+                response
         );
     }
 
     @PostMapping("/submit-test")
-    public Flux<String> submitTest(@RequestBody List<AnswerRequest> answerRequests) throws JsonProcessingException {
+    public Flux<String> submitTest(@RequestBody List<AnswerRequest> answerRequests) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // Determine the email of the authenticated user or use "anonymous" if not authenticated
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+
+        // Save the test results to the database
+        try {
+            testService.saveTests(email, answerRequests);
+        } catch (Exception e) {
+            return Flux.error(new RuntimeException("Error saving test results: " + e.getMessage(), e));
+        }
+
         return chatService.analyzeTestResult(answerRequests, email);
     }
 

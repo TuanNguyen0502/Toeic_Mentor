@@ -3,31 +3,25 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.request.QuestionRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
-import intern.nhhtuan.toeic_mentor.entity.Question;
-import intern.nhhtuan.toeic_mentor.entity.QuestionImage;
-import intern.nhhtuan.toeic_mentor.entity.QuestionOption;
-import intern.nhhtuan.toeic_mentor.entity.QuestionTag;
-import intern.nhhtuan.toeic_mentor.repository.QuestionImageRepository;
-import intern.nhhtuan.toeic_mentor.repository.QuestionOptionRepository;
-import intern.nhhtuan.toeic_mentor.repository.QuestionRepository;
-import intern.nhhtuan.toeic_mentor.repository.QuestionTagRepository;
+import intern.nhhtuan.toeic_mentor.entity.*;
+import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
+import intern.nhhtuan.toeic_mentor.repository.*;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class QuestionService implements IQuestionService {
+public class QuestionServiceImpl implements IQuestionService {
     private final QuestionRepository questionRepository;
     private final QuestionOptionRepository optionRepository;
     private final QuestionTagRepository tagRepository;
     private final QuestionImageRepository imageRepository;
+    private final PartRepository partRepository;
 
     @Transactional
     @Override
@@ -38,7 +32,7 @@ public class QuestionService implements IQuestionService {
             question.setQuestionText(dto.getQuestionText());
             question.setCorrectAnswer(dto.getCorrectAnswer());
             question.setPassage(dto.getPassage());
-            question.setPart(dto.getPart());
+            question.setPart(partRepository.findByName(getPartName(dto.getPart())));
 
             // Lưu trước để có ID cho liên kết
             questionRepository.save(question);
@@ -74,18 +68,19 @@ public class QuestionService implements IQuestionService {
             if (part < 1 || part > 7) {
                 throw new IllegalArgumentException("Part must be between 1 and 7");
             }
+            EPart partName = getPartName(part);
             // Fetch questions based on part and topic
             List<Question> questions;
             // If no topics are specified, fetch all questions for the part
             if (request.getTopic().size() == 0) {
-                questions = questionRepository.findDistinctByPart(part);
+                questions = questionRepository.findDistinctByPart_Name(partName);
             } else {
                 // If topics are specified, fetch questions that match both part and topics
                 List<QuestionTag> tags = new ArrayList<>();
                 for (String tag : request.getTopic()) {
                     tags.addAll(tagRepository.findByTag(tag));
                 }
-                questions = questionRepository.findDistinctByPartAndTags(part, tags);
+                questions = questionRepository.findDistinctByPart_NameAndTags(partName, tags);
             }
             // Add the fetched questions to the matched list
             matchedQuestions.addAll(questions);
@@ -123,9 +118,31 @@ public class QuestionService implements IQuestionService {
                 null,
                 question.getPassage(),
                 passageImageUrls,
-                question.getPart(),
+                Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")),
                 options,
                 tags
         );
+    }
+
+    @Override
+    public int countByPart_Id(Long partId) {
+        return questionRepository.countByPart_Id(partId);
+    }
+
+    @Override
+    public int getTotalQuestions() {
+        return questionRepository.findAll().size();
+    }
+
+    @Override
+    public Optional<Question> findById(Long aLong) {
+        return questionRepository.findById(aLong);
+    }
+
+    public EPart getPartName(Integer part) {
+        return Arrays.stream(EPart.values())
+                .filter(p -> p.name().contains(part.toString()))
+                .findFirst()
+                .orElse(null);
     }
 }

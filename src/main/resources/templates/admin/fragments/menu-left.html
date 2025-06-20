@@ -1,0 +1,137 @@
+<div class="section-menu-left" th:fragment="section-menu-left">
+    <div class="box-logo">
+        <a th:href="@{/admin/dashboard}" id="site-logo-inner">
+            <img class="" id="logo_header" alt="" th:src="@{/admin/asset/images/logo/logo.png}"
+                 th:data-light="@{/admin/asset/images/logo/logo.png}"
+                 th:data-dark="@{/admin/asset/images/logo/logo-dark.png}">
+        </a>
+        <div class="button-show-hide">
+            <i class="icon-menu-left"></i>
+        </div>
+    </div>
+    <div class="section-menu-left-wrap">
+        <div class="center">
+            <div class="center-item">
+                <div class="center-heading">Main Home</div>
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a th:href="@{/admin}"
+                           class="menu-item-button">
+                            <div class="icon"><i class="icon-grid"></i></div>
+                            <div class="text">Dashboard</div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="center-item">
+                <div class="center-heading">All page</div>
+                <ul class="menu-list">
+                    <li class="menu-item has-children">
+                        <a href="javascript:void(0);" class="menu-item-button">
+                            <div class="icon"><i class="icon-bookmark"></i></div>
+                            <div class="text">Section</div>
+                        </a>
+                        <ul class="sub-menu">
+                            <li class="sub-menu-item">
+                                <a th:href="@{/admin/sections}" class="">
+                                    <div class="text">Section List</div>
+                                </a>
+                            </li>
+                            <li class="sub-menu-item">
+                                <a th:href="@{/admin/sections/create}" class="">
+                                    <div class="text">Add Section</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="menu-item has-children">
+                        <a href="javascript:void(0);" class="menu-item-button">
+                            <div class="icon"><i class="icon-box"></i></div>
+                            <div class="text">Part</div>
+                        </a>
+                        <ul class="sub-menu">
+                            <li class="sub-menu-item">
+                                <a th:href="@{/admin/parts}" class="">
+                                    <div class="text">Parts List</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+<!--                    <li class="menu-item has-children" th:if="${user.roleName == 'ROLE_ADMIN'}">-->
+<!--                        <a href="javascript:void(0);" class="menu-item-button">-->
+<!--                            <div class="icon"><i class="icon-layers"></i></div>-->
+<!--                            <div class="text">Brand</div>-->
+<!--                        </a>-->
+<!--                        <ul class="sub-menu">-->
+<!--                            <li class="sub-menu-item">-->
+<!--                                <a th:href="@{/admin/brands}" class="">-->
+<!--                                    <div class="text">Brand list</div>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                            <li class="sub-menu-item">-->
+<!--                                <a th:href="@{/admin/brands/add}" class="">-->
+<!--                                    <div class="text">New brand</div>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                        </ul>-->
+<!--                    </li>-->
+<!--                    <li class="menu-item has-children" th:if="${user.roleName == 'ROLE_ADMIN'}">-->
+<!--                        <a href="javascript:void(0);" class="menu-item-button">-->
+<!--                            <div class="icon"><i class="icon-gift"></i></div>-->
+<!--                            <div class="text">Discount</div>-->
+<!--                        </a>-->
+<!--                        <ul class="sub-menu">-->
+<!--                            <li class="sub-menu-item">-->
+<!--                                <a th:href="@{/admin/discounts}" class="">-->
+<!--                                    <div class="text">Discount list</div>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                            <li class="sub-menu-item">-->
+<!--                                <a th:href="@{/admin/discounts/add}" class="">-->
+<!--                                    <div class="text">New discount</div>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                        </ul>-->
+<!--                    </li>-->
+<!--                    <li class="menu-item has-children" th:if="${user.roleName == 'ROLE_ADMIN'}">-->
+<!--                        <a href="javascript:void(0);" class="menu-item-button">-->
+<!--                            <div class="icon"><i class="icon-user"></i></div>-->
+<!--                            <div class="text">User</div>-->
+<!--                        </a>-->
+<!--                        <ul class="sub-menu">-->
+<!--                            <li class="sub-menu-item">-->
+<!--                                <a th:href="@{/admin/users}" class="">-->
+<!--                                    <div class="text">All user</div>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                            <li class="sub-menu-item">-->
+<!--                                <a href="add-new-user.html">-->
+<!--                                    <div class="text">Add new user</div>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                        </ul>-->
+<!--                    </li>-->
+<!--                    <li class="menu-item" th:if="${user.roleName == 'ROLE_ADMIN'}">-->
+<!--                        <a th:href="@{/admin/sale-report}" class="">-->
+<!--                            <div class="icon"><i class="icon-pie-chart"></i></div>-->
+<!--                            <div class="text">Report</div>-->
+<!--                        </a>-->
+<!--                    </li>-->
+                </ul>
+            </div>
+
+        </div>
+        <div class="bot text-center">
+            <div class="wrap">
+                <div class="mb-20">
+                    <img th:src="@{/admin/asset/images/menu-left/img-bot.png}" alt="">
+                </div>
+                <div class="mb-20">
+                    <h6>Hi, how can we help?</h6>
+                    <div class="text">Contact us if you have any assistance, we will contact you as soon as possible
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
