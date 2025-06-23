@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
+import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,9 +33,17 @@ public class Question {
     @Column(name = "passage", columnDefinition = "TEXT")
     private String passage;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EQuestionStatus status;
+
     @ManyToOne
     @JoinColumn(name = "part_id", referencedColumnName = "id")
     private Part part;
+
+    @ManyToOne
+    @JoinColumn(name = "section_id")
+    private Section section;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionImage> passageImageUrls = new ArrayList<>();
