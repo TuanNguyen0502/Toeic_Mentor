@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.QuestionRequest;
 import reactor.core.publisher.Flux;
 
 import java.io.InputStream;
@@ -12,9 +13,11 @@ public interface IChatService {
 
     Flux<String> getChatResponse(String message, String conversationId);
 
-    String createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent);
+    List<QuestionRequest> createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent);
 
     String definePart(InputStream imageInputStream, String contentType);
+
+    String identifyToeicTest(InputStream imageInputStream, String contentType);
 
     List<String> getChatHistory(String conversationId);
 

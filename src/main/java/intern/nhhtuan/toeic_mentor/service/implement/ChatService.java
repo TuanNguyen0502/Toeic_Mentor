@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.QuestionRequest;
 import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
@@ -17,6 +18,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,8 @@ public class ChatService implements IChatService {
     private Resource systemMessageResource;
     @Value("classpath:/prompts/define-question-part-prompt.txt")
     private Resource defineQuestionPartPromptResource;
+    @Value("classpath:/prompts/identify-toeic-test.txt")
+    private Resource identifyToeicTestPromptResource;
 
     public ChatService(ChatClient.Builder builder,
                        JdbcChatMemoryRepository jdbcChatMemoryRepository,
@@ -78,7 +82,7 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public String createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent) {
+    public List<QuestionRequest> createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent) {
         // Prepare the prompt with the image URLs
         // Convert the list of image URLs to a JSON string
         ObjectMapper mapper = new ObjectMapper();
@@ -89,7 +93,7 @@ public class ChatService implements IChatService {
             throw new RuntimeException(e);
         }
         String prompt = """
-                Analyze the provided TOEIC Reading image and extract every question into a standardized JSON format.
+                Analyze the provided TOEIC Reading image and extract every question into a entity.
                 
                 Step 1: Identify the question part
                 For each question, determine its TOEIC Reading part based on structure:
@@ -99,41 +103,38 @@ public class ChatService implements IChatService {
                 
                 Step 2: For each question, extract the following fields:
                 {
-                  "question_number": <number>,
-                  "question_text": <text of the question>,
+                  "questionNumber": <number>,
+                  "questionText": <text of the question>,
                   "options": {
                     "A": <text>,
                     "B": <text>,
                     "C": <text>,
                     "D": <text>
                   },
-                  "correct_answer": <A/B/C/D>,
+                  "correctAnswer": <A/B/C/D>,
                   "tags": [<topic1>, <topic2>, ...],
-                  "passage": <text if available, or null>,
-                  "passage_image_urls": <if Part 7, use this: %s; if Part 5 or 6, set to null>,
+                  "passage": <text for Part 6 and 7, or Part 5 null>,
+                  "passageImageUrls": <if Part 7, use this: %s; if Part 5 or 6, set to null>,
                   "part": <number of the part, e.g., 5, 6, or 7>
                 }
                 Field instructions:
-                - question_text: For Part 6 and 7, extract the actual question sentence. For Part 5, use the sentence with the blank.
+                - questionText: For Part 6 and 7, extract the actual question sentence. For Part 5, use the sentence with the blank.
                 - If the image belongs to Part 7, combine that passage with the visual content in the image when extracting and answering the questions.
                 - Additional passage text (if applicable): %s
-                - correct_answer: Analyze and choose the best answer using grammar and context.
+                - correctAnswer: Analyze and choose the best answer using grammar and context.
                 - tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", ...
                 - passage: Use only for Part 6 and 7, keep the original passage with blanks. For Part 7, combine the detected passage from the image and the input above (if provided) For Part 5, set this to null.
-                - passage_image_url: For Part 7, replace with: %s. For Part 5 and 6, set to null.
+                - passageImageUrl: For Part 7, replace with: %s. For Part 5 and 6, set to null.
                 
                 Step 3: Return the result
-                Return ONLY the raw JSON array.
                 Do NOT include any text, explanation, markdown formatting (e.g. triple backticks ```) or surrounding quotes.
-                The output MUST be a valid JSON array.
                 """.formatted(imageUrlsJson, part7PreviousContent, imageUrlsJson);
-        String result = ChatClient.create(chatModel).prompt()
+        return ChatClient.create(chatModel).prompt()
                 .user(user -> user
                         .text(prompt)
                         .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
                 .call()
-                .content();
-        return result.replaceAll("^```json\\s*", "").replaceAll("```$", "");
+                .entity(new ParameterizedTypeReference<List<QuestionRequest>>() {});
     }
 
     @Override
@@ -141,6 +142,16 @@ public class ChatService implements IChatService {
         return ChatClient.create(chatModel).prompt()
                 .user(user -> user
                         .text(defineQuestionPartPromptResource)
+                        .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
+                .call()
+                .content();
+    }
+
+    @Override
+    public String identifyToeicTest(InputStream imageInputStream, String contentType) {
+        return ChatClient.create(chatModel).prompt()
+                .user(user -> user
+                        .text(identifyToeicTestPromptResource)
                         .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
                 .call()
                 .content();

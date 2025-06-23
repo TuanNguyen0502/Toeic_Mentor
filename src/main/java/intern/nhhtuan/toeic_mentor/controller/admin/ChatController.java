@@ -30,9 +30,10 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", "Image file cannot be empty"));
         }
 
-        List<String> imageUrls = new ArrayList<>(); // Store URLs of uploaded images=
+        List<String> imageUrls = new ArrayList<>(); // Store URLs of uploaded images
         List<Integer> indexOfPart7NoQuestion = new ArrayList<>(); // Store indices of images that are PART_7_NO_QUESTION
         StringBuilder part7PreviousContent = new StringBuilder(); // Store previous content for PART_7
+        int maxAttempts = 3; // Maximum attempts to process each image
 
         for (MultipartFile imageFile : imageFiles) {
             // Check if the uploaded file is empty
@@ -46,23 +47,57 @@ public class ChatController {
             }
 
             try (InputStream inputStream = imageFile.getInputStream()) {
-                // Call service to define image's part
-                String part = chatService.definePart(inputStream, imageFile.getContentType());
-                // If the part is 7 or NO_QUESTION then save the image and get the URL
-                if (part.contains("PART_7")) {
-                    imageUrls.add(imageUtil.saveImage(imageFile));
+                // Check if the uploaded file is TOEIC test
+                int identifyToeicAttempts = 0;
+                String identifyResult;
+                do {
+                    identifyResult = chatService.identifyToeicTest(imageFile.getInputStream(), imageFile.getContentType());
+                    if (identifyResult.equals("TOEIC_TRUE")) {
+                        break; // Exit the loop if TOEIC test is identified
+                    } else if (identifyResult.equals("TOEIC_FALSE")) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "One or more images are not TOEIC test images"));
+                    }
+                    identifyToeicAttempts++; // Increment the attempt count
+                } while (identifyToeicAttempts < maxAttempts);
+                // If the maximum attempts are reached and the result is still not identified
+                if (!identifyResult.equals("TOEIC_TRUE")) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Failed to identify TOEIC test after maximum attempts"));
                 }
-                // If the part is NO_QUESTION, remove the image from the list
-                // so it won't be processed further
-                if (part.contains("PART_7_NO_QUESTION")) {
-                    indexOfPart7NoQuestion.add(imageFiles.indexOf(imageFile));
-                    // Store the previous content for PART_7_NO_QUESTION
-                    String temp = part.replace("PART_7_NO_QUESTION_", "");
-                    part7PreviousContent.append(temp);
+
+                // Call service to define image's part
+                int definePartAttempts = 0; // Counter for attempts to define part
+                String part;
+                do {
+                    part = chatService.definePart(inputStream, imageFile.getContentType());
+                    // If the part is 7 or NO_QUESTION then save the image and get the URL
+                    if (part.contains("PART_7")) {
+                        imageUrls.add(imageUtil.saveImage(imageFile));
+                    }
+                    // If the part is NO_QUESTION, remove the image from the list
+                    // so it won't be processed further
+                    if (part.contains("PART_7_NO_QUESTION")) {
+                        indexOfPart7NoQuestion.add(imageFiles.indexOf(imageFile));
+                        // Store the previous content for PART_7_NO_QUESTION
+                        part7PreviousContent.append(part.replace("PART_7_NO_QUESTION_", ""));
+                    }
+                    // If the part is PART_5, PART_6, or PART_7, break the loop
+                    if (part.contains("PART_5") || part.contains("PART_6") || part.contains("PART_7")) {
+                        break;
+                    }
+
+                    definePartAttempts++; // Increment the attempt count
+                } while (definePartAttempts < maxAttempts);
+                // If the maximum attempts are reached and the part is still not defined
+                if (!part.contains("PART_5") && !part.contains("PART_6") && !part.contains("PART_7")) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Failed to define part after maximum attempts"));
                 }
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Error processing image file"));
             }
+        }
+        if (indexOfPart7NoQuestion.size() == imageFiles.size()) {
+            // If all images are PART_7_NO_QUESTION, return an error
+            return ResponseEntity.badRequest().body(Map.of("error", "All images do not have any questions to process"));
         }
 
         // Remove images that are only PART_7_NO_QUESTION
@@ -73,27 +108,17 @@ public class ChatController {
             }
         }
 
-        List<String> chatbotResponses = new ArrayList<>(); // Store chatbot responses of each image
+        List<QuestionRequest> questionRequests = new ArrayList<>(); // Store question requests
         for (MultipartFile imageFile : imageFiles) {
             try (InputStream inputStream = imageFile.getInputStream()) {
                 // Create a test with the image input stream and content type
-                String chatbotResponse = chatService.createTest(inputStream, imageFile.getContentType(), imageUrls, part7PreviousContent.toString());
-                chatbotResponses.add(chatbotResponse);
+                questionRequests.addAll(chatService.createTest(inputStream, imageFile.getContentType(), imageUrls, part7PreviousContent.toString()));
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Error processing image file"));
             }
         }
 
-        // Combine all responses into a single string
-        String result = chatService.mergeJsonResponses(chatbotResponses);
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            // Parse the result string to a List of Map
-            List<Map<String, Object>> resultList = objectMapper.readValue(result, new TypeReference<List<Map<String, Object>>>() {});
-            return ResponseEntity.ok(resultList);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Error parsing result"));
-        }
+        return ResponseEntity.ok(questionRequests);
     }
 
     @PostMapping("/upload-json")

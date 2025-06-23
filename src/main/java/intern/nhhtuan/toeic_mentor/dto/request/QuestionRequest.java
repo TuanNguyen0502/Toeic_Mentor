@@ -1,6 +1,5 @@
 package intern.nhhtuan.toeic_mentor.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,22 +9,18 @@ import java.util.Map;
 @Getter
 @Setter
 public class QuestionRequest {
-    @JsonProperty("question_number")
     private Integer questionNumber;
 
-    @JsonProperty("question_text")
     private String questionText;
 
     private Map<String, String> options;
 
-    @JsonProperty("correct_answer")
     private String correctAnswer;
 
     private List<String> tags;
 
     private String passage;
 
-    @JsonProperty("passage_image_urls")
     private List<String> passageImageUrls;
 
     private Integer part;
