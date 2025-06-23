@@ -5,6 +5,7 @@ import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
+import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
 import intern.nhhtuan.toeic_mentor.repository.*;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import lombok.RequiredArgsConstructor;
@@ -73,14 +74,14 @@ public class QuestionServiceImpl implements IQuestionService {
             List<Question> questions;
             // If no topics are specified, fetch all questions for the part
             if (request.getTopic().size() == 0) {
-                questions = questionRepository.findDistinctByPart_Name(partName);
+                questions = questionRepository.findDistinctByPart_NameAndStatus(partName, EQuestionStatus.APPROVED);
             } else {
                 // If topics are specified, fetch questions that match both part and topics
                 List<QuestionTag> tags = new ArrayList<>();
                 for (String tag : request.getTopic()) {
                     tags.addAll(tagRepository.findByTag(tag));
                 }
-                questions = questionRepository.findDistinctByPart_NameAndTags(partName, tags);
+                questions = questionRepository.findDistinctByPart_NameAndTagsAndStatus(partName, tags, EQuestionStatus.APPROVED);
             }
             // Add the fetched questions to the matched list
             matchedQuestions.addAll(questions);
