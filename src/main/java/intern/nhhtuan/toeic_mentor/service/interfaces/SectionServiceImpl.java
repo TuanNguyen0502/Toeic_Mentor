@@ -1,8 +1,10 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
+import intern.nhhtuan.toeic_mentor.dto.request.SectionCreateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.SectionResponse;
 import intern.nhhtuan.toeic_mentor.entity.Question;
 import intern.nhhtuan.toeic_mentor.entity.Section;
+import intern.nhhtuan.toeic_mentor.entity.enums.ESectionStatus;
 import intern.nhhtuan.toeic_mentor.repository.SectionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,19 @@ public class SectionServiceImpl implements ISectionService {
             sectionResponses.add(sectionResponse);
         }
         return sectionResponses;
+    }
+
+    @Override
+    public boolean create(SectionCreateRequest sectionCreateRequest) {
+        Section section = new Section();
+        section.setTitle(sectionCreateRequest.getTitle());
+        section.setStatus(ESectionStatus.DRAFT);
+
+        // Save the section to the repository
+        sectionRepository.save(section);
+
+        // If the save operation was successful, return true
+        return true;
     }
 
     private String getPartNamesBySection(Section section) {
