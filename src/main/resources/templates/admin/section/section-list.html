@@ -1,0 +1,184 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<!-- Mirrored from themesflat.co/html/remos/add-attributes.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:48 GMT -->
+<div th:insert="~{admin/fragments/head::head}"></div>
+
+<body class="body">
+
+<!-- #wrapper -->
+<div id="wrapper">
+    <!-- #page -->
+    <div id="page" class="">
+        <!-- layout-wrap -->
+        <div class="layout-wrap">
+            <!-- preload -->
+            <div id="preload" class="preload-container">
+                <div class="preloading">
+                    <span></span>
+                </div>
+            </div>
+            <!-- /preload -->
+            <!-- section-menu-left -->
+            <div th:insert="~{admin/fragments/menu-left::section-menu-left}"></div>
+            <!-- /section-menu-left -->
+            <!-- section-content-right -->
+            <div class="section-content-right">
+                <!-- header-dashboard -->
+                <div th:insert="~{admin/fragments/header_dashboard::header-dashboard}"></div>
+                <!-- /header-dashboard -->
+                <!-- main-content -->
+                <div class="main-content">
+                    <!-- main-content-wrap -->
+                    <div class="main-content-inner">
+                        <!-- main-content-wrap -->
+                        <div class="main-content-wrap">
+                            <div class="flex items-center flex-wrap justify-between gap20 mb-27">
+                                <h3>Section List</h3>
+                                <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+                                    <li>
+                                        <a th:href="@{/admin}">
+                                            <div class="text-tiny">Dashboard</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/sections}">
+                                            <div class="text-tiny">Section</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <div class="text-tiny">Section List</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- section-list -->
+                            <div class="wg-box">
+                                <div class="flex items-center justify-between gap10 flex-wrap">
+                                    <a class="tf-button style-1 w208" th:href="@{/admin/sections/create}"><i
+                                            class="icon-plus"></i>Add Section</a>
+                                </div>
+                                <div class="flex items-center justify-between gap10 flex-wrap">
+                                    <div class="wg-filter flex-grow">
+                                        <form class="form-search">
+                                            <fieldset class="name">
+                                                <input type="text" placeholder="Search here..." class="search-input"
+                                                       name="name" tabindex="2" value="" aria-required="true"
+                                                       required="">
+                                            </fieldset>
+                                            <div class="button-submit">
+                                                <button class="" type="submit"><i class="icon-search"></i></button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="wg-table table-all-roles">
+                                    <ul class="table-title flex gap20 mb-14">
+                                        <li>
+                                            <div class="body-title">ID</div>
+                                        </li>
+                                        <li>
+                                            <div class="body-title">Title</div>
+                                        </li>
+                                        <li>
+                                            <div class="body-title">Status</div>
+                                        </li>
+                                        <li>
+                                            <div class="body-title">Update At</div>
+                                        </li>
+                                        <li>
+                                            <div class="body-title">Part</div>
+                                        </li>
+                                        <li>
+                                            <div class="body-title">Questions</div>
+                                        </li>
+                                        <li>
+                                            <div class="body-title">Action</div>
+                                        </li>
+                                    </ul>
+                                    <ul class="list">
+                                        <li class="roles-item gap20" th:each="sectionResponse : ${sectionResponses}">
+                                            <div class="flex items-center justify-between gap6 mb-5 flex-grow">
+                                                <div class="body-text" th:text="${sectionResponse.getId()}"></div>
+                                                <div class="body-text" th:text="${sectionResponse.getTitle()}"></div>
+                                                <div class="body-text" th:switch="${sectionResponse.getStatus()}">
+                                                    <div class="flex-center status-pending"
+                                                         th:case="'DRAFT'"
+                                                         th:text="${sectionResponse.getStatus()}">
+                                                    </div>
+                                                    <div class="flex-center status-pickup"
+                                                         th:case="'PENDING_REVIEW'"
+                                                         th:text="${sectionResponse.getStatus()}">
+                                                    </div>
+                                                    <div class="flex-center status-delivered"
+                                                         th:case="'APPROVED'"
+                                                         th:text="${sectionResponse.getStatus()}">
+                                                    </div>
+                                                    <div class="flex-center status-cancelled"
+                                                         th:case="'REJECTED'"
+                                                         th:text="${sectionResponse.getStatus()}">
+                                                    </div>
+                                                    <div class="flex-center"
+                                                         th:case="*"
+                                                         th:text="${sectionResponse.getStatus()}">
+                                                    </div>
+                                                </div>
+                                                <div class="body-text"
+                                                     th:text="${sectionResponse.getUpdatedAt()}"></div>
+                                                <div class="body-text" th:text="${sectionResponse.getParts()}"></div>
+                                                <div class="body-text"
+                                                     th:text="${sectionResponse.getQuestionCount()}"></div>
+                                            </div>
+                                            <div class="list-icon-function">
+                                                <div class="item eye">
+                                                    <a class="icon-eye"
+                                                       th:href="@{/staff/orders/{id}(id=${sectionResponse.getId()})}"></a>
+                                                </div>
+                                                <div class="item edit">
+                                                    <a class="icon-edit"
+                                                       th:href="@{'/staff/orders/' + ${sectionResponse.getId()} + '?status=true'}"></a>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="divider"></div>
+                                <div class="flex items-center justify-between flex-wrap gap10">
+                                    <div class="text-tiny">Showing 10 entries</div>
+                                    <ul class="wg-pagination listPage">
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- /order-list -->
+                        </div>
+                        <!-- /main-content-wrap -->
+                    </div>
+                    <!-- /main-content-wrap -->
+                    <!-- bottom-page -->
+                    <div th:insert="~{admin/fragments/bottom_page::bottom-page}"></div>
+                    <!-- /bottom-page -->
+                </div>
+                <!-- /main-content -->
+            </div>
+            <!-- /section-content-right -->
+        </div>
+        <!-- /layout-wrap -->
+    </div>
+    <!-- /#page -->
+</div>
+<!-- /#wrapper -->
+
+<!-- Javascript -->
+<div th:insert="~{admin/fragments/script::script}"></div>
+
+</body>
+<script th:src="@{/admin/asset/js/pagination.js}"></script>
+<script th:src="@{/admin/asset/js/search.js}"></script>
+
+<!-- Mirrored from themesflat.co/html/remos/section-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:48 GMT -->
+</html>
