@@ -10,6 +10,8 @@ import java.util.List;
 public interface ITestService {
     List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest);
 
+    List<TestCountResponse> countBySeparatePartsAndPercent(TestCountRequest testCountRequest);
+
     int getTotalTests();
 
     @Transactional

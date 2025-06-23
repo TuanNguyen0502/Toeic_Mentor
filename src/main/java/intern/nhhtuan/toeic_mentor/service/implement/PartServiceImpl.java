@@ -43,6 +43,11 @@ public class PartServiceImpl implements IPartService {
     }
 
     @Override
+    public Part findByName(EPart ePart) {
+        return partRepository.findByName(ePart);
+    }
+
+    @Override
     public List<Long> getIdsByPartName(List<EPart> parts) {
         return partRepository.findAll()
                 .stream()

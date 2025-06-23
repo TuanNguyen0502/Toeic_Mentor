@@ -2,9 +2,7 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.entity.Test;
 import intern.nhhtuan.toeic_mentor.entity.TestPart;
-import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.repository.TestPartRepository;
-import intern.nhhtuan.toeic_mentor.service.interfaces.IPartService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ITestPartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +14,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TestPartServiceImpl implements ITestPartService {
     private final TestPartRepository testPartRepository;
-    private final IPartService partService;
 
     @Override
     public int countByPart_Id(Long partId) {
@@ -24,12 +21,11 @@ public class TestPartServiceImpl implements ITestPartService {
     }
 
     @Override
-    public List<Test> findTestsBySeparatePartIds(List<EPart> parts) {
-        List<Long> partIds = partService.getIdsByPartName(parts); // Get part ids by EPart names
-
+    public List<Test> findTestsByPartId(Long partId) {
+        // Get all test ids that contain any part in partIds
         return testPartRepository.findAll()
                 .stream()
-                .filter(testPart -> partIds.contains(testPart.getPart().getId())) // Filter test parts by part ids;
+                .filter(testPart -> testPart.getPart().getId().equals(partId)) // Filter test parts by part ids;
                 .map(TestPart::getTest)
                 .distinct()
                 .toList();

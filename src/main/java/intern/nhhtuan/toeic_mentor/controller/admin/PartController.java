@@ -39,6 +39,8 @@ public class PartController {
                              Model model) {
         if (testCountRequest.getType().equals(TestCountRequest.EType.COMBINE)) {
             model.addAttribute("testCountResponseList", testService.countByCombinePartsAndPercent(testCountRequest));
+        } else if (testCountRequest.getType().equals(TestCountRequest.EType.SEPARATE)) {
+            model.addAttribute("testCountResponseList", testService.countBySeparatePartsAndPercent(testCountRequest));
         }
         model.addAttribute("testCountRequest", new TestCountRequest());
         model.addAttribute("ePart", EPart.values());

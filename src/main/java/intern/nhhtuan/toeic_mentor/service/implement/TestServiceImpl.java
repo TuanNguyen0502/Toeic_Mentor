@@ -67,13 +67,58 @@ public class TestServiceImpl implements ITestService {
 
         StringBuilder partName = new StringBuilder();
         for (EPart ePart : testCountRequest.getParts()) {
-            partName.append(ePart.name()).append(", ");
+            partName.append(ePart.name().replace("_", " ")).append(", ");
         }
         partName = new StringBuilder(partName.substring(0, partName.length() - 2));
         return List.of(TestCountResponse.builder()
                 .partName(partName.toString())
                 .tests(testCount)
                 .build());
+    }
+
+    @Override
+    public List<TestCountResponse> countBySeparatePartsAndPercent(TestCountRequest testCountRequest) {
+        List<TestCountResponse> testCountResponses = new ArrayList<>();
+
+        for (EPart ePart : testCountRequest.getParts()) {
+            // Get part by EPart name
+            Part part = partService.findByName(ePart);
+            // Get tests that contains the part
+            List<Test> tests = testPartService.findTestsByPartId(part.getId());
+            // Count correct answers for each test
+            int testCount = 0;
+            for (Test test : tests) {
+                // Get total questions in the test that belong to the specified parts
+                long totalQuestionsByPart = test.getAnswers() // Get all answers for the test
+                        .stream()
+                        // If the answer's question part is equal to the specified part
+                        .filter(answer -> answer.getQuestion().getPart().equals(part))
+                        .count();
+
+                if (totalQuestionsByPart == 0) continue; // Skip if no questions in the specified parts
+
+                // Get total correct answers in the test that belong to the specified parts
+                long totalAnswersByPart = test.getAnswers() // Get all answers for the test
+                        .stream()
+                        // If the answer's question part is equal to the specified part and the answer is correct
+                        .filter(answer -> answer.getQuestion().getPart().equals(part) && answerService.checkByStatus(answer.getId(), testCountRequest.getStatus()))
+                        .count();
+
+                // Check if the percentage of correct answers meets the requirement
+                if ((totalAnswersByPart * 100 / totalQuestionsByPart) >= testCountRequest.getPercent()) {
+                    testCount++;
+                }
+            }
+
+            // Create TestCountResponse for each part
+            testCountResponses.add(TestCountResponse.builder()
+                    .partId(part.getId())
+                    .partName(part.getName().name().replace("_", " "))
+                    .tests(testCount)
+                    .build());
+        }
+
+        return testCountResponses;
     }
 
     @Override

@@ -13,5 +13,7 @@ public interface IPartService {
 
     Part findByName(Integer name);
 
+    Part findByName(EPart ePart);
+
     List<Long> getIdsByPartName(List<EPart> parts);
 }

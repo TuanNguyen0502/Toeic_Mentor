@@ -9,7 +9,7 @@ import java.util.List;
 public interface ITestPartService {
     int countByPart_Id(Long partId);
 
-    List<Test> findTestsBySeparatePartIds(List<EPart> parts);
+    List<Test> findTestsByPartId(Long partId);
 
     List<Test> findTestsByCombinePartNames(List<Long> partIds);
 
