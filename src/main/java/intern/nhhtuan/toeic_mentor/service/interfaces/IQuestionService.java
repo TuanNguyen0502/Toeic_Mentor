@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface IQuestionService {
     @Transactional
-    void saveQuestionsFromDTO(List<QuestionDTO> dtoList);
+    void saveQuestionsFromDTO(List<QuestionDTO> dtoList, Long sectionId);
 
     List<SectionQuestionResponse> getQuestionResponseBySectionId(Long sectionId);
 

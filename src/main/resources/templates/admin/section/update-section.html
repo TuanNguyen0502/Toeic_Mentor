@@ -105,8 +105,9 @@
                             <!-- question-list -->
                             <div class="wg-box">
                                 <div class="flex items-center justify-between gap10 flex-wrap">
-                                    <a class="tf-button style-1 w208" th:href="@{/admin/sections/add-questions}"><i
-                                            class="icon-plus"></i>Add Question</a>
+                                    <a class="tf-button style-1 w208"
+                                       th:href="@{/admin/sections/add-questions/{id}(id=${sectionUpdateDTO.getId()})}">
+                                        <i class="icon-plus"></i>Add Question</a>
                                 </div>
                                 <div class="flex items-center justify-between gap10 flex-wrap">
                                     <div class="wg-filter flex-grow">

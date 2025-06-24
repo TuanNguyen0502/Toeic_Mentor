@@ -55,8 +55,7 @@ public class ChatController {
                     } else if (identifyResult.equals("TOEIC_FALSE")) {
                         return ResponseEntity.badRequest().body(Map.of("error", "One or more images are not TOEIC test images"));
                     }
-                    identifyToeicAttempts++; // Increment the attempt count
-                } while (identifyToeicAttempts < maxAttempts);
+                } while (++identifyToeicAttempts < maxAttempts);
                 // If the maximum attempts are reached and the result is still not identified
                 if (!identifyResult.equals("TOEIC_TRUE")) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Failed to identify TOEIC test after maximum attempts"));
@@ -82,9 +81,7 @@ public class ChatController {
                     if (part.contains("PART_5") || part.contains("PART_6") || part.contains("PART_7")) {
                         break;
                     }
-
-                    definePartAttempts++; // Increment the attempt count
-                } while (definePartAttempts < maxAttempts);
+                } while (++definePartAttempts < maxAttempts);
                 // If the maximum attempts are reached and the part is still not defined
                 if (!part.contains("PART_5") && !part.contains("PART_6") && !part.contains("PART_7")) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Failed to define part after maximum attempts"));
@@ -119,9 +116,14 @@ public class ChatController {
         return ResponseEntity.ok(questionDTOS);
     }
 
-    @PostMapping("/upload-json")
-    public ResponseEntity<?> uploadJson(@RequestBody List<QuestionDTO> questions) {
-        questionService.saveQuestionsFromDTO(questions);
+    @PostMapping("/save-questions")
+    public ResponseEntity<?> saveQuestions(@RequestBody List<QuestionDTO> questions,
+                                           @RequestParam("sectionId") Long sectionId) {
+        // Validate sectionId
+        if (sectionId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Section ID cannot be null"));
+        }
+        questionService.saveQuestionsFromDTO(questions, sectionId);
         return ResponseEntity.ok(Map.of("message", "Saved successfully"));
     }
 }

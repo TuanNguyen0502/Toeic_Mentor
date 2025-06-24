@@ -41,6 +41,12 @@ public class SectionController {
         return "admin/section/update-section";
     }
 
+    @GetMapping("/add-questions/{id}")
+    public String getAddQuestionPage(@PathVariable Long id, Model model) {
+        model.addAttribute("sectionId", id);
+        return "admin/section/create-test";
+    }
+
     @PostMapping("")
     public String createSection(@Validated @ModelAttribute SectionCreateRequest sectionCreateRequest,
                                 BindingResult bindingResult,

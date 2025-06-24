@@ -7,6 +7,7 @@ import intern.nhhtuan.toeic_mentor.dto.response.SectionQuestionResponse;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
+import intern.nhhtuan.toeic_mentor.entity.enums.ESectionStatus;
 import intern.nhhtuan.toeic_mentor.repository.*;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +25,11 @@ public class QuestionServiceImpl implements IQuestionService {
     private final QuestionTagRepository tagRepository;
     private final QuestionImageRepository imageRepository;
     private final PartRepository partRepository;
+    private final SectionRepository sectionRepository;
 
     @Transactional
     @Override
-    public void saveQuestionsFromDTO(List<QuestionDTO> dtoList) {
+    public void saveQuestionsFromDTO(List<QuestionDTO> dtoList, Long sectionId) {
         for (QuestionDTO dto : dtoList) {
             Question question = new Question();
             question.setQuestionNumber(dto.getQuestionNumber());
@@ -35,6 +37,14 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setCorrectAnswer(dto.getCorrectAnswer());
             question.setPassage(dto.getPassage());
             question.setPart(partRepository.findByName(getPartName(dto.getPart())));
+            question.setStatus(EQuestionStatus.IN_SECTION);
+            Section section = sectionRepository.findById(sectionId)
+                    .orElseThrow(() -> new IllegalArgumentException("Section not found with ID: " + sectionId));
+            if (section.getStatus().equals(ESectionStatus.DRAFT)) {
+                section.setStatus(ESectionStatus.PENDING_REVIEW);
+                sectionRepository.save(section);
+            }
+            question.setSection(section);
 
             // Lưu trước để có ID cho liên kết
             questionRepository.save(question);

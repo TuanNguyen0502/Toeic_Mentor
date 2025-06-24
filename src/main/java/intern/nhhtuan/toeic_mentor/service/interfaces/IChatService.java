@@ -23,11 +23,7 @@ public interface IChatService {
 
     List<String> getConversationIdsByEmail(String email);
 
-    String buildTestAnalysisPrompt(List<AnswerRequest> answerRequests) throws JsonProcessingException;
-
     Flux<String> analyzeTestResult(List<AnswerRequest> answerRequests, String conversationId);
-
-    String mergeJsonResponses(List<String> jsonResponses);
 
     void deleteByConversationId(String conversationId);
 

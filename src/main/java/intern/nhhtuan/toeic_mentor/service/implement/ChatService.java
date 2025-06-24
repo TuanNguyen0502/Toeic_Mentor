@@ -177,8 +177,7 @@ public class ChatService implements IChatService {
                 .toList();
     }
 
-    @Override
-    public String buildTestAnalysisPrompt(List<AnswerRequest> answerRequests) throws JsonProcessingException {
+    private String buildTestAnalysisPrompt(List<AnswerRequest> answerRequests) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         // Convert the list of QuestionResponse to JSON
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(answerRequests);
@@ -247,32 +246,6 @@ public class ChatService implements IChatService {
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content();
-    }
-
-    @Override
-    public String mergeJsonResponses(List<String> jsonResponses) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<Object> mergedList = new ArrayList<>(); // Danh sách để lưu trữ các phần tử đã được phân tích từ các chuỗi JSON
-
-        for (String jsonResponse : jsonResponses) {
-            try {
-                // Parse từng chuỗi và add phần tử vào mergedList
-                mergedList.addAll(objectMapper.readValue(jsonResponse, new TypeReference<List<Object>>() {
-                }));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Invalid JSON response: " + jsonResponse, e);
-            }
-        }
-
-        String mergedJsonString; // Chuỗi JSON cuối cùng sẽ chứa tất cả các phần tử đã được phân tích
-        try {
-            // Chuyển đổi mergedList thành chuỗi JSON
-            mergedJsonString = objectMapper.writeValueAsString(mergedList);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Invalid JSON response: ", e);
-        }
-
-        return mergedJsonString;
     }
 
     @Override
