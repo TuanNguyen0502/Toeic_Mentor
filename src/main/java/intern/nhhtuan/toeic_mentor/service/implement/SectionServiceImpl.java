@@ -78,6 +78,36 @@ public class SectionServiceImpl implements ISectionService {
     }
 
     @Override
+    public boolean approveSection(Long sectionId) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found with id: " + sectionId));
+        section.setStatus(ESectionStatus.APPROVED);
+
+        // Update the status of all questions in the section to APPROVED
+        for (Question question : section.getQuestions()) {
+            questionService.updateQuestionStatus(question.getId(), EQuestionStatus.APPROVED);
+        }
+        // Save the updated section to the repository
+        sectionRepository.save(section);
+        return true;
+    }
+
+    @Override
+    public boolean rejectSection(Long sectionId) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found with id: " + sectionId));
+        section.setStatus(ESectionStatus.REJECTED);
+
+        // Update the status of all questions in the section to APPROVED
+        for (Question question : section.getQuestions()) {
+            questionService.updateQuestionStatus(question.getId(), EQuestionStatus.IN_SECTION);
+        }
+        // Save the updated section to the repository
+        sectionRepository.save(section);
+        return true;
+    }
+
+    @Override
     public SectionUpdateDTO getSectionUpdateById(Long id) {
         Section section = sectionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Section not found with id: " + id));

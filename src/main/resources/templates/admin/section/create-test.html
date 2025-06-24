@@ -127,13 +127,20 @@
 
             <div class="mt-6">
                 <button
-                    id="save-button"
-                    class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    id="approve-button"
+                    class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
-                    Save Results to Database
+                    Approve Section
                 </button>
-                <div id="save-status" class="mt-2 text-center hidden"></div>
+                <button
+                    id="reject-button"
+                    class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                    Reject Section
+                </button>
             </div>
+
+            <div id="save-status" class="mt-2 text-center hidden"></div>
         </div>
     </div>
 
@@ -146,8 +153,8 @@
         const loadingContainer = document.getElementById('loading-container');
         const resultContainer = document.getElementById('result-container');
         const resultContent = document.getElementById('result-content');
-        const saveButton = document.getElementById('save-button');
-        const saveStatus = document.getElementById('save-status');
+        const approveButton = document.getElementById('approve-button');
+        const rejectButton = document.getElementById('reject-button');
         let currentJsonResult = null;
 
         // Handle file selection
@@ -311,46 +318,39 @@
             currentJsonResult = null;
         }
 
-        // Save results to database
-        saveButton.addEventListener('click', async function() {
-            if (!currentJsonResult) return;
-
+        // Approve section
+        approveButton.addEventListener('click', async function() {
+            const sectionId = document.getElementById('section-id').value;
             try {
-                saveButton.disabled = true;
-                saveStatus.textContent = 'Saving...';
-                saveStatus.classList.remove('hidden', 'text-red-500', 'text-green-500');
-                saveStatus.classList.add('text-gray-500');
-
-                const sectionId = document.getElementById('section-id').value;
-                const response = await fetch(`/admin/chat/save-questions?sectionId=${sectionId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(currentJsonResult)
+                const response = await fetch(`/admin/chat/approve-section/${sectionId}`, {
+                    method: 'PUT',
                 });
-
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.message || 'Failed to save results');
+                    throw new Error(error.error || 'Failed to approve section');
                 }
-
-                const result = await response.json();
-                saveStatus.textContent = result.message || 'Saved successfully!';
-                saveStatus.classList.remove('text-gray-500', 'text-red-500');
-                saveStatus.classList.add('text-green-500');
-
-                // Reset form after successful save
-                setTimeout(() => {
-                    resetForm();
-                    saveStatus.classList.add('hidden');
-                }, 2000);
+                alert('Section approved successfully!');
             } catch (error) {
                 console.error('Error:', error);
-                saveStatus.textContent = 'Failed to save results. Please try again.';
-                saveStatus.classList.remove('text-gray-500', 'text-green-500');
-                saveStatus.classList.add('text-red-500');
-                saveButton.disabled = false;
+                alert(error.message || 'An error occurred while approving the section.');
+            }
+        });
+
+        // Reject section
+        rejectButton.addEventListener('click', async function() {
+            const sectionId = document.getElementById('section-id').value;
+            try {
+                const response = await fetch(`/admin/chat/reject-section/${sectionId}`, {
+                    method: 'PUT',
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to reject section');
+                }
+                alert('Section rejected successfully!');
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'An error occurred while rejecting the section.');
             }
         });
     </script>

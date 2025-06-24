@@ -1,8 +1,10 @@
 package intern.nhhtuan.toeic_mentor.controller.admin;
 
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
+import intern.nhhtuan.toeic_mentor.service.interfaces.ISectionService;
 import intern.nhhtuan.toeic_mentor.util.ImageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,6 +21,7 @@ import java.util.*;
 public class ChatController {
     private final IChatService chatService;
     private final IQuestionService questionService;
+    private final ISectionService sectionService;
     private final ImageUtil imageUtil;
 
     @PostMapping("/upload-image")
@@ -122,14 +125,31 @@ public class ChatController {
         return ResponseEntity.ok(questionDTOS);
     }
 
-    @PostMapping("/save-questions")
-    public ResponseEntity<?> saveQuestions(@RequestBody List<QuestionDTO> questions,
-                                           @RequestParam("sectionId") Long sectionId) {
+    @PutMapping("/approve-section/{sectionId}")
+    public ResponseEntity<?> approveSection(@PathVariable Long sectionId) {
         // Validate sectionId
         if (sectionId == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Section ID cannot be null"));
         }
-        questionService.saveQuestionsFromDTO(questions, sectionId);
-        return ResponseEntity.ok(Map.of("message", "Saved successfully"));
+        // Approve the section
+        boolean isApproved = sectionService.approveSection(sectionId);
+        if (!isApproved) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to approve section with ID: " + sectionId));
+        }
+        return ResponseEntity.ok("Section with ID " + sectionId + " has been approved successfully");
+    }
+
+    @PutMapping("/reject-section/{sectionId}")
+    public ResponseEntity<?> rejectSection(@PathVariable Long sectionId) {
+        // Validate sectionId
+        if (sectionId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Section ID cannot be null"));
+        }
+        // Approve the section
+        boolean isApproved = sectionService.rejectSection(sectionId);
+        if (!isApproved) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to approve section with ID: " + sectionId));
+        }
+        return ResponseEntity.ok("Section with ID " + sectionId + " has been rejected successfully");
     }
 }

@@ -13,5 +13,9 @@ public interface ISectionService {
 
     boolean update(Long sectionId, SectionUpdateDTO sectionUpdateDTO);
 
+    boolean approveSection(Long sectionId);
+
+    boolean rejectSection(Long sectionId);
+
     SectionUpdateDTO getSectionUpdateById(Long id);
 }
