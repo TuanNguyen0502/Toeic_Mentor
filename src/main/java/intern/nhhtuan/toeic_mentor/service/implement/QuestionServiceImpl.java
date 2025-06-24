@@ -1,8 +1,9 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
-import intern.nhhtuan.toeic_mentor.dto.request.QuestionRequest;
+import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.SectionQuestionResponse;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
@@ -26,8 +27,8 @@ public class QuestionServiceImpl implements IQuestionService {
 
     @Transactional
     @Override
-    public void saveQuestionsFromDTO(List<QuestionRequest> dtoList) {
-        for (QuestionRequest dto : dtoList) {
+    public void saveQuestionsFromDTO(List<QuestionDTO> dtoList) {
+        for (QuestionDTO dto : dtoList) {
             Question question = new Question();
             question.setQuestionNumber(dto.getQuestionNumber());
             question.setQuestionText(dto.getQuestionText());
@@ -58,6 +59,39 @@ public class QuestionServiceImpl implements IQuestionService {
                 tagRepository.save(tag);
             }
         }
+    }
+
+    @Override
+    public List<SectionQuestionResponse> getQuestionResponseBySectionId(Long sectionId) {
+        List<Question> questions = questionRepository.findBySection_Id(sectionId);
+        return questions.stream()
+                .map(question -> SectionQuestionResponse.builder()
+                        .id(question.getId())
+                        .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
+                        .status(question.getStatus().name())
+                        .text(question.getQuestionText())
+                        .correctAnswer(question.getCorrectAnswer() + ". " + question.getOptions().stream()
+                                .filter(opt -> opt.getKey().equals(question.getCorrectAnswer()))
+                                .map(QuestionOption::getValue)
+                                .findFirst()
+                                .orElse(""))
+                        .tags(question.getTags().stream()
+                                .map(QuestionTag::getTag)
+                                .collect(Collectors.joining(", ")))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean updateQuestionStatus(Long questionId, EQuestionStatus status) {
+        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
+        if (optionalQuestion.isPresent()) {
+            Question question = optionalQuestion.get();
+            question.setStatus(status);
+            questionRepository.save(question);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -99,6 +133,28 @@ public class QuestionServiceImpl implements IQuestionService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public int countByPart_Id(Long partId) {
+        return questionRepository.countByPart_Id(partId);
+    }
+
+    @Override
+    public int getTotalQuestions() {
+        return questionRepository.findAll().size();
+    }
+
+    @Override
+    public Optional<Question> findById(Long aLong) {
+        return questionRepository.findById(aLong);
+    }
+
+    private EPart getPartName(Integer part) {
+        return Arrays.stream(EPart.values())
+                .filter(p -> p.name().contains(part.toString()))
+                .findFirst()
+                .orElse(null);
+    }
+
     private QuestionResponse convertToDTO(Question question) {
         List<QuestionResponse.OptionResponse> options = question.getOptions().stream()
                 .map(opt -> new QuestionResponse.OptionResponse(opt.getKey(), opt.getValue()))
@@ -123,27 +179,5 @@ public class QuestionServiceImpl implements IQuestionService {
                 options,
                 tags
         );
-    }
-
-    @Override
-    public int countByPart_Id(Long partId) {
-        return questionRepository.countByPart_Id(partId);
-    }
-
-    @Override
-    public int getTotalQuestions() {
-        return questionRepository.findAll().size();
-    }
-
-    @Override
-    public Optional<Question> findById(Long aLong) {
-        return questionRepository.findById(aLong);
-    }
-
-    public EPart getPartName(Integer part) {
-        return Arrays.stream(EPart.values())
-                .filter(p -> p.name().contains(part.toString()))
-                .findFirst()
-                .orElse(null);
     }
 }

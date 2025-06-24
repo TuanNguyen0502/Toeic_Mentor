@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
-import intern.nhhtuan.toeic_mentor.dto.request.QuestionRequest;
+import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
@@ -82,7 +82,7 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public List<QuestionRequest> createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent) {
+    public List<QuestionDTO> createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent) {
         // Prepare the prompt with the image URLs
         // Convert the list of image URLs to a JSON string
         ObjectMapper mapper = new ObjectMapper();
@@ -134,7 +134,7 @@ public class ChatService implements IChatService {
                         .text(prompt)
                         .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
                 .call()
-                .entity(new ParameterizedTypeReference<List<QuestionRequest>>() {});
+                .entity(new ParameterizedTypeReference<List<QuestionDTO>>() {});
     }
 
     @Override

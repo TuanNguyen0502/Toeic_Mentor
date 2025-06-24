@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
+import intern.nhhtuan.toeic_mentor.dto.SectionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.SectionCreateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.SectionResponse;
 
@@ -9,4 +10,8 @@ public interface ISectionService {
     List<SectionResponse> getSectionResponses();
 
     boolean create(SectionCreateRequest sectionCreateRequest);
+
+    boolean update(Long sectionId, SectionUpdateDTO sectionUpdateDTO);
+
+    SectionUpdateDTO getSectionUpdateById(Long id);
 }

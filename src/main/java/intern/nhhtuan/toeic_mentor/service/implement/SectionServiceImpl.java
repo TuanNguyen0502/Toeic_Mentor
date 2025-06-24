@@ -1,11 +1,14 @@
-package intern.nhhtuan.toeic_mentor.service.interfaces;
+package intern.nhhtuan.toeic_mentor.service.implement;
 
+import intern.nhhtuan.toeic_mentor.dto.SectionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.SectionCreateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.SectionResponse;
-import intern.nhhtuan.toeic_mentor.entity.Question;
-import intern.nhhtuan.toeic_mentor.entity.Section;
+import intern.nhhtuan.toeic_mentor.entity.*;
+import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
 import intern.nhhtuan.toeic_mentor.entity.enums.ESectionStatus;
 import intern.nhhtuan.toeic_mentor.repository.SectionRepository;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
+import intern.nhhtuan.toeic_mentor.service.interfaces.ISectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SectionServiceImpl implements ISectionService {
     private final SectionRepository sectionRepository;
+    private final IQuestionService questionService;
 
     @Override
     public List<SectionResponse> getSectionResponses() {
@@ -48,6 +52,42 @@ public class SectionServiceImpl implements ISectionService {
 
         // If the save operation was successful, return true
         return true;
+    }
+
+    @Override
+    public boolean update(Long sectionId, SectionUpdateDTO sectionUpdateDTO) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found with id: " + sectionId));
+        section.setTitle(sectionUpdateDTO.getTitle());
+        if (!section.getStatus().equals(sectionUpdateDTO.getStatus())) {
+            section.setStatus(sectionUpdateDTO.getStatus());
+            if (sectionUpdateDTO.getStatus().equals(ESectionStatus.APPROVED)) {
+                for (Question question : section.getQuestions()) {
+                    questionService.updateQuestionStatus(question.getId(), EQuestionStatus.APPROVED);
+                }
+            } else if (sectionUpdateDTO.getStatus().equals(ESectionStatus.REJECTED) ||
+                    sectionUpdateDTO.getStatus().equals(ESectionStatus.PENDING_REVIEW)) {
+                for (Question question : section.getQuestions()) {
+                    questionService.updateQuestionStatus(question.getId(), EQuestionStatus.IN_SECTION);
+                }
+            }
+        }
+        // Save the updated section to the repository
+        sectionRepository.save(section);
+        return true;
+    }
+
+    @Override
+    public SectionUpdateDTO getSectionUpdateById(Long id) {
+        Section section = sectionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Section not found with id: " + id));
+
+        return SectionUpdateDTO.builder()
+                .id(section.getId())
+                .title(section.getTitle())
+                .status(section.getStatus())
+                .parts(getPartNamesBySection(section))
+                .build();
     }
 
     private String getPartNamesBySection(Section section) {

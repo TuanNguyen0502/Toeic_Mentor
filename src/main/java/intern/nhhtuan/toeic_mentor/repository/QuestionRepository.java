@@ -14,4 +14,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findDistinctByPart_NameAndTagsAndStatus(EPart partName, List<QuestionTag> tags, EQuestionStatus status);
 
     int countByPart_Id(Long partId);
+
+    List<Question> findBySection_Id(Long sectionId);
 }

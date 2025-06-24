@@ -1,5 +1,7 @@
-package intern.nhhtuan.toeic_mentor.dto.request;
+package intern.nhhtuan.toeic_mentor.dto;
 
+import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,20 +10,17 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class QuestionRequest {
+@Builder
+public class QuestionDTO {
+    private Long id;
     private Integer questionNumber;
-
     private String questionText;
-
     private Map<String, String> options;
-
     private String correctAnswer;
-
     private List<String> tags;
-
     private String passage;
-
     private List<String> passageImageUrls;
-
     private Integer part;
+    private Long sectionId;
+    private EQuestionStatus status;
 }

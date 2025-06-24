@@ -1,8 +1,6 @@
 package intern.nhhtuan.toeic_mentor.controller.admin;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import intern.nhhtuan.toeic_mentor.dto.request.QuestionRequest;
+import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import intern.nhhtuan.toeic_mentor.util.ImageUtil;
@@ -108,21 +106,21 @@ public class ChatController {
             }
         }
 
-        List<QuestionRequest> questionRequests = new ArrayList<>(); // Store question requests
+        List<QuestionDTO> questionDTOS = new ArrayList<>(); // Store question requests
         for (MultipartFile imageFile : imageFiles) {
             try (InputStream inputStream = imageFile.getInputStream()) {
                 // Create a test with the image input stream and content type
-                questionRequests.addAll(chatService.createTest(inputStream, imageFile.getContentType(), imageUrls, part7PreviousContent.toString()));
+                questionDTOS.addAll(chatService.createTest(inputStream, imageFile.getContentType(), imageUrls, part7PreviousContent.toString()));
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Error processing image file"));
             }
         }
 
-        return ResponseEntity.ok(questionRequests);
+        return ResponseEntity.ok(questionDTOS);
     }
 
     @PostMapping("/upload-json")
-    public ResponseEntity<?> uploadJson(@RequestBody List<QuestionRequest> questions) {
+    public ResponseEntity<?> uploadJson(@RequestBody List<QuestionDTO> questions) {
         questionService.saveQuestionsFromDTO(questions);
         return ResponseEntity.ok(Map.of("message", "Saved successfully"));
     }
