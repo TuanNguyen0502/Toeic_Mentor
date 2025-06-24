@@ -31,6 +31,11 @@ public class QuestionServiceImpl implements IQuestionService {
     @Override
     public void saveQuestionsFromDTO(List<QuestionDTO> dtoList, Long sectionId) {
         for (QuestionDTO dto : dtoList) {
+            Section section = sectionRepository.findById(sectionId)
+                    .orElseThrow(() -> new IllegalArgumentException("Section not found with ID: " + sectionId));
+            section.setStatus(ESectionStatus.PENDING_REVIEW); // Đặt trạng thái của section là PENDING_REVIEW
+            sectionRepository.save(section); // Lưu section với trạng thái mới
+
             Question question = new Question();
             question.setQuestionNumber(dto.getQuestionNumber());
             question.setQuestionText(dto.getQuestionText());
@@ -38,14 +43,7 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setPassage(dto.getPassage());
             question.setPart(partRepository.findByName(getPartName(dto.getPart())));
             question.setStatus(EQuestionStatus.IN_SECTION);
-            Section section = sectionRepository.findById(sectionId)
-                    .orElseThrow(() -> new IllegalArgumentException("Section not found with ID: " + sectionId));
-            if (section.getStatus().equals(ESectionStatus.DRAFT)) {
-                section.setStatus(ESectionStatus.PENDING_REVIEW);
-                sectionRepository.save(section);
-            }
             question.setSection(section);
-
             // Lưu trước để có ID cho liên kết
             questionRepository.save(question);
 

@@ -22,7 +22,12 @@ public class ChatController {
     private final ImageUtil imageUtil;
 
     @PostMapping("/upload-image")
-    public ResponseEntity<?> uploadImage(@RequestParam("image") List<MultipartFile> imageFiles) {
+    public ResponseEntity<?> uploadImage(@RequestParam("image") List<MultipartFile> imageFiles,
+                                         @RequestParam("sectionId") Long sectionId) {
+        // Validate sectionId
+        if (sectionId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Section ID cannot be null"));
+        }
         // Check if the list of image files is empty
         if (imageFiles.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Image file cannot be empty"));
@@ -113,6 +118,7 @@ public class ChatController {
             }
         }
 
+        questionService.saveQuestionsFromDTO(questionDTOS, sectionId);
         return ResponseEntity.ok(questionDTOS);
     }
 
