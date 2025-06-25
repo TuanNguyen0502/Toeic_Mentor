@@ -1,86 +1,125 @@
-<!doctype html>
-<html lang="en" xmlns:th="https://www.thymeleaf.org">
-<div th:replace="~{user/fragments/head :: head('Toeic Mentor | Login page')}"></div>
+<!DOCTYPE html>
+<html lang="en">
+
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<head th:replace="~{user/fragments/head :: head('TOEIC Mentor - Login')}"></head>
 
 <body>
+<!-- top notification start -->
+<div class="top-notification-bar">
+    <div class="container">
+        <ul class="notification-entry">
+            <li class="notify-wrap notify-mail">
+                <div class="notify-text">
+                    <ul class="grid-wrap">
+                        <li class="grid-wrapper">
+                            <p class="notification-free"><span class="top-c">Free delivery</span> on orders over $100 discount</p>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- top notification end -->
 
+<!-- header-area start -->
+<div th:insert="~{user/fragments/header::header}"></div>
+<!-- header end -->
+<div th:insert="~{user/fragments/main_menu::main-menu}"></div>
 <main>
-
-    <!-- header-area start -->
-    <div th:insert="~{user/fragments/header::header}"></div>
-    <!-- header end -->
-
-    <!-- off-canvas-menu start -->
-    <div th:insert="~{user/fragments/off-canvas-menu::offcanvasMenu}"></div>
-    <!-- off-canvas-menu end -->
-
-    <section class="hero-section d-flex justify-content-center align-items-center">
+    <!-- breadcrumb start -->
+    <section class="breadcrumb-area">
         <div class="container">
             <div class="row">
-
-                <div class="col-lg-5 col-12 mx-auto">
-                    <form class="custom-form login-form" role="form" method="post"
-                          th:action="@{/loginProcess}" th:object="${loginRequest}">
-                        <h2 class="hero-title text-center mb-4 pb-2">Login Form</h2>
-
-                        <!-- Add error message for BadCredentialsException -->
-                        <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
-
-                        <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
-                        <div class="form-floating mb-4 p-0">
-                            <input type="email" name="email" id="email" pattern="[^ @]*@[^ @]*" class="form-control"
-                                   placeholder="Email address" required="" th:field="*{email}">
-                            <label for="email">Email address</label>
-                        </div>
-
-                        <span class="text-danger" th:if="${#fields.hasErrors('password')}"
-                              th:errors="*{password}"></span>
-                        <div class="form-floating p-0">
-                            <input type="password" name="password" id="password" class="form-control"
-                                   placeholder="Password" required="" th:field="*{password}">
-                            <label for="password">Password</label>
-                        </div>
-
-                        <div class="row justify-content-center align-items-center">
-                            <div class="col-lg-5 col-12">
-                                <button type="submit" class="form-control">Login</button>
-                            </div>
-
-                            <div class="col-lg-5 col-12">
-                                <a th:href="@{/register}" class="btn custom-btn custom-border-btn">Register</a>
-                            </div>
-
-                        </div>
-
-                        <div class="text-center mt-3">
-                            <div class="col-lg-10 col-20">
-                                <a th:href="@{/forgot-password}" class="btn custom-btn custom-border-btn">
-                                    Forgot your password?
-                                </a>
-                            </div>
-                        </div>
-
-                    </form>
-
+                <div class="col">
+                    <div class="breadcrumb-index">
+                        <!-- breadcrumb-list start -->
+                        <ul class="breadcrumb-ul">
+                            <li class="breadcrumb-li">
+                                <a class="breadcrumb-link" href="../../../../../../../TechStore-master/src/main/resources/templates/web/index1.html">Home</a>
+                            </li>
+                            <li class="breadcrumb-li">
+                                <span class="breadcrumb-text">Create Account</span>
+                            </li>
+                        </ul>
+                        <!-- breadcrumb-list end -->
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="video-wrap">
-            <video autoplay="" loop="" muted="" class="custom-video" poster="">
-                <source th:src="@{/user/asset/videos/video.mp4}" type="video/mp4">
-
-                Your browser does not support the video tag.
-            </video>
+    </section>
+    <!-- breadcrumb end -->
+    <!-- customer-page start -->
+    <section class="customer-page section-pt">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="acc-form">
+                        <div class="log-acc-page" id="CustomerLoginForm">
+                            <!-- account title start -->
+                            <div class="section-capture">
+                                <div class="section-title">
+                                    <h2 data-animate="animate__fadeInUp"><span>Login account</span></h2>
+                                    <p data-animate="animate__fadeInUp">Please login account detail</p>
+                                </div>
+                            </div>
+                            <!-- account title end -->
+                            <!-- account login start -->
+                            <div class="acc-page">
+                                <div class="login">
+                                    <form method="post" th:action="@{/loginProcess}" th:object="${loginRequest}">
+                                        <!-- Add error message for BadCredentialsException -->
+                                        <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
+                                        <div class="login-form-container">
+                                            <ul class="fill-form">
+                                                <li class="log-email" data-animate="animate__fadeInUp">
+                                                    <label>Email address</label>
+                                                    <input th:field="*{email}" placeholder="Example: example@gmail.com" autocomplete="off">
+                                                    <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                                                </li>
+                                                <li class="log-pwd" data-animate="animate__fadeInUp">
+                                                    <label>Password</label>
+                                                    <input type="password" th:field="*{password}" placeholder="Please enter your password!">
+                                                    <span class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                                                </li>
+                                            </ul>
+                                            <div class="form-action-button" data-animate="animate__fadeInUp">
+                                                <button type="submit" class="btn btn-style2">Sign In</button>
+                                                <a th:href="@{/forgot-password}">Forgot your password?</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="acc-wrapper" data-animate="animate__fadeInUp">
+                                    <h6 data-animate="animate__fadeInUp">Don't have account?</h6>
+                                    <div class="account-optional-action" data-animate="animate__fadeInUp">
+                                        <a th:href="@{/register}">Create account</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- account login end -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
+    <!-- customer-page end  -->
+    <!-- news-letter start -->
+    <div th:insert="~{user/fragments/newsletter::newsletter}"></div>
+    <!-- news-letter end -->
 </main>
-
-<!-- JAVASCRIPT FILES -->
-<script th:src="@{/user/asset/js/jquery.min.js}"></script>
-<script th:src="@{/user/asset/js/bootstrap.bundle.min.js}"></script>
-<script th:src="@{/user/asset/js/countdown.js}"></script>
-<script th:src="@{/user/asset/js/init.js}"></script>
-
+<!-- main end -->
+<!-- footer start -->
+<div th:insert="~{user/fragments/footer::footer}"></div>
+<!-- footer end -->
+<!-- back-to-top start -->
+<a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
+<!-- back-to-top end -->
+<!-- plugin js -->
+<script th:src="@{/user/asset/js/plugin.js}"></script>
+<!-- theme js -->
+<script th:src="@{/user/asset/js/main.js}"></script>
 </body>
 </html>

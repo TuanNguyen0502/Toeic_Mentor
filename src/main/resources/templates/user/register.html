@@ -1,129 +1,174 @@
-<!doctype html>
-<html lang="en" xmlns:th="https://www.thymeleaf.org">
-<div th:replace="~{user/fragments/head :: head('Toeic Mentor | Register page')}"></div>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<!-- Added by HTTrack -->
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<head th:replace="~{user/fragments/head :: head('TOEIC Mentor - Register')}"></head>
 
 <body>
-
+<!-- top notification start -->
+<div class="top-notification-bar">
+    <div class="container">
+        <ul class="notification-entry">
+            <li class="notify-wrap notify-mail">
+                <div class="notify-text">
+                    <ul class="grid-wrap">
+                        <li class="grid-wrapper">
+                            <p class="notification-free"><span class="top-c">Free delivery</span> on orders over $100 discount</p>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- top notification end -->
+<!-- header-area start -->
+<div th:insert="~{user/fragments/header::header}"></div>
+<!-- header end -->
+<div th:insert="~{user/fragments/main_menu::main-menu}"></div>
 <main>
-
-    <!-- header-area start -->
-    <div th:insert="~{user/fragments/header::header}"></div>
-    <!-- header end -->
-
-    <!-- off-canvas-menu start -->
-    <div th:insert="~{user/fragments/off-canvas-menu::offcanvasMenu}"></div>
-    <!-- off-canvas-menu end -->
-
-    <section class="hero-section d-flex justify-content-center align-items-center">
+    <!-- breadcrumb start -->
+    <section class="breadcrumb-area">
         <div class="container">
             <div class="row">
-
-                <div class="col-lg-6 col-12 mx-auto">
-                    <form class="custom-form" role="form" method="post"
-                          th:action="@{/register}" th:object="${registerRequest}" enctype="multipart/form-data">
-                        <h2 class="hero-title text-center mb-4 pb-2">Create an account</h2>
-
-                        <!-- Add error message for BadCredentialsException -->
-                        <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
-
-                        <div class="row">
-                            <div class="col-lg-12 col-12">
-                                <span class="text-danger" th:if="${#fields.hasErrors('email')}"
-                                      th:errors="*{email}"></span>
-                                <div class="form-floating p-0">
-                                    <input type="email" name="email" id="email" pattern="[^ @]*@[^ @]*"
-                                           class="form-control" placeholder="Email address" required=""
-                                           th:field="*{email}">
-                                    <label for="email">Email address</label>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-12 col-12">
-                                <span class="text-danger" th:if="${#fields.hasErrors('password')}"
-                                      th:errors="*{password}"></span>
-                                <div class="form-floating p-0">
-                                    <input type="password" name="password" id="password" class="form-control"
-                                           placeholder="Password" required="" th:field="*{password}">
-                                    <label for="password">Password</label>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-12 col-12">
-                                <span class="text-danger" th:if="${#fields.hasErrors('confirmPassword')}"
-                                      th:errors="*{confirmPassword}"></span>
-                                <div class="form-floating p-0">
-                                    <input type="password" name="confirmPassword" id="confirmPassword"
-                                           class="form-control" placeholder="Password" required=""
-                                           th:field="*{confirmPassword}">
-                                    <label for="password">Password Confirm</label>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-12 col-12">
-                                <span class="text-danger" th:if="${#fields.hasErrors('fullName')}"
-                                      th:errors="*{fullName}"></span>
-                                <div class="form-floating">
-                                    <input type="text" name="full-name" id="full-name" class="form-control"
-                                           placeholder="Full Name" required="" th:field="*{fullName}">
-                                    <label for="full-name">Full Name</label>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-12 col-12">
-                                <div class="form-floating">
-                                    <select th:field="*{gender}" class="form-control">
-                                        <option value="">Select gender</option>
-                                        <option th:each="gender : ${genders}"
-                                                th:value="${gender}"
-                                                th:text="${gender}"></option>
-                                    </select>
-                                    <label for="full-name">Gender</label>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-12 col-12">
-                                <span class="text-danger" th:if="${#fields.hasErrors('image')}"
-                                      th:errors="*{image}"></span>
-                                <div class="form-floating">
-                                    <input type="file" th:field="*{image}" accept="image/*" class="form-control">
-                                    <label>Avatar</label>
-                                </div>
-                            </div>
-
-                            <div class="row justify-content-center align-items-center">
-                                <div class="col-lg-5 col-md-5 col-5 ms-auto">
-                                    <button type="submit" class="form-control">Register</button>
-                                </div>
-
-                                <div class="col-lg-6 col-md-6 col-7">
-                                    <p class="mb-0">Already have an account?
-                                        <a th:href="@{/login}" class="ms-2">Login</a>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-
+                <div class="col">
+                    <div class="breadcrumb-index">
+                        <!-- breadcrumb-list start -->
+                        <ul class="breadcrumb-ul">
+                            <li class="breadcrumb-li">
+                                <a class="breadcrumb-link" href="../../../../../../../TechStore-master/src/main/resources/templates/user/index1.html">Home</a>
+                            </li>
+                            <li class="breadcrumb-li">
+                                <span class="breadcrumb-text">Create Account</span>
+                            </li>
+                        </ul>
+                        <!-- breadcrumb-list end -->
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="video-wrap">
-            <video autoplay="" loop="" muted="" class="custom-video" poster="">
-                <source th:src="@{/user/asset/videos/video.mp4}" type="video/mp4">
-
-                Your browser does not support the video tag.
-            </video>
+    </section>
+    <!-- breadcrumb end -->
+    <!-- customer-page start -->
+    <section class="customer-page section-pt">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <!-- account login title start -->
+                    <div class="section-capture" data-animate="animate__fadeInUp">
+                        <div class="section-title">
+                            <h2><span>Create account</span></h2>
+                        </div>
+                    </div>
+                    <!-- account login title end -->
+                    <!-- account login start  -->
+                    <div class="log-acc-page">
+                        <div class="contact-form-list">
+                            <form method="post" th:action="@{/register}" th:object="${registerRequest}" enctype="multipart/form-data">
+                                <!-- Add error message for BadCredentialsException -->
+                                <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
+                                
+                                <ul class="form-fill">
+                                    <li class="form-fill-li" data-animate="animate__fadeInUp">
+                                        <label>Email</label>
+                                        <input type="email" th:field="*{email}" placeholder="Example: example@gmail.com">
+                                        <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                                    </li>
+                                    <li class="form-fill-li" data-animate="animate__fadeInUp">
+                                        <label>Password</label>
+                                        <input type="password" th:field="*{password}" placeholder="Please enter your password!">
+                                        <label class="password-requirements">Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 special character and be 8-20 characters long.</label>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                                    </li>
+                                    <li class="form-fill-li" data-animate="animate__fadeInUp">
+                                        <label>Confirm Password</label>
+                                        <input type="password" th:field="*{confirmPassword}" placeholder="Please enter your re-password!">
+                                        <span class="text-danger" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></span>
+                                    </li>
+                                    <li class="form-fill-li" data-animate="animate__fadeInUp">
+                                        <label>Full Name</label>
+                                        <input type="text" th:field="*{fullName}" placeholder="Nguyễn Văn A">
+                                        <span class="text-danger" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></span>
+                                    </li>
+                                    <li class="form-fill-li" data-animate="animate__fadeInUp">
+                                        <label>Gender</label>
+                                        <select th:field="*{gender}" class="form-control">
+                                            <option value="">Select gender</option>
+                                            <option th:each="gender : ${genders}"
+                                                    th:value="${gender}" 
+                                                    th:text="${gender}"></option>
+                                        </select>
+                                    </li>
+                                    <li class="form-fill-li" data-animate="animate__fadeInUp">
+                                        <label>Profile Image</label>
+                                        <input type="file" th:field="*{image}" accept="image/*" class="form-control">
+                                        <span class="text-danger" th:if="${#fields.hasErrors('image')}" th:errors="*{image}"></span>
+                                        <small class="form-text text-muted">Upload a profile picture (JPG, PNG, GIF)</small>
+                                    </li>
+                                </ul>
+                                <div class="register-action" data-animate="animate__fadeInUp">
+                                    <label class="cust-checkbox-label login-read-text">
+                                        <span class="login-read">
+                                            Tôi đã đọc và đồng ý với <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/terms-condition.html">điều khoản & điều kiện.</a>
+                                        </span>
+                                        <input type="checkbox" id="login-terms" name="login-terms" class="cust-checkbox login-checkbox">
+                                        <span class="cust-check"></span>
+                                    </label>
+                                    <button type="submit" class="btn-style2 register-btn" id="registerBtn" disabled>Register</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="acc-wrapper" data-animate="animate__fadeInUp">
+                            <h6>Already have an account?</h6>
+                            <div class="account-optional">
+                                <a th:href="@{/login}">Login</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- account login start -->
+                </div>
+            </div>
         </div>
     </section>
+    <!-- customer-page end  -->
+    <!-- news-letter start -->
+    <div th:insert="~{user/fragments/newsletter::newsletter}"></div>
+    <!-- news-letter end -->
 </main>
+<!-- main end -->
+<!-- footer start -->
+<div th:insert="~{user/fragments/footer::footer}"></div>
+<!-- footer end -->
+<!-- back-to-top start -->
+<a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
+<a href="#" class="user-item" onclick="document.getElementById('logoutForm').submit();">
+    <div class="icon">
+        <i class="icon-log-out"></i>
+    </div>
+    <div class="body-title-2">Log out</div>
+</a>
 
-<!-- JAVASCRIPT FILES -->
-<script th:src="@{/user/asset/js/jquery.min.js}"></script>
-<script th:src="@{/user/asset/js/bootstrap.bundle.min.js}"></script>
-<script th:src="@{/user/asset/js/countdown.js}"></script>
-<script th:src="@{/user/asset/js/init.js}"></script>
-<script th:src="@{/user/asset/js/password-validator.js}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const checkbox = document.getElementById("login-terms");
+        const registerBtn = document.getElementById("registerBtn");
 
+        // Mặc định vô hiệu hóa nút register
+        registerBtn.disabled = true;
+
+        checkbox.addEventListener("change", function () {
+            registerBtn.disabled = !checkbox.checked;
+        });
+    });
+</script>
+
+<!-- back-to-top end -->
+<!-- plugin js -->
+<script th:src="@{/user/asset/js/plugin.js}"></script>
+<!-- theme js -->
+<script th:src="@{/user/asset/js/main.js}"></script>
 </body>
+
+<!-- Mirrored from spacingtech.com/html/etro/etro/register.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 18 Mar 2025 13:01:05 GMT -->
 </html>
