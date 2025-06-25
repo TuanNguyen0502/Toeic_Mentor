@@ -1,42 +1,147 @@
-<header class="site-header" th:fragment="header">
-    <div class="container">
-        <div class="row justify-content-between">
+<header id="header" class="main-header stickyheader" th:fragment="header">
+    <div class="header-area">
+        <div class="container">
+            <div class="main-menu-area">
+                <div class="main-menu-wrap">
+                    <!-- header-logo start -->
+                    <div class="header-theme-logo">
+                        <a th:href="@{/home}" class="theme-logo">
+                            <img th:src="@{/user/asset/image/home1/logo.png}" class="img-fluid" alt="logo">
+                        </a>
+                    </div>
+                    <!-- header-logo end -->
+                    <!-- search-wrapper start -->
+                    <!-- header-search start -->
+                    <div class="header-element header-search">
+                        <div class="header-theme-search">
+                            <form method="get" action="/products" class="search-form">
+                                <div class="search-bar">
+                                    <div class="form-search">
+                                        <input type="search" id="search-input" name="name" class="search-input" placeholder="Search our store" autocomplete="off">
+                                    </div>
+                                    <div class="search-results" style="display: none;">
+                                        <p class="search-for d-none">Search for <span class="search-text"></span></p>
+                                        <ul id="search-suggestions"></ul>
+                                        <p class="search-more d-none">
+                                            <a href="/products" id="see-all-results-link">See all results</a>
+                                        </p>
+                                        <p class="search-fail d-none">Search not found</p>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
 
-            <div class="col-lg-12 col-12 d-flex">
-                <a class="site-header-text d-flex justify-content-center align-items-center me-auto" th:href="@{/login}">
-                    <i class="bi-box"></i>
-
-                    <span>Toeic Mentor</span>
-                </a>
-
-<!--                <ul class="social-icon d-flex justify-content-center align-items-center mx-auto">-->
-<!--                    <span class="text-white me-4 d-none d-lg-block">Stay connected</span>-->
-
-<!--                    <li class="social-icon-item">-->
-<!--                        <a href="#" class="social-icon-link bi-instagram"></a>-->
-<!--                    </li>-->
-
-<!--                    <li class="social-icon-item">-->
-<!--                        <a href="#" class="social-icon-link bi-twitter"></a>-->
-<!--                    </li>-->
-
-<!--                    <li class="social-icon-item">-->
-<!--                        <a href="#" class="social-icon-link bi-whatsapp"></a>-->
-<!--                    </li>-->
-<!--                </ul>-->
-
-<!--                <div>-->
-<!--                    <a href="#" class="custom-btn custom-border-btn btn" data-bs-toggle="modal"-->
-<!--                       data-bs-target="#subscribeModal">Notify me-->
-<!--                        <i class="bi-arrow-right ms-2"></i>-->
-<!--                    </a>-->
-<!--                </div>-->
-
-<!--                <a class="bi-list offcanvas-icon" data-bs-toggle="offcanvas" href="#offcanvasMenu" role="button"-->
-<!--                   aria-controls="offcanvasMenu"></a>-->
-
+                    <!-- header-text end -->
+                    <!-- search-wrapper end -->
+                    <!-- header-icon start -->
+                    <div class="header-icon-block">
+                        <ul class="shop-element">
+                            <li class="side-wrap toggler-wrap">
+                                <div class="toggler-wrapper">
+                                    <button type="button" class="toggler-btn"><span class="toggler-icon"><i class="feather-menu"></i></span></button>
+                                </div>
+                            </li>
+                            <li class="side-wrap search-wrap">
+                                <div class="search-wrapper">
+                                    <a href="#searchmodal" data-bs-toggle="modal">
+                                        <span class="search-icon"><i class="feather-search"></i></span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li class="side-wrap user-wrap">
+                                <div class="user-info">
+                                    <a th:if="${#authentication.principal == 'anonymousUser'}" th:href="@{/login}">
+                                        <span class="user-icon"><i class="feather-user"></i></span>
+                                    </a>
+                                    <a th:unless="${#authentication.principal == 'anonymousUser'}" th:href="@{/my-account}">
+                                        <span class="user-icon"><i class="feather-user"></i></span>
+                                    </a>
+                                    <div class="account-main">
+                                        <span class="acc-title">Account</span>
+                                        <div class="account-login">
+                                            <a th:if="${#authentication.principal == 'anonymousUser'}" th:href="@{/register}">Register</a>
+                                            <a th:unless="${#authentication.principal == 'anonymousUser'}" th:href="@{/my-account}" th:text="${user.getFullName()}"></a>
+                                            <a th:if="${#authentication.principal == 'anonymousUser'}" th:href="@{/login}">Login</a>
+                                            <a th:unless="${#authentication.principal == 'anonymousUser'}" th:href="@{/logout}">Logout</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="side-wrap cart-wrap">
+                                <div class="cart-wrapper">
+                                    <a href="javascript:void(0)" class="js-cart-drawer">
+                                        <span class="cart-icon-count">
+                                            <span class="cart-icon"><i class="feather-shopping-bag"></i></span>
+                                            <span class="cart-count cart-counter"
+                                                  th:if="${#authentication.principal != 'anonymousUser'}"
+                                                  th:text="'(' + ${cart != null and cart.activeDetails != null ? cart.activeDetails.size() : 0} + ')'">
+                                            </span>
+                                        </span>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- header-icon end -->
+                </div>
             </div>
-
+        </div>
+    </div>
+    <div class="menu-main">
+        <div class="container">
+            <div class="menu-contact">
+                <!-- main-menu start -->
+                <div class="mega-menu-area">
+                    <div class="mainmenu-content">
+                        <div class="main-wrap">
+                            <ul class="main-menu">
+                                <li class="menu-link">
+                                    <a th:href="@{/home}" class="link-title">
+                                        <span class="sp-link-title">Home</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                </li>
+                                <li class="menu-link">
+                                    <a th:href="@{/products}" class="link-title">
+                                        <span class="sp-link-title">Products</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                </li>
+                                <li class="menu-link">
+                                    <a th:href="@{/products}" class="link-title">
+                                        <span class="sp-link-title">Brands</span>
+                                        <span class="menu-arrow"><i class="feather-chevron-down"></i></span>
+                                    </a>
+                                    <div class="menu-dropdown menu-single collapse" id="blogs2">
+                                        <ul class="ul">
+                                            <li class="menusingle-li" th:each="brand : ${brands}">
+                                                <a th:href="@{/products(brandNames=${brand.name})}" class="menusingle-title">
+                                                    <img class="sp-link-title" style="height: 50px; width: 50px" th:src="${brand.image}" th:text="${brand.name}">
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="menu-link">
+                                    <a th:href="@{/about-us}" class="link-title">
+                                        <span class="sp-link-title">About us</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- main-menu end -->
+                <div class="contact-num">
+                    <div class="contact-wrap service-line">
+                        <span class="contact-details"><i class="feather-headphones"></i></span>
+                        <a href="tel:+2031234567890">0332694718</a>
+                    </div>
+                </div>
+            </div>
+            <!-- mega sale -->
         </div>
     </div>
 </header>

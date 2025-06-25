@@ -1,0 +1,55 @@
+<div class="menu-main" th:fragment="main-menu">
+    <div class="container">
+        <div class="menu-contact">
+            <!-- main-menu start -->
+            <div class="mega-menu-area">
+                <div class="mainmenu-content">
+                    <div class="main-wrap">
+                        <ul class="main-menu">
+                            <li class="menu-link">
+                                <a th:href="@{/home}" class="link-title">
+                                    <span class="sp-link-title">Home</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                            </li>
+                            <li class="menu-link">
+                                <a th:href="@{/products}" class="link-title">
+                                    <span class="sp-link-title">Products</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                            </li>
+                            <li class="menu-link">
+                                <a th:href="@{/products}" class="link-title">
+                                    <span class="sp-link-title">Brands</span>
+                                    <span class="menu-arrow"><i class="feather-chevron-down"></i></span>
+                                </a>
+                                <div class="menu-dropdown menu-single collapse" id="blogs2">
+                                    <ul class="ul">
+                                        <li class="menusingle-li" th:each="brand : ${brands}">
+                                            <a th:href="@{/products(brandNames=${brand.name})}" class="menusingle-title">
+                                                <img class="sp-link-title" style="height: 50px; width: 50px" th:src="${brand.image}" th:text="${brand.name}">
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="menu-link">
+                                <a th:href="@{/about-us}" class="link-title">
+                                    <span class="sp-link-title">About us</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- main-menu end -->
+            <div class="contact-num">
+                <div class="contact-wrap service-line">
+                    <span class="contact-details"><i class="feather-headphones"></i></span>
+                    <a href="tel:+2031234567890">0867673342</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

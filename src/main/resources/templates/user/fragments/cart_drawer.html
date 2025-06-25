@@ -1,0 +1,90 @@
+<div class="cart-drawer" id="cart-drawer" th:fragment="cart-drawer">
+    <form method="post" action="javascript:void(0)" class="drawer-contents">
+        <div class="drawer-fixed-header">
+            <div class="drawer-header">
+                <h6 class="drawer-header-title">Cart</h6>
+                <div class="drawer-close">
+                    <button type="button" class="drawer-close-btn" aria-label="Close"><span class="drawer-close-icon"><i class="feather-x"></i></span></button>
+                </div>
+            </div>
+        </div>
+        <div class="drawer-cart-empty drawer-inner" th:if="${cart == null||cart.activeDetails.size() == 0}">
+            <div class="drawer-scrollable">
+                <img th:src="@{/user/asset/image/home1/cart/empty-cart.png}">
+                <h5 style="color: #8a0032">Your cart is currently empty</h5>
+                <a th:href="@{/products}" class="btn-style2">Continue shopping</a>
+            </div>
+        </div>
+        <div class="drawer-inner cart-fill" th:if="${cart} != null">
+            <div class="drawer-scrollable">
+                <ul class="cart-items" th:each="eachCart : ${cart.activeDetails}">
+                    <li class="cart-item" th:data-product-id="${eachCart.product.id}">
+                        <div class="cart-item-wrap">
+                            <div class="cart-item-image">
+                                <a th:href="@{/products/{id}(id=${eachCart.product.id})}">
+                                    <img th:src="${eachCart.product.getThumbnail()}"
+                                         alt="Ảnh người dùng mặc định" class="img-fluid">
+                                </a>
+                            </div>
+                            <div class="cart-item-details">
+                                <div class="cart-item-info">
+                                    <div class="cart-item-name">
+                                        <a th:href="@{/products/{id}(id=${eachCart.product.id})}" th:text="${eachCart.product.name}"></a>
+                                    </div>
+                                    <div class="cart-item-variants">
+                                        <h6>OS:</h6>
+                                        <span th:text="${eachCart.product.operatingSystem}"></span>
+                                    </div>
+                                    <div class="cart-item-variants">
+                                        <h6>Battery:</h6>
+                                        <span th:text="${eachCart.product.batteryCapacity}"></span>
+                                    </div>
+                                </div>
+                                <div class="cart-item-price">
+                                    <h6 th:text="${eachCart.totalPriceRow}"></h6>
+                                </div>
+                                <div class="cart-qty-remove">
+                                    <div class="cart-item-qty">
+                                        <div class="js-qty-wrapper">
+                                            <div class="js-qty-wrap">
+                                                <button type="button" class="js-qty-adjust js-qty-adjust-minus" onclick="decreaseQuantity(this)" aria-label="Remove item">
+                                                    <span><i class="feather-minus"></i></span>
+                                                </button>
+
+                                                <input type="number" name="refractometers-s-red" class="js-qty-num" th:value="${eachCart.quantity}" min="1">
+
+                                                <button type="button" class="js-qty-adjust js-qty-adjust-plus" onclick="increaseQuantity(this)" aria-label="Add item">
+                                                    <span><i class="feather-plus"></i></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="cart-item-remove">
+                                        <button type="button" class="cart-remove text-danger" onclick="deleteItem(this)" aria-label="Remove item">
+                                            <i class="feather-trash-2"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="drawer-footer">
+                <div class="drawer-total">
+                    <span class="drawer-subtotal">Subtotal</span>
+                    <h6 class="drawer-totalprice"><span class="total-cart" th:text="${cart.totalPrice}"></span></h6>
+                </div>
+                <div class="drawer-ship-text">
+                    <span>Shipping, taxes, and discount codes calculated at checkout</span>
+                </div>
+                <br>
+                <div style="display: flex; justify-content: center;">
+                    <div class="wt-content">
+                        <a th:href="@{/carts}" class="btn-style2">View cart</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
