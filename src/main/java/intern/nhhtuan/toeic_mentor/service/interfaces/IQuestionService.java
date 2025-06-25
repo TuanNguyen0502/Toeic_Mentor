@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.QuestionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.SectionQuestionResponse;
@@ -14,6 +15,10 @@ import java.util.Optional;
 public interface IQuestionService {
     @Transactional
     void saveQuestionsFromDTO(List<QuestionDTO> dtoList, Long sectionId);
+
+    boolean update(QuestionUpdateDTO questionUpdateDTO);
+
+    QuestionUpdateDTO getQuestionUpdateById(Long questionId);
 
     List<SectionQuestionResponse> getQuestionResponseBySectionId(Long sectionId);
 

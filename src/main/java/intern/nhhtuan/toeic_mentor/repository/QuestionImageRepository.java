@@ -4,4 +4,5 @@ import intern.nhhtuan.toeic_mentor.entity.QuestionImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface QuestionImageRepository extends JpaRepository<QuestionImage, Long> {
+    void deleteAllByQuestion_Id(Long id);
 }

@@ -175,13 +175,13 @@
                                                 <div class="body-text" th:text="${questionResponse.getTags()}"></div>
                                             </div>
                                             <div class="list-icon-function">
-                                                <div class="item eye">
-                                                    <a class="icon-eye"
-                                                       th:href="@{/admin/sections/{id}(id=${questionResponse.getId()})}"></a>
-                                                </div>
+<!--                                                <div class="item eye">-->
+<!--                                                    <a class="icon-eye"-->
+<!--                                                       th:href="@{/admin/sections/{id}(id=${questionResponse.getId()})}"></a>-->
+<!--                                                </div>-->
                                                 <div class="item edit">
                                                     <a class="icon-edit"
-                                                       th:href="@{/admin/sections/update/{id}(id=${questionResponse.getId()})}"></a>
+                                                       th:href="@{/admin/sections/{sectionId}/questions/{questionId}(sectionId=${sectionUpdateDTO.getId()},questionId=${questionResponse.getId()})}"></a>
                                                 </div>
                                             </div>
                                         </li>

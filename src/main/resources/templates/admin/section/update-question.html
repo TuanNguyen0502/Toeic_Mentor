@@ -1,0 +1,240 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" lang="en">
+
+<!-- Mirrored from themesflat.co/html/remos/add-attributes.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:48 GMT -->
+<div th:insert="~{admin/fragments/head::head}"></div>
+
+<body class="body">
+
+<!-- #wrapper -->
+<div id="wrapper">
+    <!-- #page -->
+    <div id="page" class="">
+        <!-- layout-wrap -->
+        <div class="layout-wrap">
+            <!-- preload -->
+            <div id="preload" class="preload-container">
+                <div class="preloading">
+                    <span></span>
+                </div>
+            </div>
+            <!-- /preload -->
+            <!-- section-menu-left -->
+            <div th:insert="~{admin/fragments/menu-left::section-menu-left}"></div>
+            <!-- /section-menu-left -->
+            <!-- section-content-right -->
+            <div class="section-content-right">
+                <!-- header-dashboard -->
+                <div th:insert="~{admin/fragments/header_dashboard::header-dashboard}"></div>
+                <!-- /header-dashboard -->
+                <!-- main-content -->
+                <div class="main-content">
+                    <!-- main-content-wrap -->
+                    <div class="main-content-inner">
+                        <!-- main-content-wrap -->
+                        <div class="main-content-wrap">
+                            <div class="flex items-center flex-wrap justify-between gap20 mb-27">
+                                <h3>Question information</h3>
+                                <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+                                    <li>
+                                        <a th:href="@{/admin}">
+                                            <div class="text-tiny">Dashboard</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/sections}">
+                                            <div class="text-tiny">Section</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <div class="text-tiny">Question Detail</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- update-section -->
+                            <div class="wg-box">
+                                <div class="block-warning" th:if="${error}">
+                                    <i class="icon-alert-octagon"></i>
+                                    <div class="body-title-2" th:text="${error}"></div>
+                                </div>
+                                <form th:action="@{/admin/sections/{sectionId}/questions/{questionId}(sectionId=${sectionId},questionId=${questionId})}"
+                                      method="post" enctype="multipart/form-data"
+                                      class="form-new-product form-style-1" th:object="${questionUpdate}">
+                                    <fieldset class="name">
+                                        <div class="body-title">ID <span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="text" name="id"
+                                               tabindex="0" aria-required="true" required readonly
+                                               th:field="*{id}">
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Part <span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="number" name="part"
+                                               tabindex="0" aria-required="true" required
+                                               min="1" max="7" th:field="*{part}"
+                                               oninput="validatePartInput(this)">
+                                        <div class="block-warning" th:if="${#fields.hasErrors('part')}">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" th:errors="*{part}"></div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Number <span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="number" name="number"
+                                               tabindex="0" aria-required="true" required
+                                               th:field="*{number}">
+                                        <div class="block-warning" th:if="${#fields.hasErrors('number')}">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" th:errors="*{number}"></div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <div class="body-title">Upload image</div>
+                                        <div class="upload-image flex-grow"
+                                             th:each="imageUrl : ${questionUpdate.getImageUrls()}">
+                                            <img th:src="${imageUrl}" class="product-image" alt="Image Preview"
+                                                 width="300px;" id="imagePreview">
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Passage</div>
+                                        <textarea class="flex-grow" type="text" name="passage"
+                                                  tabindex="0" th:field="*{passage}"></textarea>
+                                        <div class="block-warning" th:if="${#fields.hasErrors('passage')}">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" th:errors="*{passage}"></div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Content <span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="text" name="content"
+                                               tabindex="0" aria-required="true" required
+                                               placeholder="Question's Content Here" th:field="*{content}">
+                                        <div class="block-warning" th:if="${#fields.hasErrors('content')}">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" th:errors="*{content}"></div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Options</div>
+                                        <div class="options-container">
+                                            <div th:each="option, stat : *{options}" class="option-row" style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                <label style="min-width: 60px; margin-right: 10px;" th:text="${option.key}"></label>
+                                                <input type="text" class="flex-grow"
+                                                       th:field="*{options[__${option.key}__]}"
+                                                       tabindex="0" required>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Correct Answer <span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="text" name="correctAnswer"
+                                               tabindex="0" aria-required="true" required
+                                               th:field="*{correctAnswer}"
+                                               pattern="[A-Da-d]"
+                                               oninput="validateCorrectAnswer(this)"
+                                               placeholder="Enter A, B, C, or D">
+                                        <div class="block-warning" th:if="${#fields.hasErrors('correctAnswer')}">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" th:errors="*{correctAnswer}"></div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Tags</div>
+                                        <div class="tags-container">
+                                            <div th:each="tag, stat : *{tags}">
+                                                <div class="tag-row">
+                                                    <input type="text" class="flex-grow"
+                                                           th:field="*{tags[__${stat.index}__]}"
+                                                           th:placeholder="'Tag ' + (${stat.index} + 1)"
+                                                           tabindex="0" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Status <span class="tf-color-1">*</span></div>
+                                        <div class="select">
+                                            <select class="" th:field="*{status}">
+                                                <option th:each="status : ${eQuestionStatus}"
+                                                        th:value="${status}"
+                                                        th:text="${status.name()}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </fieldset>
+
+                                    <div class="bot">
+                                        <div></div>
+                                        <button class="tf-button w208" type="submit">Save</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- /update-section -->
+                        </div>
+                        <!-- /main-content-wrap -->
+                    </div>
+                    <!-- /main-content-wrap -->
+                    <!-- bottom-page -->
+                    <div th:insert="~{admin/fragments/bottom_page::bottom-page}"></div>
+                    <!-- /bottom-page -->
+                </div>
+                <!-- /main-content -->
+            </div>
+            <!-- /section-content-right -->
+        </div>
+        <!-- /layout-wrap -->
+    </div>
+    <!-- /#page -->
+</div>
+<!-- /#wrapper -->
+
+<!-- Javascript -->
+<div th:insert="~{admin/fragments/script::script}"></div>
+<script th:src="@{/admin/asset/js/pagination.js}"></script>
+<script th:src="@{/admin/asset/js/search.js}"></script>
+<script>
+    function validatePartInput(input) {
+        const value = parseInt(input.value);
+        if (value < 1 || value > 7) {
+            input.setCustomValidity('Part must be between 1 and 7');
+        } else {
+            input.setCustomValidity('');
+        }
+        input.reportValidity();
+    }
+
+    function validateCorrectAnswer(input) {
+        // Convert the input value to uppercase
+        input.value = input.value.toUpperCase();
+
+        // Check if the value is one of the allowed options: A, B, C, or D
+        if (!/^[A-D]$/.test(input.value)) {
+            // If not, set the custom validity message
+            input.setCustomValidity('Correct Answer must be A, B, C, or D');
+        } else {
+            // If valid, clear the custom validity message
+            input.setCustomValidity('');
+        }
+    }
+</script>
+
+</body>
+
+
+<!-- Mirrored from themesflat.co/html/remos/new-discount.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:47 GMT -->
+</html>

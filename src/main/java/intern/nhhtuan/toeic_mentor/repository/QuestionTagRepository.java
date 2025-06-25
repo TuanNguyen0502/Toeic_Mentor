@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface QuestionTagRepository extends JpaRepository<QuestionTag, Long> {
     List<QuestionTag> findByTag(String tag);
+
+    List<QuestionTag> findByQuestion_Id(Long questionId);
 }

@@ -13,14 +13,14 @@ import java.util.Map;
 @Builder
 public class QuestionDTO {
     private Long id;
+    private Integer part;
     private Integer questionNumber;
+    private List<String> passageImageUrls;
+    private String passage;
     private String questionText;
     private Map<String, String> options;
     private String correctAnswer;
     private List<String> tags;
-    private String passage;
-    private List<String> passageImageUrls;
-    private Integer part;
     private Long sectionId;
     private EQuestionStatus status;
 }

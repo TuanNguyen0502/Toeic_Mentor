@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.controller.admin;
 
+import intern.nhhtuan.toeic_mentor.dto.QuestionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.SectionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.SectionCreateRequest;
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
@@ -47,6 +48,17 @@ public class SectionController {
         return "admin/section/create-test";
     }
 
+    @GetMapping("{sectionId}/questions/{questionId}")
+    public String getQuestionByQuestionId(@PathVariable Long sectionId,
+                                          @PathVariable Long questionId,
+                                          Model model) {
+        model.addAttribute("sectionId", sectionId);
+        model.addAttribute("questionId", questionId);
+        model.addAttribute("eQuestionStatus", EQuestionStatus.values());
+        model.addAttribute("questionUpdate", questionService.getQuestionUpdateById(questionId));
+        return "admin/section/update-question";
+    }
+
     @PostMapping("")
     public String createSection(@Validated @ModelAttribute SectionCreateRequest sectionCreateRequest,
                                 BindingResult bindingResult,
@@ -77,11 +89,30 @@ public class SectionController {
         }
         try {
             sectionService.update(id, sectionUpdateDTO);
-            return "redirect:/admin/sections";
+            return "redirect:/admin/sections/question/" + id;
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             return "admin/section/update-section";
         }
     }
 
+    @PostMapping("{sectionId}/questions/{questionId}")
+    public String updateQuestion(@PathVariable Long sectionId,
+                                 @PathVariable Long questionId,
+                                 @Validated @ModelAttribute QuestionUpdateDTO questionUpdateDTO,
+                                 BindingResult bindingResult,
+                                 Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("eQuestionStatus", EQuestionStatus.values());
+            model.addAttribute("questionUpdate", questionUpdateDTO);
+            return "admin/section/update-question";
+        }
+        try {
+            questionService.update(questionUpdateDTO);
+            return "redirect:/admin/sections/question/" + questionUpdateDTO.getId();
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "admin/section/update-question";
+        }
+    }
 }

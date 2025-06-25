@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.QuestionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.SectionQuestionResponse;
@@ -9,7 +10,9 @@ import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
 import intern.nhhtuan.toeic_mentor.entity.enums.ESectionStatus;
 import intern.nhhtuan.toeic_mentor.repository.*;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionOptionService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionTagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +24,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionServiceImpl implements IQuestionService {
     private final QuestionRepository questionRepository;
-    private final QuestionOptionRepository optionRepository;
-    private final QuestionTagRepository tagRepository;
+    private final IQuestionOptionService questionOptionService;
+    private final IQuestionTagService questionTagService;
     private final QuestionImageRepository imageRepository;
     private final PartRepository partRepository;
     private final SectionRepository sectionRepository;
@@ -56,17 +59,67 @@ public class QuestionServiceImpl implements IQuestionService {
             }
 
             // Lưu options
-            for (var entry : dto.getOptions().entrySet()) {
-                QuestionOption option = new QuestionOption(entry.getKey(), entry.getValue(), question);
-                optionRepository.save(option);
-            }
+            questionOptionService.saveOptions(dto.getOptions(), question);
 
             // Lưu tags
-            for (String tagStr : dto.getTags()) {
-                QuestionTag tag = new QuestionTag(tagStr, question);
-                tagRepository.save(tag);
-            }
+            questionTagService.saveTags(dto.getTags(), question);
         }
+    }
+
+    @Override
+    public boolean update(QuestionUpdateDTO questionUpdateDTO) {
+        Optional<Question> optionalQuestion = questionRepository.findById(questionUpdateDTO.getId());
+        if (optionalQuestion.isPresent()) {
+            Question question = optionalQuestion.get();
+            question.setPart(partRepository.findByName(getPartName(questionUpdateDTO.getPart())));
+            question.setQuestionNumber(questionUpdateDTO.getNumber());
+            question.setPassage(questionUpdateDTO.getPassage());
+            question.setQuestionText(questionUpdateDTO.getContent());
+            question.setCorrectAnswer(questionUpdateDTO.getCorrectAnswer());
+            question.setStatus(questionUpdateDTO.getStatus());
+
+            // Save question with updated fields
+            questionRepository.save(question);
+
+            // Save new options
+            questionOptionService.saveOptions(questionUpdateDTO.getOptions(), question);
+
+            // Save new tags
+            questionTagService.saveTags(questionUpdateDTO.getTags(), question);
+
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public QuestionUpdateDTO getQuestionUpdateById(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new IllegalArgumentException("Question not found with ID: " + questionId));
+
+        List<String> imageUrls = question.getPassageImageUrls().stream()
+                .map(QuestionImage::getImage)
+                .collect(Collectors.toList());
+
+        Map<String, String> options = question.getOptions().stream()
+                .collect(Collectors.toMap(QuestionOption::getKey, QuestionOption::getValue));
+
+        List<String> tags = question.getTags().stream()
+                .map(QuestionTag::getTag)
+                .collect(Collectors.toList());
+
+        return QuestionUpdateDTO.builder()
+                .id(question.getId())
+                .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
+                .number(question.getQuestionNumber())
+                .imageUrls(imageUrls)
+                .passage(question.getPassage())
+                .content(question.getQuestionText())
+                .options(options)
+                .correctAnswer(question.getCorrectAnswer())
+                .tags(tags)
+                .status(question.getStatus())
+                .build();
     }
 
     @Override
@@ -121,7 +174,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 // If topics are specified, fetch questions that match both part and topics
                 List<QuestionTag> tags = new ArrayList<>();
                 for (String tag : request.getTopic()) {
-                    tags.addAll(tagRepository.findByTag(tag));
+                    tags.addAll(questionTagService.findByTag(tag));
                 }
                 questions = questionRepository.findDistinctByPart_NameAndTagsAndStatus(partName, tags, EQuestionStatus.APPROVED);
             }
