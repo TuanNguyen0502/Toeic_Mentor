@@ -2,7 +2,7 @@
 <html xmlns:th="https://www.thymeleaf.org" lang="en">
 
 <!-- Mirrored from themesflat.co/html/remos/add-attributes.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:48 GMT -->
-<div th:insert="~{admin/fragments/head::head}"></div>
+<head th:insert="~{admin/fragments/head::head}"></head>
 
 <body class="body">
 
@@ -47,6 +47,14 @@
                                     <li>
                                         <a th:href="@{/admin/sections}">
                                             <div class="text-tiny">Section</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/sections/{sectionId}(sectionId=${sectionId})}">
+                                            <div class="text-tiny" th:text="${sectionId}"></div>
                                         </a>
                                     </li>
                                     <li>
@@ -102,6 +110,11 @@
                                              th:each="imageUrl : ${questionUpdate.getImageUrls()}">
                                             <img th:src="${imageUrl}" class="product-image" alt="Image Preview"
                                                  width="300px;" id="imagePreview">
+                                        </div>
+                                        <div class="flex items-center justify-between gap10 flex-wrap">
+                                            <a class="tf-button style-1 w208"
+                                               th:href="@{/admin/sections/{sectionId}/questions/{questionId}/images(sectionId=${sectionId}, questionId=${questionId})}">
+                                                <i class="icon-plus"></i>Update Images</a>
                                         </div>
                                     </fieldset>
 

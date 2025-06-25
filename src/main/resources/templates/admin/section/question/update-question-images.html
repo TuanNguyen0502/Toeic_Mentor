@@ -1,0 +1,316 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head th:insert="~{admin/fragments/head::head}">
+    <style>
+        .upload-image .item {
+            display: inline-block;
+            width: 150px;
+            height: 150px;
+            margin: 5px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            vertical-align: top;
+            background: #fafafa;
+        }
+
+        .upload-image .item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0 6px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        .item.up-load {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 150px;
+            height: 150px;
+            margin: 5px;
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            background: #fafafa;
+        }
+
+        .item.up-load:hover {
+            background: #f0f8ff;
+            border-color: #66aaff;
+        }
+
+        .item.up-load .icon {
+            font-size: 24px;
+            color: #90caf9;
+            margin-bottom: 4px;
+        }
+
+        .item.up-load .text-tiny {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.2;
+        }
+
+        #newImages {
+            display: none;
+        }
+
+        .alert {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert i {
+            font-size: 18px;
+        }
+
+        .alert-success {
+            background: #e6ffed;
+            border: 1px solid #27ae60;
+            color: #065a2e;
+        }
+
+        .alert-success i {
+            color: #2ecc71;
+        }
+
+        .alert-error {
+            background: #ffe6e6;
+            border: 1px solid #e74c3c;
+            color: #611a15;
+        }
+
+        .alert-error i {
+            color: #e74c3c;
+        }
+
+    </style>
+</head>
+<body class="body">
+<div id="wrapper">
+    <div id="page">
+        <div class="layout-wrap">
+
+            <!-- Sidebar + Header -->
+            <div th:insert="~{admin/fragments/menu-left::section-menu-left}"></div>
+            <div class="section-content-right">
+                <div th:insert="~{admin/fragments/header_dashboard::header-dashboard}"></div>
+
+                <div class="main-content">
+                    <div class="main-content-inner">
+                        <div class="main-content-wrap">
+
+                            <!-- Title / Breadcrumbs -->
+                            <div class="flex items-center justify-between gap20 mb-27">
+                                <h3>Add / Update Question's Images</h3>
+                                <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+                                    <li>
+                                        <a th:href="@{/admin}">
+                                            <div class="text-tiny">Dashboard</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/sections}">
+                                            <div class="text-tiny">Section</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/sections/{sectionId}(sectionId=${sectionId})}">
+                                            <div class="text-tiny" th:text="${sectionId}"></div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/sections/{sectionId}/questions/{questionId}(sectionId=${sectionId}, questionId=${questionId})}">
+                                            <div class="text-tiny">Question</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <div class="text-tiny">Question Images</div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Flash messages -->
+                            <div th:if="${successMessage}" class="alert alert-success">
+                                <i class="icon-check-circle"></i>
+                                <span th:text="${successMessage}"></span>
+                            </div>
+                            <div th:if="${errorMessage}" class="alert alert-error">
+                                <i class="icon-alert-circle"></i>
+                                <span th:text="${errorMessage}"></span>
+                            </div>
+
+                            <br>
+
+                            <!-- Form -->
+                            <form th:action="@{/admin/sections/{sectionId}/questions/{questionId}/images(sectionId=${sectionId}, questionId=${questionId})}"
+                                  th:object="${questionImageUpdateDTO}"
+                                  method="post"
+                                  enctype="multipart/form-data">
+
+                                <!-- productId -->
+                                <input type="hidden" th:field="*{questionId}"/>
+
+                                <!-- Add hidden inputs container for existing image paths -->
+                                <div id="existingImagePathsContainer">
+                                    <input type="hidden" th:each="path : *{existingImagePaths}"
+                                           name="existingImagePaths" th:value="${path}"/>
+                                </div>
+
+                                <div class="wg-box mb-20">
+                                    <fieldset>
+                                        <div class="body-title mb-10">Upload images</div>
+                                        <div id="preview-container" class="upload-image mb-16">
+
+                                            <!-- existing images -->
+                                            <div th:each="path : *{existingImagePaths}"
+                                                 th:data-path="${path}"
+                                                 class="item">
+                                                <img th:src="${path}" alt="Ảnh cũ"/>
+                                                <span class="delete-btn">X</span>
+                                            </div>
+
+                                            <!-- upload button -->
+                                            <div class="item up-load">
+                                                <label class="uploadfile" for="newImages">
+                                                    <span class="icon"><i class="icon-upload-cloud"></i></span>
+                                                    <span class="text-tiny">Drop your images here or<br/>
+                                                        <span class="tf-color">click to browse</span></span>
+                                                </label>
+                                                <input type="file"
+                                                       id="newImages"
+                                                       name="newImages"
+                                                       multiple accept="image/*"/>
+                                            </div>
+
+                                        </div>
+                                    </fieldset>
+                                </div>
+
+                                <div class="cols gap10">
+                                    <button class="tf-button w-full" type="submit">Save</button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Javascript -->
+<div th:insert="~{admin/fragments/script::script}"></div>
+<!-- JS xử lý preview + xóa -->
+<script>
+    const preview = document.getElementById('preview-container');
+    const fileInput = document.getElementById('newImages');
+    const existingPathsContainer = document.getElementById('existingImagePathsContainer');
+    let newFiles = [];
+
+    // Event delegation for both old and new images
+    preview.addEventListener('click', e => {
+        if (!e.target.classList.contains('delete-btn')) return;
+        const item = e.target.closest('.item');
+
+        // Skip upload button
+        if (item.classList.contains('up-load')) return;
+
+        if (item.classList.contains('new')) {
+            // Handle new image deletion
+            const idx = +item.dataset.idx;
+            newFiles.splice(idx, 1);
+            syncFiles();
+            renderNewPreviews();
+        } else {
+            // Handle existing image deletion
+            const path = item.dataset.path;
+            // Remove the hidden input for this path
+            const pathInput = existingPathsContainer.querySelector(`input[value="${path}"]`);
+            if (pathInput) {
+                pathInput.remove();
+            }
+            // Remove the preview
+            item.remove();
+        }
+    });
+
+    // 2) Preview ảnh mới
+    fileInput.addEventListener('change', () => {
+        const files = Array.from(fileInput.files);
+        fileInput.value = ''; // clear để không overwrite DataTransfer
+
+        // kiểm tra giới hạn 5 ảnh
+        const keptCount = preview.querySelectorAll(
+            '.item:not(.up-load):not(.new)'
+        ).length;
+        if (keptCount + newFiles.length + files.length > 5) {
+            alert('Tối đa 5 ảnh tổng cộng!');
+            return;
+        }
+
+        newFiles.push(...files);
+        syncFiles();
+        renderNewPreviews();
+    });
+
+    function syncFiles() {
+        const dt = new DataTransfer();
+        newFiles.forEach(f => dt.items.add(f));
+        fileInput.files = dt.files;
+    }
+
+    function renderNewPreviews() {
+        // remove old previews
+        preview.querySelectorAll('.item.new').forEach(e => e.remove());
+        newFiles.forEach((file, i) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const div = document.createElement('div');
+                div.className = 'item new';
+                div.dataset.idx = i;
+                div.innerHTML = `
+            <img src="${e.target.result}" alt="">
+            <span class="delete-btn">✕</span>
+          `;
+                preview.insertBefore(div, preview.querySelector('.item.up-load'));
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+</script>
+</body>
+</html>

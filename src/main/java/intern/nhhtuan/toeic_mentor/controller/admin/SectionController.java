@@ -1,10 +1,12 @@
 package intern.nhhtuan.toeic_mentor.controller.admin;
 
+import intern.nhhtuan.toeic_mentor.dto.QuestionImageUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.QuestionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.SectionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.SectionCreateRequest;
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
 import intern.nhhtuan.toeic_mentor.entity.enums.ESectionStatus;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionImageService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ISectionService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin/sections")
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class SectionController {
     private final ISectionService sectionService;
     private final IQuestionService questionService;
+    private final IQuestionImageService questionImageService;
 
     @GetMapping("")
     public String index(Model model) {
@@ -56,7 +60,17 @@ public class SectionController {
         model.addAttribute("questionId", questionId);
         model.addAttribute("eQuestionStatus", EQuestionStatus.values());
         model.addAttribute("questionUpdate", questionService.getQuestionUpdateById(questionId));
-        return "admin/section/update-question";
+        return "admin/section/question/update-question";
+    }
+
+    @GetMapping("{sectionId}/questions/{questionId}/images")
+    public String getQuestionImage(@PathVariable Long sectionId,
+                                   @PathVariable Long questionId,
+                                   Model model) {
+        model.addAttribute("sectionId", sectionId);
+        model.addAttribute("questionId", questionId);
+        model.addAttribute("questionImageUpdateDTO", questionImageService.getQuestionImageUpdateByQuestionId(questionId));
+        return "admin/section/question/update-question-images";
     }
 
     @PostMapping("")
@@ -105,14 +119,28 @@ public class SectionController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("eQuestionStatus", EQuestionStatus.values());
             model.addAttribute("questionUpdate", questionUpdateDTO);
-            return "admin/section/update-question";
+            return "admin/section/question/update-question";
         }
         try {
             questionService.update(questionUpdateDTO);
-            return "redirect:/admin/sections/question/" + questionUpdateDTO.getId();
+            return "redirect:/admin/sections/" + sectionId + "/questions/" + questionId;
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
-            return "admin/section/update-question";
+            return "admin/section/question/update-question";
         }
+    }
+
+    @PostMapping("{sectionId}/questions/{questionId}/images")
+    public String updateQuestionImages(@PathVariable Long sectionId,
+                                       @PathVariable Long questionId,
+                                       @ModelAttribute QuestionImageUpdateDTO questionImageUpdateDTO,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            questionImageService.updateQuestionImage(questionImageUpdateDTO);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật ảnh thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/sections/" + sectionId + "/questions/" + questionId + "/images";
     }
 }
