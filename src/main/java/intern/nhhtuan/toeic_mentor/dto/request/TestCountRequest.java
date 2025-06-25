@@ -14,10 +14,20 @@ import java.util.List;
 @AllArgsConstructor
 public class TestCountRequest {
     private List<EPart> parts;
-    private int percent;
+    private EPercentChoice percentChoice;
+    private int lowerRange;
+    private int upperRange;
     private EStatus status;
     private EType type;
 
+    public enum EPercentChoice {
+        GREATER_THAN,
+        GREATER_THAN_OR_EQUAL ,
+        LESS_THAN,
+        LESS_THAN_OR_EQUAL,
+        EQUAL_TO,
+        BETWEEN
+    }
     public enum EStatus {
         CORRECT, INCORRECT
     }

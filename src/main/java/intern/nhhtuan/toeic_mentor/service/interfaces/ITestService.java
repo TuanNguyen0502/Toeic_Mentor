@@ -8,9 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface ITestService {
-    List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest);
-
-    List<TestCountResponse> countBySeparatePartsAndPercent(TestCountRequest testCountRequest);
+    List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest);
 
     int getTotalTests();
 

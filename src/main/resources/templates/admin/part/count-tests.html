@@ -63,7 +63,7 @@
                                     <i class="icon-alert-octagon"></i>
                                     <div class="body-title-2" th:text="${error}"></div>
                                 </div>
-                                <form action="/admin/parts/count-tests" method="post"
+                                <form action="/admin/parts/count" method="get"
                                       class="form-new-product form-style-1" th:object="${testCountRequest}" onsubmit="return validateForm()">
                                     <fieldset class="name">
                                         <div class="body-title">Parts<span class="tf-color-1">*</span></div>
@@ -85,14 +85,48 @@
                                     </fieldset>
 
                                     <fieldset class="name">
+                                        <div class="body-title">Parts Type <span class="tf-color-1">*</span></div>
+                                        <div class="select">
+                                            <select class="" th:field="*{type}">
+                                                <option th:each="type : ${eType}"
+                                                        th:value="${type}"
+                                                        th:text="${type.name()}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Counting Type<span class="tf-color-1">*</span></div>
+                                        <div class="select">
+                                            <select class="" th:field="*{percentChoice}" onchange="handlePercentChoiceChange(this)">
+                                                <option th:each="percentChoice : ${ePercentChoice}"
+                                                        th:value="${percentChoice}"
+                                                        th:text="${percentChoice.name().replace('_', ' ')}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name" id="singleValueField">
                                         <div class="body-title">Percent<span class="tf-color-1">*</span></div>
-                                        <input class="flex-grow" type="number" name="percent"
+                                        <input class="flex-grow" type="number" name="singleValue"
                                                tabindex="0" aria-required="true" required="required"
-                                               th:field="*{percent}" step="1"
-                                               oninput="handleAmountInput(this)">
-                                        <div class="block-warning" th:if="${#fields.hasErrors('percent')}">
-                                            <i class="icon-alert-octagon"></i>
-                                            <div class="body-title-2" th:errors="*{percent}"></div>
+                                               min="1" max="100" step="1"
+                                               oninput="handleSingleValueInput(this)">
+                                    </fieldset>
+
+                                    <fieldset class="name" id="rangeField" style="display: none;">
+                                        <div class="body-title">Percent Range<span class="tf-color-1">*</span></div>
+                                        <div style="display: flex; gap: 10px;">
+                                            <input class="flex-grow" type="number" name="lowerRange"
+                                                   th:field="*{lowerRange}"
+                                                   placeholder="From" min="1" max="100" step="1"
+                                                   oninput="handleRangeInput(this)">
+                                            <input class="flex-grow" type="number" name="upperRange"
+                                                   th:field="*{upperRange}"
+                                                   placeholder="To" min="1" max="100" step="1"
+                                                   oninput="handleRangeInput(this)">
                                         </div>
                                     </fieldset>
 
@@ -103,18 +137,6 @@
                                                 <option th:each="status : ${eStatus}"
                                                         th:value="${status}"
                                                         th:text="${status.name()}">
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </fieldset>
-
-                                    <fieldset class="name">
-                                        <div class="body-title">Type<span class="tf-color-1">*</span></div>
-                                        <div class="select">
-                                            <select class="" th:field="*{type}">
-                                                <option th:each="type : ${eType}"
-                                                        th:value="${type}"
-                                                        th:text="${type.name()}">
                                                 </option>
                                             </select>
                                         </div>
@@ -221,27 +243,90 @@
             errorDiv.style.display = 'flex';
             return false;
         }
-
         errorDiv.style.display = 'none';
+
+        // Validate percent values based on the counting type
+        const percentChoice = document.querySelector('select[name="percentChoice"]').value;
+        const isBetween = percentChoice === 'BETWEEN';
+
+        if (isBetween) {
+            const lowerRange = parseInt(document.querySelector('input[name="lowerRange"]').value);
+            const upperRange = parseInt(document.querySelector('input[name="upperRange"]').value);
+
+            if (isNaN(lowerRange) || isNaN(upperRange) || lowerRange < 1 || upperRange > 100 || lowerRange > upperRange) {
+                alert('Please enter valid range values. Lower range must be less than or equal to upper range, and both must be between 1 and 100.');
+                return false;
+            }
+        } else {
+            const singleValue = parseInt(document.querySelector('input[name="singleValue"]').value);
+            if (isNaN(singleValue) || singleValue < 1 || singleValue > 100) {
+                alert('Please enter a valid percent value between 1 and 100.');
+                return false;
+            }
+            // Set both range values to the single value before submitting
+            document.querySelector('input[name="lowerRange"]').value = singleValue;
+            document.querySelector('input[name="upperRange"]').value = singleValue;
+        }
+
         return true;
     }
 
-    function handleAmountInput(input) {
-        let val = input.value;
+    function handlePercentChoiceChange(select) {
+        const singleValueField = document.getElementById('singleValueField');
+        const rangeField = document.getElementById('rangeField');
+        const isBetween = select.value === 'BETWEEN';
 
-        // Only allow integers
-        val = val.replace(/[^0-9]/g, '');
+        singleValueField.style.display = isBetween ? 'none' : 'block';
+        rangeField.style.display = isBetween ? 'block' : 'none';
 
-        // COUPON: between 2 and 100
-        if (val !== '') {
-            let num = parseInt(val);
-            if (num < 1) num = 1;
-            if (num > 100) num = 100;
-            val = num;
+        // Reset values
+        if (isBetween) {
+            document.querySelector('input[name="singleValue"]').value = 50;
+            document.getElementById('singleValueDisplay').textContent = 50;
+        } else {
+            document.querySelector('input[name="lowerRange"]').value = 25;
+            document.querySelector('input[name="upperRange"]').value = 75;
+            document.getElementById('lowerRangeDisplay').textContent = 25;
+            document.getElementById('upperRangeDisplay').textContent = 75;
         }
-
-        input.value = val;
     }
+
+    function handleSingleValueInput(input) {
+        const value = parseInt(input.value);
+        document.getElementById('singleValueDisplay').textContent = value;
+
+        // Set both range values to the same number
+        document.querySelector('input[name="lowerRange"]').value = value;
+        document.querySelector('input[name="upperRange"]').value = value;
+        document.getElementById('lowerRangeDisplay').textContent = value;
+        document.getElementById('upperRangeDisplay').textContent = value;
+    }
+
+    function handleRangeInput(input) {
+        const value = parseInt(input.value);
+        const isLower = input.name === 'lowerRange';
+        const displayId = isLower ? 'lowerRangeDisplay' : 'upperRangeDisplay';
+        document.getElementById(displayId).textContent = value;
+
+        const lowerRange = parseInt(document.querySelector('input[name="lowerRange"]').value);
+        const upperRange = parseInt(document.querySelector('input[name="upperRange"]').value);
+
+        if (lowerRange > upperRange) {
+            if (isLower) {
+                input.value = upperRange;
+                document.getElementById('lowerRangeDisplay').textContent = upperRange;
+            } else {
+                input.value = lowerRange;
+                document.getElementById('upperRangeDisplay').textContent = lowerRange;
+            }
+        }
+    }
+
+    // Initialize the form on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const select = document.querySelector('select[name="percentChoice"]');
+        handlePercentChoiceChange(select);
+    });
 </script>
 
 </body>

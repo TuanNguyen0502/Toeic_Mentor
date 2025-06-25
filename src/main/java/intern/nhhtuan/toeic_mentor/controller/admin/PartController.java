@@ -29,23 +29,21 @@ public class PartController {
     public String showCountTests(Model model) {
         model.addAttribute("testCountRequest", new TestCountRequest());
         model.addAttribute("ePart", EPart.values());
+        model.addAttribute("ePercentChoice", TestCountRequest.EPercentChoice.values());
         model.addAttribute("eStatus", TestCountRequest.EStatus.values());
         model.addAttribute("eType", TestCountRequest.EType.values());
         return "admin/part/count-tests";
     }
 
-    @PostMapping("/count-tests")
+    @GetMapping("/count")
     public String countTests(@ModelAttribute("testCountRequest") TestCountRequest testCountRequest,
                              Model model) {
-        if (testCountRequest.getType().equals(TestCountRequest.EType.COMBINE)) {
-            model.addAttribute("testCountResponseList", testService.countByCombinePartsAndPercent(testCountRequest));
-        } else if (testCountRequest.getType().equals(TestCountRequest.EType.SEPARATE)) {
-            model.addAttribute("testCountResponseList", testService.countBySeparatePartsAndPercent(testCountRequest));
-        }
-        model.addAttribute("testCountRequest", new TestCountRequest());
+        model.addAttribute("testCountResponseList", testService.countByPartsAndPercent(testCountRequest));
+        model.addAttribute("ePercentChoice", TestCountRequest.EPercentChoice.values());
         model.addAttribute("ePart", EPart.values());
         model.addAttribute("eStatus", TestCountRequest.EStatus.values());
         model.addAttribute("eType", TestCountRequest.EType.values());
+        model.addAttribute("testCountRequest", new TestCountRequest());
         return "admin/part/count-tests";
     }
 }

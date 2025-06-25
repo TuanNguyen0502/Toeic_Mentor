@@ -29,7 +29,16 @@ public class TestServiceImpl implements ITestService {
     private final IPartService partService;
 
     @Override
-    public List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest) {
+    public List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest) {
+        // Check if the request is for combine or separate parts
+        if (testCountRequest.getType() == TestCountRequest.EType.COMBINE) {
+            return countByCombinePartsAndPercent(testCountRequest);
+        } else {
+            return countBySeparatePartsAndPercent(testCountRequest);
+        }
+    }
+
+    private List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest) {
         List<Long> partIds = partService.getIdsByPartName(testCountRequest.getParts()); // Get part ids by EPart names
 
         // Get tests that contains all parts in partIds
@@ -60,7 +69,7 @@ public class TestServiceImpl implements ITestService {
                     .filter(answer -> partIds.contains(answer.getQuestion().getPart().getId()) && answerService.checkByStatus(answer.getId(), testCountRequest.getStatus()))
                     .count();
             // Check if the percentage of correct answers meets the requirement
-            if ((totalAnswersByPart * 100 / totalQuestionsByPart) >= testCountRequest.getPercent()) {
+            if (checkPercentCondition(totalAnswersByPart, totalQuestionsByPart, testCountRequest.getPercentChoice(), testCountRequest.getLowerRange(), testCountRequest.getUpperRange())) {
                 testCount++;
             }
         }
@@ -76,8 +85,7 @@ public class TestServiceImpl implements ITestService {
                 .build());
     }
 
-    @Override
-    public List<TestCountResponse> countBySeparatePartsAndPercent(TestCountRequest testCountRequest) {
+    private List<TestCountResponse> countBySeparatePartsAndPercent(TestCountRequest testCountRequest) {
         List<TestCountResponse> testCountResponses = new ArrayList<>();
 
         for (EPart ePart : testCountRequest.getParts()) {
@@ -105,7 +113,7 @@ public class TestServiceImpl implements ITestService {
                         .count();
 
                 // Check if the percentage of correct answers meets the requirement
-                if ((totalAnswersByPart * 100 / totalQuestionsByPart) >= testCountRequest.getPercent()) {
+                if (checkPercentCondition(totalAnswersByPart, totalQuestionsByPart, testCountRequest.getPercentChoice(), testCountRequest.getLowerRange(), testCountRequest.getUpperRange())) {
                     testCount++;
                 }
             }
@@ -119,6 +127,20 @@ public class TestServiceImpl implements ITestService {
         }
 
         return testCountResponses;
+    }
+
+    private boolean checkPercentCondition(long totalAnswers, long totalQuestions, TestCountRequest.EPercentChoice percentChoice, int lowerRange, int upperRange) {
+        if (totalQuestions == 0) return false; // Avoid division by zero
+        int percentage = (int) ((totalAnswers * 100) / totalQuestions);
+        return switch (percentChoice) {
+            case GREATER_THAN -> percentage > lowerRange;
+            case GREATER_THAN_OR_EQUAL -> percentage >= lowerRange;
+            case LESS_THAN -> percentage < lowerRange;
+            case LESS_THAN_OR_EQUAL -> percentage <= lowerRange;
+            case EQUAL_TO -> percentage == lowerRange;
+            case BETWEEN -> percentage >= lowerRange && percentage <= upperRange;
+            default -> false;
+        };
     }
 
     @Override
