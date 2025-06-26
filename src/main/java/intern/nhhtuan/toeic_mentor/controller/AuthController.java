@@ -65,7 +65,7 @@ public class AuthController {
             if (isAdmin) {
                 return "redirect:/admin";
             } else {
-                return "redirect:/";
+                return "redirect:/home";
             }
         }
 
@@ -131,6 +131,6 @@ public class AuthController {
 
     @GetMapping("/")
     public String index() {
-        return "user/index";
+        return "redirect:/login";
     }
 }
