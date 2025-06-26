@@ -65,8 +65,7 @@ public class AuthController {
             if (isAdmin) {
                 return "redirect:/admin";
             } else {
-                String email = authentication.getName();
-                return "redirect:/chat/" + email;
+                return "redirect:/";
             }
         }
 
@@ -132,6 +131,6 @@ public class AuthController {
 
     @GetMapping("/")
     public String index() {
-        return "redirect:/login";
+        return "user/index";
     }
 }

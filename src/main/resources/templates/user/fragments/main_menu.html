@@ -7,15 +7,19 @@
                     <div class="main-wrap">
                         <ul class="main-menu">
                             <li class="menu-link">
-                                <a th:href="@{/home}" class="link-title">
+                                <a th:href="@{/}" class="link-title">
                                     <span class="sp-link-title">Home</span>
                                     <span class="menu-arrow"></span>
                                 </a>
                             </li>
-                            <li class="menu-link">
-                                <a th:href="@{/products}" class="link-title">
-                                    <span class="sp-link-title">Products</span>
-                                    <span class="menu-arrow"></span>
+                            <li class="menu-link" th:if="${#authentication.principal == 'anonymousUser'}">
+                                <a th:href="@{/login}" class="link-title">
+                                    <span class="sp-link-title">Chatbot</span>
+                                </a>
+                            </li>
+                            <li class="menu-link" th:unless="${#authentication.principal == 'anonymousUser'}">
+                                <a th:href="@{/chat}" class="link-title">
+                                    <span class="sp-link-title">Chatbot</span>
                                 </a>
                             </li>
                             <li class="menu-link">

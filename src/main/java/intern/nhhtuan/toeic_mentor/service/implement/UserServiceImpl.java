@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
+import intern.nhhtuan.toeic_mentor.dto.ProfileDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Service
@@ -72,13 +74,6 @@ public class UserServiceImpl implements IUserService {
         return true;
     }
 
-    public void validateEmailUnique(String email) {
-        User existingUserByEmail = userRepository.findByEmail(email).orElse(null);
-        if (existingUserByEmail != null) {
-            throw new BadCredentialsException("Email already exists");
-        }
-    }
-
     @Override
     public boolean updatePassword(ForgotPasswordRequest forgotPasswordRequest) {
         // Kiểm tra email có tồn tại không
@@ -96,7 +91,61 @@ public class UserServiceImpl implements IUserService {
         return true;
     }
 
-    public boolean isPasswordConfirmed(String password, String confirmPassword) {
+    @Override
+    public ProfileDTO getProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("User not found with email: " + email));
+
+        return ProfileDTO.builder()
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .gender(user.getGender())
+                .avatarUrl(user.getAvatarUrl())
+                .createdAt(user.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .build();
+    }
+
+    @Override
+    public boolean updateProfile(ProfileDTO profileDTO) {
+        User user = userRepository.findByEmail(profileDTO.getEmail())
+                .orElseThrow(() -> new BadCredentialsException("User not found with email: " + profileDTO.getEmail()));
+        user.setFullName(profileDTO.getFullName());
+        user.setGender(profileDTO.getGender());
+        if (profileDTO.getAvatar() != null && !profileDTO.getAvatar().isEmpty()) {
+            if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
+                // Xóa ảnh cũ nếu có
+                try {
+                    imageUtil.deleteImage(user.getAvatarUrl());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            // Kiểm tra định dạng ảnh hợp lệ
+            if (imageUtil.isValidSuffixImage(Objects.requireNonNull(profileDTO.getAvatar().getOriginalFilename()))) {
+                try {
+                    user.setAvatarUrl(imageUtil.saveImage(profileDTO.getAvatar()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                throw new IllegalArgumentException("Invalid image format.");
+            }
+        } else {
+            // Nếu không có ảnh, giữ nguyên ảnh cũ
+            user.setAvatarUrl(user.getAvatarUrl());
+        }
+        userRepository.save(user);
+        return true;
+    }
+
+    private void validateEmailUnique(String email) {
+        User existingUserByEmail = userRepository.findByEmail(email).orElse(null);
+        if (existingUserByEmail != null) {
+            throw new BadCredentialsException("Email already exists");
+        }
+    }
+
+    private boolean isPasswordConfirmed(String password, String confirmPassword) {
         return password != null && password.equals(confirmPassword);
     }
 }

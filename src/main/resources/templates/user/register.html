@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <!-- Added by HTTrack -->
-<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
 <head th:replace="~{user/fragments/head :: head('TOEIC Mentor - Register')}"></head>
 
 <body>
@@ -14,7 +14,8 @@
                 <div class="notify-text">
                     <ul class="grid-wrap">
                         <li class="grid-wrapper">
-                            <p class="notification-free"><span class="top-c">Free delivery</span> on orders over $100 discount</p>
+                            <p class="notification-free"><span class="top-c">Free delivery</span> on orders over $100
+                                discount</p>
                         </li>
                     </ul>
                 </div>
@@ -37,7 +38,8 @@
                         <!-- breadcrumb-list start -->
                         <ul class="breadcrumb-ul">
                             <li class="breadcrumb-li">
-                                <a class="breadcrumb-link" href="../../../../../../../TechStore-master/src/main/resources/templates/user/index1.html">Home</a>
+                                <a class="breadcrumb-link"
+                                   href="../../../../../../../TechStore-master/src/main/resources/templates/user/index1.html">Home</a>
                             </li>
                             <li class="breadcrumb-li">
                                 <span class="breadcrumb-text">Create Account</span>
@@ -65,57 +67,73 @@
                     <!-- account login start  -->
                     <div class="log-acc-page">
                         <div class="contact-form-list">
-                            <form method="post" th:action="@{/register}" th:object="${registerRequest}" enctype="multipart/form-data">
+                            <form method="post" th:action="@{/register}" th:object="${registerRequest}"
+                                  enctype="multipart/form-data">
                                 <!-- Add error message for BadCredentialsException -->
                                 <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
-                                
+
                                 <ul class="form-fill">
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Email</label>
-                                        <input type="email" th:field="*{email}" placeholder="Example: example@gmail.com">
-                                        <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                                        <input type="email" th:field="*{email}"
+                                               placeholder="Example: example@gmail.com">
+                                        <span class="text-danger" th:if="${#fields.hasErrors('email')}"
+                                              th:errors="*{email}"></span>
                                     </li>
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Password</label>
-                                        <input type="password" th:field="*{password}" placeholder="Please enter your password!">
-                                        <label class="password-requirements">Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 special character and be 8-20 characters long.</label>
-                                        <span class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                                        <input type="password" th:field="*{password}"
+                                               placeholder="Please enter your password!">
+                                        <label class="password-requirements">Password must contain at least 1 uppercase
+                                            letter, 1 lowercase letter, 1 special character and be 8-20 characters
+                                            long.</label>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('password')}"
+                                              th:errors="*{password}"></span>
                                     </li>
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Confirm Password</label>
-                                        <input type="password" th:field="*{confirmPassword}" placeholder="Please enter your re-password!">
-                                        <span class="text-danger" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></span>
+                                        <input type="password" th:field="*{confirmPassword}"
+                                               placeholder="Please enter your re-password!">
+                                        <span class="text-danger" th:if="${#fields.hasErrors('confirmPassword')}"
+                                              th:errors="*{confirmPassword}"></span>
                                     </li>
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Full Name</label>
                                         <input type="text" th:field="*{fullName}" placeholder="Nguyễn Văn A">
-                                        <span class="text-danger" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></span>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('fullName')}"
+                                              th:errors="*{fullName}"></span>
                                     </li>
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Gender</label>
                                         <select th:field="*{gender}" class="form-control">
                                             <option value="">Select gender</option>
                                             <option th:each="gender : ${genders}"
-                                                    th:value="${gender}" 
+                                                    th:value="${gender}"
                                                     th:text="${gender}"></option>
                                         </select>
                                     </li>
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Profile Image</label>
                                         <input type="file" th:field="*{image}" accept="image/*" class="form-control">
-                                        <span class="text-danger" th:if="${#fields.hasErrors('image')}" th:errors="*{image}"></span>
-                                        <small class="form-text text-muted">Upload a profile picture (JPG, PNG, GIF)</small>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('image')}"
+                                              th:errors="*{image}"></span>
+                                        <small class="form-text text-muted">Upload a profile picture (JPG, PNG,
+                                            GIF)</small>
                                     </li>
                                 </ul>
                                 <div class="register-action" data-animate="animate__fadeInUp">
                                     <label class="cust-checkbox-label login-read-text">
                                         <span class="login-read">
-                                            Tôi đã đọc và đồng ý với <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/terms-condition.html">điều khoản & điều kiện.</a>
+                                            Tôi đã đọc và đồng ý với <a
+                                                href="../../../../../../../TechStore-master/src/main/resources/templates/user/terms-condition.html">điều khoản & điều kiện.</a>
                                         </span>
-                                        <input type="checkbox" id="login-terms" name="login-terms" class="cust-checkbox login-checkbox">
+                                        <input type="checkbox" id="login-terms" name="login-terms"
+                                               class="cust-checkbox login-checkbox">
                                         <span class="cust-check"></span>
                                     </label>
-                                    <button type="submit" class="btn-style2 register-btn" id="registerBtn" disabled>Register</button>
+                                    <button type="submit" class="btn-style2 register-btn" id="registerBtn"
+                                            disabled="disabled">Register
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -142,20 +160,11 @@
 <!-- footer end -->
 <!-- back-to-top start -->
 <a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
-<a href="#" class="user-item" onclick="document.getElementById('logoutForm').submit();">
-    <div class="icon">
-        <i class="icon-log-out"></i>
-    </div>
-    <div class="body-title-2">Log out</div>
-</a>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const checkbox = document.getElementById("login-terms");
         const registerBtn = document.getElementById("registerBtn");
-
-        // Mặc định vô hiệu hóa nút register
-        registerBtn.disabled = true;
 
         checkbox.addEventListener("change", function () {
             registerBtn.disabled = !checkbox.checked;

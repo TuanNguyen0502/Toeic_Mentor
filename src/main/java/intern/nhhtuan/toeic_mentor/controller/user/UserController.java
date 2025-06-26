@@ -1,48 +1,55 @@
 package intern.nhhtuan.toeic_mentor.controller.user;
 
-import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
-import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
-import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
+import intern.nhhtuan.toeic_mentor.dto.ProfileDTO;
+import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
+import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
-@RequestMapping("/chat")
 @RequiredArgsConstructor
 public class UserController {
-    private final IQuestionService questionService;
+    private final IUserService userService;
 
-    @GetMapping("")
-    public String index() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // Determine the email of the authenticated user or use "anonymous" if not authenticated
-        String conversationId = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
-        return "redirect:/chat/" + conversationId;
+    @GetMapping("/profile")
+    public String profile(Model model) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        model.addAttribute("eGender", EGender.values());
+        model.addAttribute("profile", userService.getProfile(email));
+        return "user/profile";
     }
 
-    @GetMapping("/{conversationId}")
-    public String chatbot(@PathVariable String conversationId, Model model) {
-        // Ensure the conversationId contains the user's email to prevent unauthorized access
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // Determine the email of the authenticated user or use "anonymous" if not authenticated
-        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
-        if (!conversationId.contains(email)) {
-            return "redirect:/chat/" + email;
+    @GetMapping("/change-password")
+    public String changePassword(Model model) {
+        model.addAttribute("forgotPasswordRequest", new ForgotPasswordRequest());
+        return "user/password-reset";
+    }
+
+    @PostMapping("/profile")
+    public String updateProfile(@Validated @ModelAttribute ProfileDTO profileDTO,
+                                BindingResult bindingResult,
+                                Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("eGender", EGender.values());
+            model.addAttribute("profile", profileDTO);
+            return "user/profile";
         }
-        model.addAttribute("conversationId", conversationId);
-        return "user/index";
-    }
-
-    @PostMapping("/generate-test")
-    public String generateTest(@RequestBody TestRequest request, Model model) {
-        List<QuestionResponse> questions = questionService.generateTest(request);
-        model.addAttribute("questions", questions);
-        return "user/take-test";
+        try {
+            if (userService.updateProfile(profileDTO)) {
+                return "redirect:/profile";
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        model.addAttribute("profile", profileDTO);
+        return "user/profile";
     }
 }

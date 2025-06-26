@@ -17,7 +17,8 @@
                             <form method="get" action="/products" class="search-form">
                                 <div class="search-bar">
                                     <div class="form-search">
-                                        <input type="search" id="search-input" name="name" class="search-input" placeholder="Search our store" autocomplete="off">
+                                        <input type="search" id="search-input" name="name" class="search-input"
+                                               placeholder="Search" autocomplete="off">
                                     </div>
                                     <div class="search-results" style="display: none;">
                                         <p class="search-for d-none">Search for <span class="search-text"></span></p>
@@ -31,7 +32,6 @@
                             </form>
                         </div>
                     </div>
-
                     <!-- header-text end -->
                     <!-- search-wrapper end -->
                     <!-- header-icon start -->
@@ -39,7 +39,8 @@
                         <ul class="shop-element">
                             <li class="side-wrap toggler-wrap">
                                 <div class="toggler-wrapper">
-                                    <button type="button" class="toggler-btn"><span class="toggler-icon"><i class="feather-menu"></i></span></button>
+                                    <button type="button" class="toggler-btn"><span class="toggler-icon"><i
+                                            class="feather-menu"></i></span></button>
                                 </div>
                             </li>
                             <li class="side-wrap search-wrap">
@@ -54,16 +55,21 @@
                                     <a th:if="${#authentication.principal == 'anonymousUser'}" th:href="@{/login}">
                                         <span class="user-icon"><i class="feather-user"></i></span>
                                     </a>
-                                    <a th:unless="${#authentication.principal == 'anonymousUser'}" th:href="@{/my-account}">
+                                    <a th:unless="${#authentication.principal == 'anonymousUser'}"
+                                       th:href="@{/profile}">
                                         <span class="user-icon"><i class="feather-user"></i></span>
                                     </a>
                                     <div class="account-main">
                                         <span class="acc-title">Account</span>
                                         <div class="account-login">
-                                            <a th:if="${#authentication.principal == 'anonymousUser'}" th:href="@{/register}">Register</a>
-                                            <a th:unless="${#authentication.principal == 'anonymousUser'}" th:href="@{/my-account}" th:text="${user.getFullName()}"></a>
-                                            <a th:if="${#authentication.principal == 'anonymousUser'}" th:href="@{/login}">Login</a>
-                                            <a th:unless="${#authentication.principal == 'anonymousUser'}" th:href="@{/logout}">Logout</a>
+                                            <a th:if="${#authentication.principal == 'anonymousUser'}"
+                                               th:href="@{/register}">Register</a>
+                                            <a th:unless="${#authentication.principal == 'anonymousUser'}"
+                                               th:href="@{/profile}" th:text="${user.getFullName()}"></a>
+                                            <a th:if="${#authentication.principal == 'anonymousUser'}"
+                                               th:href="@{/login}">Login</a>
+                                            <a th:unless="${#authentication.principal == 'anonymousUser'}"
+                                               th:href="@{/logout}">Logout</a>
                                         </div>
                                     </div>
                                 </div>
@@ -97,15 +103,19 @@
                         <div class="main-wrap">
                             <ul class="main-menu">
                                 <li class="menu-link">
-                                    <a th:href="@{/home}" class="link-title">
+                                    <a th:href="@{/}" class="link-title">
                                         <span class="sp-link-title">Home</span>
                                         <span class="menu-arrow"></span>
                                     </a>
                                 </li>
-                                <li class="menu-link">
-                                    <a th:href="@{/products}" class="link-title">
-                                        <span class="sp-link-title">Products</span>
-                                        <span class="menu-arrow"></span>
+                                <li class="menu-link" th:if="${#authentication.principal == 'anonymousUser'}">
+                                    <a th:href="@{/login}" class="link-title">
+                                        <span class="sp-link-title">Chatbot</span>
+                                    </a>
+                                </li>
+                                <li class="menu-link" th:unless="${#authentication.principal == 'anonymousUser'}">
+                                    <a th:href="@{/chat}" class="link-title">
+                                        <span class="sp-link-title">Chatbot</span>
                                     </a>
                                 </li>
                                 <li class="menu-link">
@@ -116,8 +126,10 @@
                                     <div class="menu-dropdown menu-single collapse" id="blogs2">
                                         <ul class="ul">
                                             <li class="menusingle-li" th:each="brand : ${brands}">
-                                                <a th:href="@{/products(brandNames=${brand.name})}" class="menusingle-title">
-                                                    <img class="sp-link-title" style="height: 50px; width: 50px" th:src="${brand.image}" th:text="${brand.name}">
+                                                <a th:href="@{/products(brandNames=${brand.name})}"
+                                                   class="menusingle-title">
+                                                    <img class="sp-link-title" style="height: 50px; width: 50px"
+                                                         th:src="${brand.image}" th:text="${brand.name}">
                                                 </a>
                                             </li>
                                         </ul>

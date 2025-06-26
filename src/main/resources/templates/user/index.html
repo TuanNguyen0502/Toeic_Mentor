@@ -1,549 +1,772 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toeic Mentor's Chatbot</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .message-content {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .message-content code {
-            background-color: #f0f0f0;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-
-        /* Gradient animations */
-        .gradient-animation {
-            background: linear-gradient(-45deg, #3b82f6, #2563eb, #1d4ed8, #1e40af);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
-        }
-
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #c5c5c5;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-
-        /* Message animations */
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .message-animation {
-            animation: slideIn 0.3s ease-out forwards;
-        }
-
-        /* Glass effect */
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 h-screen flex flex-col">
-    <div class="flex flex-row h-full">
-        <!-- Sidebar -->
-        <div id="sidebar" class="w-64 bg-white shadow-xl p-0 hidden md:flex md:flex-col h-full border-r border-gray-200">
-            <!-- Sidebar Header -->
-            <div class="gradient-animation text-white p-4">
-                <h2 class="text-lg font-bold tracking-wide">Conversations</h2>
-                <p class="text-xs text-gray-200 mt-1">Your chat history</p>
-            </div>
-
-            <!-- Add Conversation Button -->
-            <div class="px-4 py-3 border-b border-gray-200">
-                <button id="add-conversation-btn"
-                    class="w-full bg-white border-2 border-green-500 text-green-500 py-2 px-4 rounded-lg
-                    hover:bg-green-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-500
-                    transition-all duration-200 flex items-center justify-center gap-2 font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                    New Chat
-                </button>
-            </div>
-
-            <!-- Conversation List Area -->
-            <div class="flex-1 overflow-y-auto px-2 py-2">
-                <ul id="conversation-list" class="space-y-1"></ul>
-            </div>
-
-            <!-- User Info Area -->
-            <div class="border-t border-gray-200 p-4 bg-gray-50 flex items-center">
-                <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold text-sm shadow-md">
-                    <span th:text="${#authentication?.name?.charAt(0)}">U</span>
-                </div>
-                <div class="ml-3">
-                    <div class="text-sm font-medium text-gray-900 truncate max-w-[160px]">
-                        <span th:text="${#authentication?.name}">User</span>
+<html lang="en">
+<html xmlns:th="https://www.thymeleaf.org">
+<meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
+<head th:replace="~{user/fragments/head :: head('TOEIC Mentor - Home')}"></head>
+<body>
+<!-- screen-bg start -->
+<div class="screen-bg"></div>
+<div th:insert="~{user/fragments/header::header}"></div>
+<!-- header end -->
+<div th:insert="~{user/fragments/main_menu::main-menu}"></div>
+<!-- main start -->
+<main id="main">
+    <!-- main-slider start -->
+    <section class="slider-content">
+        <div class="home-slider owl-carousel owl-theme" id="home-slider">
+            <div class="item" th:each="product : ${productHomeSliders}">
+                <div class="slider-image">
+                    <div class="slide-img" style="display: flex; justify-content: center;">
+                        <img th:src="${product.getThumbnail()}"
+                             style="max-width: 100%; max-height: 500px; width: auto; height: auto" alt="slider">
+                        <img th:src="${product.getThumbnail()}" class="img-fluid resp-img" alt="mobile-slider">
                     </div>
-                    <p class="text-xs text-gray-500">Online</p>
+                    <div class="container slider-text-info">
+                        <div class="slider-text-content">
+                            <span class="sub-title" th:text="${product.price}"></span>
+                            <h2><span th:text="${product.name}"></span></h2>
+                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn-block">
+                                <span class="shopnow">Shop now</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col h-full overflow-hidden bg-gray-50">
-            <!-- Header -->
-            <div class="glass-effect sticky top-0 z-10 border-b border-gray-200 bg-white/80">
-                <div class="flex justify-between items-center px-6 py-3">
-                    <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        Toeic Mentor's Chatbot
-                    </h1>
-                    <form th:action="@{/logout}" method="post">
-                        <button type="submit"
-                            class="bg-white text-red-500 px-4 py-2 rounded-lg border border-red-500
-                            hover:bg-red-500 hover:text-white transition-colors duration-200
-                            focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
-                            </svg>
-                            Logout
-                        </button>
-                    </form>
+    </section>
+    <!-- main-slider end -->
+    <!-- category-slider start -->
+    <section class="slider-category section-pt">
+        <div class="section-capture">
+            <div class="section-title">
+                <h2 data-animate="animate__fadeInUp">Popular brand</h2>
+            </div>
+        </div>
+        <!-- brand-slider start -->
+        <div class="brand-area section-pb">
+            <div class="container">
+                <div class="testi-category">
+                    <div class="testi-wrap">
+                        <div class="brand-slider owl-carousel owl-theme" id="brand-slider">
+                            <div class="item" data-animate="animate__fadeInUp" th:each="brand : ${brands}">
+                                <div class="brand-img">
+                                    <a th:href="@{/products(brandNames=${brand.name})}" class="brand-img"><img
+                                            th:src="*{brand.getImage()}" class="img-fluid"
+                                            alt="brand"></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+        <!-- brand-slider end -->
+    </section>
+    <!-- category-slider end -->
 
-            <!-- Chat messages area -->
-            <div class="flex-1 overflow-y-auto" id="chat-messages-container">
-                <div id="chat-messages" class="max-w-4xl mx-auto p-4 space-y-4"></div>
-            </div>
+    <!-- product-tab start -->
+    <section class="product-tab-area section-ptb">
+        <div class="container">
+            <div class="collection-category">
+                <div class="section-capture">
+                    <div class="section-title">
+                        <h2 data-animate="animate__fadeInUp">Trending product</h2>
+                    </div>
+                </div>
+                <div class="collection-wrap">
+                    <div class="collection-slider swiper" id="new-product">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide" data-animate="animate__fadeInUp"
+                                 th:each="product : ${productHomeTrending}">
+                                <div class="single-product-wrap">
+                                    <div class="product-image">
+                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html" class="pro-img">
+                                            <img th:src="${product.thumbnail}" class="img-fluid img1 resp-img1"
+                                                 alt="p-1">
+                                            <img th:src="${product.thumbnail}" class="img-fluid img2 resp-img2"
+                                                 alt="p-2">
+                                        </a>
+                                        <div class="product-action">
+                                            <a href="#" class="quickview" th:data-product-id="${product.getId()}">
+                                                <span class="product-icon"><i class="feather-eye"></i></span>
+                                                <span class="tooltip-text">quickview</span>
+                                            </a>
+                                        </div>
+                                        <!-- Thêm thuộc tính xác thực -->
+                                        <div th:attr="data-authenticated=${user != null}"></div>
+                                        <div class="product-cart">
+                                            <button type="button" class="add-to-cart"
+                                                    th:attr="data-product-id=${product.id}"
+                                                    onclick="addToCart(this)">
+                                                <span class="product-icon">
+                                                    <span class="product-bag-icon"><i class="feather-shopping-bag"></i></span>
+                                                    <span class="product-loader-icon"><i class="feather-loader"></i></span>
+                                                    <span class="product-check-icon"><i class="feather-check"></i></span>
+                                                </span>
+                                            </button>
+                                        </div>
 
-            <!-- Message input area -->
-            <div class="glass-effect border-t border-gray-200 bg-white/80">
-                <div class="max-w-4xl mx-auto p-4">
-                    <form id="chat-form" class="flex items-center gap-2" enctype="multipart/form-data">
-                        <div class="relative flex-1">
-                            <input
-                                type="text"
-                                id="message-input"
-                                name="message"
-                                placeholder="Type your message..."
-                                class="w-full p-4 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/50 backdrop-blur-sm"
-                                required
-                            >
-                            <label for="image-input" class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-blue-500 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span id="image-selected" class="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full hidden"></span>
-                            </label>
-                            <input
-                                type="file"
-                                id="image-input"
-                                name="image"
-                                accept="image/*"
-                                class="hidden"
-                            >
+                                    </div>
+                                    <div class="product-content">
+                                        <div class="product-title">
+                                            <h6><a th:href="@{/products/{id}(id=${product.id})}" th:text="${product.name}"></a></h6>
+                                        </div>
+                                        <div class="price-box">
+                                            <span class="new-price" th:text="'' + ${product.price}"></span>
+                                            <!--                                            <span class="old-price">$70.00</span>-->
+                                        </div>
+                                        <div class="product-ratting">
+                                                    <span class="review-ratting">
+                                                        <span class="review-star">
+                                                            <span th:if="${product.getStars() > 0}">
+                                                                <span th:each="i : ${#numbers.sequence(1, product.stars)}">
+                                                                    <i class="fas fa-star"></i>
+                                                                </span>
+                                                            </span>
+                                                            <span th:if="${product.getStars() < 5}">
+                                                                <span th:each="i : ${#numbers.sequence(1, 5 - product.stars)}">
+                                                                    <i class="feather-star"></i>
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                        <span class="review-caption">No reviews</span>
+                                                    </span>
+                                        </div>
+                                        <div class="product-description">
+                                            <p th:text="${product.description}"></p>
+                                        </div>
+                                        <div class="product-action">
+                                            <a th:href="@{/add-cart}" class="add-to-cart">
+                                                        <span class="product-icon">
+                                                            <span class="product-bag-icon"><i
+                                                                    class="feather-shopping-bag"></i></span>
+                                                            <span class="product-loader-icon"><i
+                                                                    class="feather-loader"></i></span>
+                                                            <span class="product-check-icon"><i
+                                                                    class="feather-check"></i></span>
+                                                        </span>
+                                                <span class="tooltip-text">add to cart</span>
+                                            </a>
+                                            <a href="#quickview-modal" data-bs-toggle="modal" class="quick-view">
+                                                <span class="product-icon"><i class="feather-eye"></i></span>
+                                                <span class="tooltip-text">quickview</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <button
-                            type="submit"
-                            class="gradient-animation text-white px-6 py-4 rounded-xl hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-lg flex items-center gap-2"
-                        >
-                            <span>Send</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                    </form>
+                        <div class="collection-button" data-animate="animate__fadeInUp">
+                            <a th:href="@{/products}" class="btn-style3">view more</a>
+                        </div>
+                    </div>
+                    <div class="swiper-buttons">
+                        <div class="swiper-buttons-wrap">
+                            <button class="swiper-prev swiper-prev-new"><i class="feather-arrow-left"></i></button>
+                            <button class="swiper-next swiper-next-new"><i class="feather-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="swiper-dots">
+                        <div class="swiper-pagination swiper-pagination-new"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- product-tab end -->
+    <!-- testimonials-slider start -->
+    <section class="testimonials-slider section-ptb">
+        <div class="section-capture">
+            <div class="section-title">
+                <h2 data-animate="animate__fadeInUp">Our customers love</h2>
+            </div>
+        </div>
+        <div class="container">
+            <div class="testi-category">
+                <div class="testi-wrap">
+                    <div class="testi-slider owl-carousel owl-theme" id="testimonials-slider">
+                        <div class="item" data-animate="animate__fadeInUp">
+                            <div class="testi-content">
+                                <div class="test-quite">
+                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
+                                </div>
+                                <div class="testi-desc">
+                                    <p>Trang web rõ ràng, nhân viên tư vấn kỹ, đặc biệt giao hàng đúng giờ. Lần sau sẽ giới thiệu bạn bè đến mua!</p>
+                                </div>
+                                <div class="testi-image">
+                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-1.jpg}"
+                                               class="img-fluid" alt="test-2"></span>
+                                </div>
+                                <div class="author-info">
+                                    <h6>Nguyễn Thảo Vy</h6>
+                                </div>
+                                <span class="review-star">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                        </span>
+                            </div>
+                        </div>
+                        <div class="item" data-animate="animate__fadeInUp">
+                            <div class="testi-content">
+                                <div class="test-quite">
+                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
+                                </div>
+                                <div class="testi-desc">
+                                    <p>Dịch vụ rất chuyên nghiệp, có cả trả góp 0% lãi suất, giao hàng tận nơi và hỗ trợ kỹ thuật miễn phí sau khi mua.
+                                         Rất đáng tin cậy!</p>
+                                </div>
+                                <div class="testi-image">
+                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-2.jpg}"
+                                               class="img-fluid" alt="test-2"></span>
+                                </div>
+                                <div class="author-info">
+                                    <h6>Lê Quỳnh Anh</h6>
+                                </div>
+                                <span class="review-star">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </span>
+                            </div>
+                        </div>
+                        <div class="item" data-animate="animate__fadeInUp">
+                            <div class="testi-content">
+                                <div class="test-quite">
+                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
+                                </div>
+                                <div class="testi-desc">
+                                    <p>Mình mua iPhone 15 Pro Max ở đây với giá rẻ hơn 2 cửa hàng khác. Hàng chính hãng, bảo hành đầy đủ. Giao hàng cũng cực nhanh!</p>
+                                </div>
+                                <div class="testi-image">
+                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-3.jpg}"
+                                               class="img-fluid" alt="test-2"></span>
+                                </div>
+                                <div class="author-info">
+                                    <h6>Vũ Thành Đạt </h6>
+                                </div>
+                                <span class="review-star">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </span>
+                            </div>
+                        </div>
+                        <div class="item" data-animate="animate__fadeInUp">
+                            <div class="testi-content">
+                                <div class="test-quite">
+                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
+                                </div>
+                                <div class="testi-desc">
+                                    <p>Website dễ dùng, lọc máy theo nhu cầu nhanh. Tư vấn viên hỗ trợ nhiệt tình, mình chọn được đúng chiếc phù hợp với công việc.</p>
+                                </div>
+                                <div class="testi-image">
+                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-4.jpg}"
+                                               class="img-fluid" alt="test-2"></span>
+                                </div>
+                                <div class="author-info">
+                                    <h6>Nguyễn Hoàng Long</h6>
+                                </div>
+                                <span class="review-star">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                        </span>
+                            </div>
+                        </div>
+                        <div class="item" data-animate="animate__fadeInUp">
+                            <div class="testi-content">
+                                <div class="test-quite">
+                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
+                                </div>
+                                <div class="testi-desc">
+                                    <p>Mình đặt Galaxy S23 Ultra hôm qua, hôm nay đã nhận được hàng. Đóng gói kỹ, máy mới nguyên seal. Sẽ ủng hộ lần sau!</p>
+                                </div>
+                                <div class="testi-image">
+                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-5.jpg}"
+                                               class="img-fluid" alt="test-2"></span>
+                                </div>
+                                <div class="author-info">
+                                    <h6>Đỗ Khánh Linh</h6>
+                                </div>
+                                <span class="review-star">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                        </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- testimonials-slider end -->
+
+    <!-- offer-text-section start -->
+    <div class="offer-text-area section-tb-padding">
+        <div class="offer-text-wrap">
+            <div class="offer-text">
+                <ul>
+                    <li class="text1">
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Newest products 10% off use code: NEW10</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                    </li>
+                    <li class="text2">
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Newest products 10% off use code: NEW10</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                    </li>
+                    <li class="text1">
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Newest products 10% off use code: NEW10</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                    </li>
+                    <li class="text2">
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Newest products 10% off use code: NEW10</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                    </li>
+                    <li class="text1">
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Newest products 10% off use code: NEW10</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                    </li>
+                    <li class="text2">
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Newest products 10% off use code: NEW10</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                    </li>
+                    <li class="text1">
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Newest products 10% off use code: NEW10</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                    </li>
+                    <li class="text2">
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Newest products 10% off use code: NEW10</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Summer sale discount 40% off all products</p>
+                        </div>
+                        <div class="offer-text-block">
+                            <p>Explore the latest shopping related offers</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <br>
+    <!-- offer-text-section end -->
+    <!-- service-area start-->
+    <div class="service-area section-p" data-animate="animate__fadeInUp">
+        <div class="container">
+            <ul class="single-service">
+                <li class="service-content" data-animate="animate__fadeInUp">
+                    <div class="ser-block">
+                        <a class="service-icon" href="JavaScript:void(0)">
+                            <span><i class="feather-truck"></i></span>
+                        </a>
+                        <div class="service-text">
+                            <h6>Free shipping</h6>
+                            <p>Delivery within 5 to 7 day</p>
+                        </div>
+                    </div>
+                </li>
+                <li class="service-content" data-animate="animate__fadeInUp">
+                    <div class="ser-block">
+                        <a class="service-icon" href="JavaScript:void(0)">
+                            <span><i class="feather-gift"></i></span>
+                        </a>
+                        <div class="service-text">
+                            <h6>Gift voucher</h6>
+                            <p>Surprise coupon voucher</p>
+                        </div>
+                    </div>
+                </li>
+                <li class="service-content" data-animate="animate__fadeInUp">
+                    <div class="ser-block">
+                        <a class="service-icon" href="JavaScript:void(0)">
+                            <span><i class="feather-shield"></i></span>
+                        </a>
+                        <div class="service-text">
+                            <h6>Money back</h6>
+                            <p>Refund within 30 days</p>
+                        </div>
+                    </div>
+                </li>
+                <li class="service-content" data-animate="animate__fadeInUp">
+                    <div class="ser-block">
+                        <a class="service-icon" href="JavaScript:void(0)">
+                            <span><i class="feather-briefcase"></i></span>
+                        </a>
+                        <div class="service-text">
+                            <h6>Safe payment</h6>
+                            <p>100% secure with us</p>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- service-area end-->
+</main>
+<!-- main end -->
+<!-- footer start -->
+<br>
+<div th:insert="~{user/fragments/footer::footer}"></div>
+<!-- footer end -->
+<!-- Quickview Modal -->
+<div class="modal fade quickview-modal" id="quickview-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quickview-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Quickview Modal End -->
+<!-- search-modal start -->
+<div class="search-modal modal fade" id="searchmodal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="container">
+                    <div class="search-content">
+                        <div class="search-box">
+                            <button type="button" class="search-close" data-bs-dismiss="modal"><span><i
+                                    class="feather-x"></i></span></button>
+                            <form method="get" action="https://spacingtech.com/search" class="search-form">
+                                <div class="search-bar">
+                                    <div class="form-search">
+                                        <input type="search" name="search-input" class="search-input" value=""
+                                               placeholder="Search our store" required="">
+                                        <button type="button" onclick="location.href='search.html'" class="search-btn"
+                                                disabled=""><i class="feather-search"></i></button>
+                                    </div>
+                                    <div class="search-results">
+                                        <p class="search-for">Search for <span class="search-text">a</span></p>
+                                        <ul>
+                                            <li>
+                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
+                                                    <img th:src="@{/user/asset/image/home1/product/product-1.jpg}"
+                                                         class="img-fluid" alt="product-1.jpg}">
+                                                    <span>Earbuds</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
+                                                    <img th:src="@{/user/asset/image/home1/product/product-7.jpg}"
+                                                         class="img-fluid" alt="product-7.jpg}">
+                                                    <span>Sandisk ssd</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
+                                                    <img th:src="@{/user/asset/image/home1/product/product-15.jpg}"
+                                                         class="img-fluid" alt="product-15.jpg}">
+                                                    <span>Router wifi6</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
+                                                    <img th:src="@{/user/asset/image/home1/product/product-18.jpg}"
+                                                         class="img-fluid" alt="product-18.jpg}">
+                                                    <span>Smartphone</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
+                                                    <img th:src="@{/user/asset/image/home1/product/product-31.jpg}"
+                                                         class="img-fluid" alt="product-31.jpg}">
+                                                    <span>IPad mini</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
+                                                    <img th:src="@{/user/asset/image/home1/product/product-49.jpg}"
+                                                         class="img-fluid" alt="product-49.jpg}">
+                                                    <span>HP color printer</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <p class="search-more"><a href="../../../../../../../TechStore-master/src/main/resources/templates/user/search.html">See all results (12)</a></p>
+                                        <p class="search-fail">Search not found</p>
+                                    </div>
+                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/search.html" class="search-btn">Search</a>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="search-example-text">Trending search: a, e, Sunglasses...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+<!-- search-modal end -->
+<!-- cart-drawer start -->
+<div th:insert="~{user/fragments/cart_drawer::cart-drawer}"></div>
+<!-- cart-drawer end -->
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    const conversationId = [[${conversationId}]];
-    const userEmail = [[${#authentication?.name}]];
-    /*]]>*/
+<!-- back-to-top start -->
+<a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
+<!-- back-to-top end -->
+</body>
+<!-- plugin js -->
+<script th:src="@{/user/asset/js/plugin.js}"></script>
+<!-- theme js -->
+<script th:src="@{/user/asset/js/main.js}"></script>
+<script>
+    function addToCart(button) {
+        const isAuthenticated = [[${#authentication.principal != 'anonymousUser'}]];
+        if (!isAuthenticated) {
+            window.location.href = "/login";
+            return;
+        }
+
+        const productId = button.getAttribute('data-product-id');
+
+        fetch(`/add-cart?productId=${productId}`, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Thêm thất bại!');
+                }
+            })
+            .then(data => {
+                alert(data);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra!');
+            });
+    }
 </script>
 <script>
-    const chatForm = document.getElementById('chat-form');
-    const messageInput = document.getElementById('message-input');
-    const chatMessages = document.getElementById('chat-messages');
-
-    // Load chat history on page load
-    document.addEventListener('DOMContentLoaded', async function () {
-        // Always use window.conversationId
-        window.conversationId = conversationId;
-        if (!window.conversationId) return;
-        try {
-            const response = await fetch(`/conversation?conversationId=${encodeURIComponent(window.conversationId)}`);
-            if (response.ok) {
-                const history = await response.json();
-                // history is expected to be a flat array of messages (List<String>)
-                history.forEach((msg, idx) => {
-                    const sender = idx % 2 === 0 ? 'User' : 'Bot';
-                    addMessageToChat(sender, msg);
-                });
-            }
-        } catch (e) {
-            console.error('Failed to load chat history:', e);
-        }
-
-        // Sidebar: Load Conversations on page load
-        const convList = document.getElementById('conversation-list');
-        if (userEmail && convList) {
-            convList.innerHTML = '<li class="text-gray-500">Loading...</li>';
-            try {
-                const res = await fetch(`/conversation-ids?email=${encodeURIComponent(userEmail)}`);
-                if (res.ok) {
-                    const ids = await res.json();
-                    convList.innerHTML = '';
-                    if (ids.length === 0) {
-                        convList.innerHTML = '<li class="text-gray-500">No conversations found.</li>';
-                    } else {
-                        ids.forEach(id => {
-                            const li = document.createElement('li');
-                            li.className = 'flex items-center justify-between hover:bg-blue-100 p-2 rounded group';
-                            const span = document.createElement('span');
-                            let displayName = id;
-                            if (id === userEmail) {
-                                displayName = userEmail;
-                            } else if (id.startsWith(userEmail + '_')) {
-                                displayName = id.substring((userEmail + '_').length);
-                            }
-                            span.innerText = displayName;
-                            li.onclick = async function(e) {
-                                // Prevent menu click from triggering conversation load
-                                if (e.target.closest('.menu-btn, .menu-dropdown')) return;
-                                window.conversationId = id;
-                                // Update page title with conversation name
-                                if (id !== userEmail) {
-                                    document.title = displayName;
-                                }
-                                const chatMessages = document.getElementById('chat-messages');
-                                if (chatMessages) chatMessages.innerHTML = '';
-                                try {
-                                    const response = await fetch(`/conversation?conversationId=${encodeURIComponent(id)}`);
-                                    if (response.ok) {
-                                        const history = await response.json();
-                                        history.forEach((msg, idx) => {
-                                            const sender = idx % 2 === 0 ? 'User' : 'Bot';
-                                            addMessageToChat(sender, msg);
-                                        });
-                                    }
-                                } catch (e) {
-                                    console.error('Failed to load chat history:', e);
-                                }
-                            };
-                            li.appendChild(span);
-                            // Add three-dot menu for non-default conversations
-                            if (id !== userEmail) {
-                                const menuBtn = document.createElement('button');
-                                menuBtn.innerHTML = '&#x22EE;'; // vertical ellipsis
-                                menuBtn.className = 'menu-btn ml-2 text-gray-500 hover:text-gray-800 focus:outline-none';
-                                menuBtn.style.fontSize = '18px';
-                                menuBtn.onclick = function(e) {
-                                    e.stopPropagation();
-                                    // Toggle dropdown
-                                    dropdownMenu.classList.toggle('hidden');
-                                };
-                                // Dropdown menu
-                                const dropdownMenu = document.createElement('div');
-                                dropdownMenu.className = 'menu-dropdown absolute z-10 right-8 mt-2 w-28 bg-white border border-gray-200 rounded shadow-lg hidden';
-                                // Rename button
-                                const renameBtn = document.createElement('button');
-                                renameBtn.className = 'block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-gray-100';
-                                renameBtn.innerText = 'Rename';
-                                renameBtn.onclick = async function(e) {
-                                    e.stopPropagation();
-                                    dropdownMenu.classList.add('hidden');
-                                    const newName = prompt('Enter new conversation name:');
-                                    if (!newName) return;
-                                    try {
-                                        const res = await fetch(`/conversation-name?conversationId=${encodeURIComponent(id)}&newName=${encodeURIComponent(newName)}`, { method: 'PUT' });
-                                        const newConversationId = await res.text();
-                                        if (res.ok && newConversationId && !newConversationId.startsWith('Failed')) {
-                                            span.innerText = newName;
-                                            // Update window.conversationId if this conversation is selected
-                                            if (window.conversationId === id) {
-                                                window.conversationId = newConversationId;
-                                            }
-                                            // Also update the id variable for this li (for future menu actions)
-                                            id = newConversationId;
-                                            alert('Conversation renamed successfully!');
-                                        } else {
-                                            alert('Failed to rename conversation.');
-                                        }
-                                    } catch (err) {
-                                        alert('Error renaming conversation.');
-                                    }
-                                };
-                                dropdownMenu.appendChild(renameBtn);
-                                // Delete button
-                                const delBtn = document.createElement('button');
-                                delBtn.className = 'block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100';
-                                delBtn.innerText = 'Delete';
-                                delBtn.onclick = async function(e) {
-                                    e.stopPropagation();
-                                    dropdownMenu.classList.add('hidden');
-                                    if (!confirm('Are you sure you want to delete this conversation?')) return;
-                                    await fetch(`/conversation?conversationId=${encodeURIComponent(id)}`, { method: 'DELETE' });
-                                    window.conversationId = userEmail;
-                                    const chatMessages = document.getElementById('chat-messages');
-                                    if (chatMessages) chatMessages.innerHTML = '';
-                                    li.remove();
-                                };
-                                dropdownMenu.appendChild(delBtn);
-                                // Positioning wrapper
-                                const menuWrapper = document.createElement('div');
-                                menuWrapper.className = 'relative flex items-center';
-                                menuWrapper.appendChild(menuBtn);
-                                menuWrapper.appendChild(dropdownMenu);
-                                li.appendChild(menuWrapper);
-                                // Hide dropdown when clicking outside
-                                document.addEventListener('click', function hideMenu(e) {
-                                    if (!menuWrapper.contains(e.target)) {
-                                        dropdownMenu.classList.add('hidden');
-                                    }
-                                });
-                            }
-                            convList.appendChild(li);
-                        });
-                    }
-                } else {
-                    convList.innerHTML = '<li class="text-red-500">Failed to load conversations.</li>';
+    function increaseQuantity(button) {
+        console.log("increaseQuantity called");
+        const productId = getProductId(button);
+        fetch(window.location.origin + "/add-cart?productId=" + productId)
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
                 }
-            } catch (e) {
-                convList.innerHTML = '<li class="text-red-500">Error loading conversations.</li>';
-            }
-        }
-
-        // Sidebar: Add Conversation logic
-        const addBtn = document.getElementById('add-conversation-btn');
-        if (addBtn && userEmail) {
-            addBtn.addEventListener('click', function() {
-                // Clear chat messages and unset conversationId
-                const chatMessages = document.getElementById('chat-messages');
-                if (chatMessages) chatMessages.innerHTML = '';
-                window.conversationId = null;
+                throw new Error('Tăng số lượng thất bại!');
+            })
+            .then(data => {
+                alert(data);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message);
             });
-        }
-    });
-
-    chatForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const message = messageInput.value;
-        const imageInput = document.getElementById('image-input');
-        const imageFile = imageInput && imageInput.files.length > 0 ? imageInput.files[0] : null;
-        if (!message && !imageFile) return;
-
-        // Add user message to chat
-        if (message) addMessageToChat('User', message);
-
-        // Clear input
-        messageInput.value = '';
-        if (imageInput) imageInput.value = '';
-
-        // Prepare FormData for sending message and image
-        const formData = new FormData();
-        formData.append('message', message);
-        if (window.conversationId) {
-            formData.append('conversationId', window.conversationId);
-        }
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
-
-        try {
-            const response = await fetch('/stream', {
-                method: 'POST',
-                body: formData
-            });
-            if (!response.ok) throw new Error('Network response was not ok');
-            const reader = response.body.getReader();
-            let botMessageElement = addMessageToChat('Bot', '');
-            let contentElement = botMessageElement.querySelector('.message-content');
-            await processStream(reader, contentElement);
-        } catch (error) {
-            console.error('Error fetching chatbot response:', error);
-            addMessageToChat('System', 'An error occurred while fetching the response. Please try again.');
-        }
-    });
-
-    async function fetchStreamWithRetry(url, retries = 3) {
-        for (let i = 0; i < retries; i++) {
-            try {
-                const response = await fetch(url, {
-                    credentials: 'include' // Send cookies with the request
-                });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return response;
-            } catch (e) {
-                console.error(`Attempt ${i + 1} failed: ${e.message}`);
-                if (i === retries - 1) throw e;
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
-            }
-        }
     }
 
-    async function processStream(reader, contentElement) {
-        const decoder = new TextDecoder("utf-8");
-        let fullResponse = "";
-        let isFirstChunk = true;
-
-        try {
-            while (true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value, {stream: true});
-                fullResponse += chunk;
-
-                if (isFirstChunk) {
-                    // Check for conversationId in the first chunk
-                    const match = chunk.match(/^ConversationId: (.*?)\n/);
-                    if (match) {
-                        window.conversationId = match[1];
-                        // Remove the conversationId line from the display
-                        contentElement.innerHTML += chunk.replace(/^ConversationId: .*?\n/, '');
-                    } else {
-                        contentElement.innerHTML += chunk;
-                    }
-                    isFirstChunk = false;
-                } else {
-                    contentElement.innerHTML += chunk;
+    function decreaseQuantity(button) {
+        console.log("decreaseQuantity called");
+        const productId = getProductId(button);
+        fetch(window.location.origin + "/decrease-cart?productId=" + productId)
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
                 }
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-
-            extractAndSendJSON(fullResponse);
-        } catch (error) {
-            console.error('Error processing stream:', error);
-            contentElement.innerHTML += '<br>[Error: Stream interrupted. Please try again.]';
-        }
+                throw new Error('Giảm số lượng thất bại!');
+            })
+            .then(data => {
+                alert(data);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message);
+            });
     }
 
-    function addMessageToChat(sender, content) {
-        const messageElement = document.createElement('div');
-        messageElement.className = `${sender.toLowerCase()}-message ${sender === 'User' ? 'bg-blue-100' : 'bg-gray-100'} p-3 rounded-lg`;
-        messageElement.innerHTML = `
-            <div class="font-bold ${sender === 'User' ? 'text-blue-600' : 'text-green-600'}">${sender}:</div>
-            <div class="message-content">${content}</div>
-        `;
-        chatMessages.appendChild(messageElement);
-        // Scroll chat messages area to bottom
-        const chatMessagesContainer = document.getElementById('chat-messages-container');
-        if (chatMessagesContainer) {
-            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-        }
-        return messageElement;
+    function deleteItem(button) {
+        console.log("deleteItem called");
+        const productId = getProductId(button);
+        fetch(window.location.origin + "/delete-cart?productId=" + productId)
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                }
+                throw new Error('Xóa sản phẩm thất bại!');
+            })
+            .then(data => {
+                alert(data);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message);
+            });
     }
 
-    function extractAndSendJSON(fullResponse) {
-        const jsonMatch = fullResponse.match(/```json\s*([\s\S]*?)```/);
-
-        if (jsonMatch && jsonMatch[1]) {
-            try {
-                const json = JSON.parse(jsonMatch[1]);
-                console.log("✅ JSON extracted:", json);
-
-                // Create a generate test button
-                const generateButtonDiv = document.createElement('div');
-                generateButtonDiv.className = 'mt-4 flex justify-center';
-                generateButtonDiv.innerHTML = `
-                    <button id="generate-test-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-                        Generate TOEIC Test
-                    </button>
-                `;
-
-                // Add button to the chat
-                chatMessages.appendChild(generateButtonDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                // Add click event listener to the button
-                document.getElementById('generate-test-btn').addEventListener('click', function () {
-                    // Display loading state
-                    this.disabled = true;
-                    this.innerHTML = 'Generating...';
-
-                    // Send JSON to backend
-                    fetch('/chat/generate-test', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(json),
-                        redirect: 'follow'
-                    }).then(response => {
-                        if (response.redirected) {
-                            // If server returned a redirect, follow it
-                            window.location.href = response.url;
-                        } else if (response.ok) {
-                            // If we get HTML content directly, load it
-                            return response.text().then(html => {
-                                document.open();
-                                document.write(html);
-                                document.close();
-                            });
-                        } else {
-                            console.error("❌ Failed to generate test");
-                            addMessageToChat('System', 'Failed to generate test. Please try again.');
-                            // Re-enable the button
-                            this.disabled = false;
-                            this.innerHTML = 'Generate TOEIC Test';
-                        }
-                    }).catch(err => {
-                        console.error("❌ Error generating test:", err);
-                        addMessageToChat('System', 'An error occurred while generating the test.');
-                        // Re-enable the button
-                        this.disabled = false;
-                        this.innerHTML = 'Generate TOEIC Test';
-                    });
-                });
-            } catch (e) {
-                console.error("❌ JSON parse error:", e);
-            }
-        }
+    function getProductId(button) {
+        const cartItem = button.closest('.cart-item');
+        return cartItem ? cartItem.getAttribute('data-product-id') : null;
     }
-
-    // Add script to show indicator when an image is selected
+</script>
+<script th:src="@{/user/asset/js/search-autocomplete.js}"></script>
+<script>
+    // Quickview functionality
     document.addEventListener('DOMContentLoaded', function() {
-        const imageInput = document.getElementById('image-input');
-        const imageSelected = document.getElementById('image-selected');
+        const quickviewButtons = document.querySelectorAll('.quickview');
 
-        imageInput.addEventListener('change', function() {
-            if (imageInput.files.length > 0) {
-                imageSelected.classList.remove('hidden');
-            } else {
-                imageSelected.classList.add('hidden');
-            }
+        quickviewButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const productId = this.getAttribute('data-product-id');
+
+                // Load quickview content
+                fetch(`/products/quickview/${productId}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('quickview-content').innerHTML = html;
+
+                        // Initialize modal
+                        const modal = new bootstrap.Modal(document.getElementById('quickview-modal'));
+                        modal.show();
+
+                        // Initialize Swiper for quickview slider
+                        const galleryThumbs = new Swiper('.gallery-thumbs', {
+                            spaceBetween: 10,
+                            slidesPerView: 4,
+                            freeMode: true,
+                            watchSlidesVisibility: true,
+                            watchSlidesProgress: true,
+                        });
+
+                        const galleryTop = new Swiper('.gallery-top', {
+                            spaceBetween: 10,
+                            navigation: {
+                                nextEl: '.quick-next',
+                                prevEl: '.quick-prev',
+                            },
+                            thumbs: {
+                                swiper: galleryThumbs
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi tải quickview!');
+                    });
+            });
         });
     });
 </script>
 
-</body>
 </html>

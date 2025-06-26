@@ -1,0 +1,163 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<head th:replace="user/fragments/head :: head('TOEIC Mentor - Profile')"></head>
+<title>TOEIC Mentor - Profile</title>
+
+<body>
+<!-- header-area start -->
+<div th:insert="~{user/fragments/header::header}"></div>
+<!-- header end -->
+<div th:insert="~{user/fragments/main_menu::main-menu}"></div>
+<main>
+    <!-- breadcrumb start -->
+    <section class="breadcrumb-area">
+        <div class="container">
+            <div class="col">
+                <div class="row">
+                    <div class="breadcrumb-index">
+                        <!-- breadcrumb-list start -->
+                        <ul class="breadcrumb-ul">
+                            <li class="breadcrumb-li">
+                                <a class="breadcrumb-link" th:href="@{/}">Home</a>
+                            </li>
+                            <li class="breadcrumb-li">
+                                <span class="breadcrumb-text">Profile</span>
+                            </li>
+                        </ul>
+                        <!-- breadcrumb-list end -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- breadcrumb end -->
+    <!--profile start -->
+    <section class="pro-address-area section-pt">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="password-block">
+                        <!-- order profile start -->
+                        <div class="profile-info">
+                            <div class="account-profile">
+                                <div class="pro-img">
+                                    <a href="javascript:void(0)" data-animate="animate__fadeInUp">
+                                        <img th:src="${profile.getAvatarUrl()}"
+                                             class="img-fluid" alt="testi-1">
+                                    </a>
+                                </div>
+                                <div class="profile-text">
+                                    <h6 data-animate="animate__fadeInUp"
+                                        th:text="${profile.getFullName()}"></h6>
+                                    <span data-animate="animate__fadeInUp"
+                                          th:text="'Joined ' + ${profile.getCreatedAt()}"></span>
+                                </div>
+                            </div>
+                            <div class="account-detail">
+                                <ul class="profile-ul">
+                                    <li class="profile-li" data-animate="animate__fadeInUp">
+                                        <a th:href="@{/profile}" class="active">Profile</a>
+                                    </li>
+                                    <li class="profile-li" data-animate="animate__fadeInUp">
+                                        <a th:href="@{/order-history}">
+                                            <span>Orders</span>
+<!--                                            <span class="pro-count" th:text="${orderResponseList.size()}">-->
+<!--                                            </span>-->
+                                        </a>
+                                    </li>
+                                    <li class="profile-li" data-animate="animate__fadeInUp">
+                                        <a th:href="@{/change-password}">
+                                            <span>Change password</span>
+                                        </a>
+                                    </li>
+                                    <li class="profile-li" data-animate="animate__fadeInUp">
+                                        <a th:href="@{/logout}">
+                                            <span>Sign out</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- order profile end -->
+                        <!-- order info start -->
+                        <div class="profile-form profile-address">
+                            <div class="billing-area">
+                                <form method="post" th:action="@{/profile}" th:object="${profile}"
+                                      enctype="multipart/form-data">
+                                    <div class="pro-add-title">
+                                        <h6 data-animate="animate__fadeInUp">Profile</h6>
+                                    </div>
+
+                                    <!-- Add error message for BadCredentialsException -->
+                                    <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
+
+                                    <div class="billing-form">
+                                        <ul class="input-2">
+                                            <li class="billing-li" data-animate="animate__fadeInUp">
+                                                <label>Email</label>
+                                                <input type="text" th:field="*{email}" readonly>
+                                            </li>
+                                            <li class="billing-li" data-animate="animate__fadeInUp">
+                                                <label>Full Name</label>
+                                                <input type="text" th:field="*{fullName}" placeholder="Nguyễn Văn A">
+                                                <span class="text-danger" th:if="${#fields.hasErrors('fullName')}"
+                                                      th:errors="*{fullName}"></span>
+                                            </li>
+                                            <li class="billing-li" data-animate="animate__fadeInUp">
+                                                <label>Gender</label>
+                                                <select th:field="*{gender}" class="form-control">
+                                                    <option value="">Select gender</option>
+                                                    <option th:each="gender : ${eGender}"
+                                                            th:value="${gender}"
+                                                            th:text="${gender.name()}"></option>
+                                                </select>
+                                            </li>
+                                            <li class="billing-li" data-animate="animate__fadeInUp">
+                                                <label>Avatar</label>
+                                                <input type="file" th:field="*{avatar}" accept="image/*"
+                                                       class="form-control">
+                                                <span class="text-danger" th:if="${#fields.hasErrors('avatar')}"
+                                                      th:errors="*{avatar}"></span>
+                                                <small class="form-text text-muted">Upload a profile picture (JPG, PNG, GIF)</small>
+                                            </li>
+                                        </ul>
+                                        <ul class="pro-submit">
+                                            <li data-animate="animate__fadeInUp">
+                                                <button type="submit" class="btn btn-style2 checkout"
+                                                        id="updateProfileBtn">Update profile
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- order info end -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- profile end -->
+    <!-- news-letter start -->
+    <div th:insert="~{user/fragments/newsletter::newsletter}"></div>
+    <!-- news-letter end -->
+</main>
+<!-- main end -->
+<!-- footer start -->
+<div th:insert="~{user/fragments/footer::footer}"></div>
+<!-- footer end -->
+<!-- cart-drawer start -->
+<div th:insert="~{user/fragments/cart_drawer::cart-drawer}"></div>
+<!-- cart-drawer end -->
+
+<!-- back-to-top start -->
+<a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
+<!-- back-to-top end -->
+<!-- plugin js -->
+<script th:src="@{/user/asset/js/plugin.js}"></script>
+<!-- theme js -->
+<script th:src="@{/user/asset/js/main.js}"></script>
+</body>
+</html>
