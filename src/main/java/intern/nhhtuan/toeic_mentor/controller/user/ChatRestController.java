@@ -56,11 +56,11 @@ public class ChatRestController {
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
 
         // Save the test results to the database
-        try {
-            testService.saveTests(email, answerRequests);
-        } catch (Exception e) {
-            return Flux.error(new RuntimeException("Error saving test results: " + e.getMessage(), e));
-        }
+//        try {
+//            testService.saveTests(email, answerRequests);
+//        } catch (Exception e) {
+//            return Flux.error(new RuntimeException("Error saving test results: " + e.getMessage(), e));
+//        }
 
         return chatService.analyzeTestResult(answerRequests, email);
     }
