@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Take TOEIC Test - Toeic Mentor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" th:href="@{/user/asset/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/user/asset/css/bootstrap-icons.css}">
 
     <style>
         .question-container {
@@ -104,9 +101,6 @@
     </style>
 </head>
 <body class="bg-gray-50">
-<!-- off-canvas-menu start -->
-<div th:insert="~{user/fragments/off-canvas-menu::offcanvasMenu}"></div>
-<!-- off-canvas-menu end -->
 
 <div class="container mx-auto py-4 px-4">
     <h1 class="text-2xl font-bold mb-4 text-center">TOEIC Practice Test</h1>
@@ -225,8 +219,6 @@
 </div>
 
 <!-- Scripts -->
-<script th:src="@{/user/asset/js/jquery.min.js}"></script>
-<script th:src="@{/user/asset/js/bootstrap.bundle.min.js}"></script>
 
 <script th:inline="javascript">
     // Get questions data from Thymeleaf
