@@ -1,7 +1,6 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
@@ -17,6 +16,8 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.template.st.StTemplateRenderer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
@@ -27,8 +28,8 @@ import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ChatService implements IChatService {
@@ -43,6 +44,8 @@ public class ChatService implements IChatService {
     private Resource defineQuestionPartPromptResource;
     @Value("classpath:/prompts/identify-toeic-test.txt")
     private Resource identifyToeicTestPromptResource;
+    @Value("classpath:/prompts/test-analysis-prompt.txt")
+    private Resource testAnalysisPromptResource;
 
     public ChatService(ChatClient.Builder builder,
                        JdbcChatMemoryRepository jdbcChatMemoryRepository,
@@ -134,7 +137,8 @@ public class ChatService implements IChatService {
                         .text(prompt)
                         .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
                 .call()
-                .entity(new ParameterizedTypeReference<List<QuestionDTO>>() {});
+                .entity(new ParameterizedTypeReference<List<QuestionDTO>>() {
+                });
     }
 
     @Override
@@ -231,18 +235,18 @@ public class ChatService implements IChatService {
 
     @Override
     public Flux<String> analyzeTestResult(List<AnswerRequest> answerRequests, String conversationId) {
-        String prompt;
-        try {
-            prompt = buildTestAnalysisPrompt(answerRequests);
-        } catch (JsonProcessingException e) {
-            return Flux.error(new RuntimeException("Error building TOEIC analysis prompt", e));
-        }
+        PromptTemplate promptTemplate = PromptTemplate.builder()
+                .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
+                .template("I’ve just completed a TOEIC test. " +
+                        "<answerRequests> " +
+                        "Please evaluate my performance according to the steps provided earlier.")
+                .build();
 
-        String systemMessage = prompt;
-        String userMessage = "I’ve just completed a TOEIC test. Please evaluate my performance according to the steps provided earlier.";
+        String prompt = promptTemplate.render(Map.of("answerRequests", answerRequests));
+
         return chatClient.prompt()
-                .system(systemMessage)
-                .user(userMessage)
+                .system(testAnalysisPromptResource)
+                .user(prompt)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content();
