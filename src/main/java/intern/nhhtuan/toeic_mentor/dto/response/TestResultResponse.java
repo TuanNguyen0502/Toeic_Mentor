@@ -1,0 +1,42 @@
+package intern.nhhtuan.toeic_mentor.dto.response;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+import java.util.List;
+
+@Data
+@Builder
+public class TestResultResponse {
+    private Long testId;
+    private int score;
+    private int correctPercent;
+    private List<AnswerResponse> answerResponses;
+    private String recommendations;
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AnswerResponse {
+        private Long id;
+        private String questionText;
+        private String correctAnswer;
+        private String userAnswer;
+        private Integer part;
+        private List<OptionResponse> options;
+        private List<String> tags;
+        @JsonProperty("isCorrect")
+        private boolean isCorrect;
+        private String explanation;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class OptionResponse {
+        private String key;
+        private String value;
+    }
+}

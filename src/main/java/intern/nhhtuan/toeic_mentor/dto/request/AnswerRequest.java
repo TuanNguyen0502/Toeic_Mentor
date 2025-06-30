@@ -1,6 +1,5 @@
 package intern.nhhtuan.toeic_mentor.dto.request;
 
-import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +17,7 @@ public class AnswerRequest {
     private String correctAnswer;
     private String userAnswer;
     private Integer part;
-    private List<QuestionResponse.OptionResponse> options;
+    private List<OptionResponse> options;
     private List<String> tags;
 
     @Data

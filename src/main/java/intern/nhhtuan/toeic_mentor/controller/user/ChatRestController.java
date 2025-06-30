@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.controller.user;
 
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ITestService;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,7 @@ public class ChatRestController {
     }
 
     @PostMapping("/submit-test")
-    public Flux<String> submitTest(@RequestBody List<AnswerRequest> answerRequests) {
+    public TestResultResponse submitTest(@RequestBody List<AnswerRequest> answerRequests) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // Determine the email of the authenticated user or use "anonymous" if not authenticated
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
@@ -61,8 +62,8 @@ public class ChatRestController {
 //        } catch (Exception e) {
 //            return Flux.error(new RuntimeException("Error saving test results: " + e.getMessage(), e));
 //        }
-
-        return chatService.analyzeTestResult(answerRequests, email);
+        TestResultResponse testResultResponse = chatService.analyzeTestResult(answerRequests);
+        return testResultResponse;
     }
 
     @GetMapping("/conversation-ids")
