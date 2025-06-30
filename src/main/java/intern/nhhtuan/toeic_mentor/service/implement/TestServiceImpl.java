@@ -3,6 +3,7 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.entity.Answer;
 import intern.nhhtuan.toeic_mentor.entity.Part;
 import intern.nhhtuan.toeic_mentor.entity.Test;
@@ -150,8 +151,10 @@ public class TestServiceImpl implements ITestService {
 
     @Transactional
     @Override
-    public void saveTests(String email, List<AnswerRequest> answerRequests) {
+    public void saveTest(String email, TestResultResponse testResultResponse) {
         Test test = new Test();
+        test.setScore(testResultResponse.getScore());
+        test.setRecommendations(testResultResponse.getRecommendations());
         test.setUser(userService.findByEmail(email));
         test.setCreatedAt(LocalDateTime.now());
 
@@ -161,17 +164,17 @@ public class TestServiceImpl implements ITestService {
         // Tạo danh sách Answer từ AnswerRequest
         List<Answer> answers = new ArrayList<>();
         List<Part> parts = new ArrayList<>();
-        for (AnswerRequest answerRequest : answerRequests) {
+        for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
             Answer answer = new Answer();
-            answer.setAnswer(answerRequest.getUserAnswer());
-            answer.setQuestion(questionService.findById(answerRequest.getId()).orElse(null));
+            answer.setAnswer(answerResponse.getUserAnswer());
+            answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
             answer.setTest(test);
             answers.add(answer); // Lưu Answer vào danh sách
             // Lưu các Answer
             answerService.save(answer);
 
             // Lưu Part nếu chưa có
-            Part part = partService.findByName(answerRequest.getPart());
+            Part part = partService.findByName(answerResponse.getPart());
             if (part != null && !parts.contains(part)) {
                 parts.add(part);
             }
