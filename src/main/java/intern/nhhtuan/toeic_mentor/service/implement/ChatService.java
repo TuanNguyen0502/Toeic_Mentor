@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
@@ -16,8 +17,6 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.template.st.StTemplateRenderer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
@@ -29,7 +28,7 @@ import reactor.core.publisher.Flux;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class ChatService implements IChatService {
@@ -96,6 +95,7 @@ public class ChatService implements IChatService {
             throw new RuntimeException(e);
         }
         String prompt = """
+                You are a TOEIC Reading question analyzer.
                 Analyze the provided TOEIC Reading image and extract every question into a entity.
                 
                 Step 1: Identify the question part
@@ -115,6 +115,7 @@ public class ChatService implements IChatService {
                     "D": <text>
                   },
                   "correctAnswer": <A/B/C/D>,
+                  "answerExplanation": <why the correct answer is correct>,
                   "tags": [<topic1>, <topic2>, ...],
                   "passage": <text for Part 6 and 7, or Part 5 null>,
                   "passageImageUrls": <if Part 7, use this: %s; if Part 5 or 6, set to null>,
@@ -125,6 +126,7 @@ public class ChatService implements IChatService {
                 - If the image belongs to Part 7, combine that passage with the visual content in the image when extracting and answering the questions.
                 - Additional passage text (if applicable): %s
                 - correctAnswer: Analyze and choose the best answer using grammar and context.
+                - answerExplanation: Provide a short analysis of why the correct answer is correct, using grammar, vocabulary, or context.
                 - tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", ...
                 - passage: Use only for Part 6 and 7, keep the original passage with blanks. For Part 7, combine the detected passage from the image and the input above (if provided) For Part 5, set this to null.
                 - passageImageUrl: For Part 7, replace with: %s. For Part 5 and 6, set to null.
@@ -181,75 +183,109 @@ public class ChatService implements IChatService {
                 .toList();
     }
 
-    private String buildTestAnalysisPrompt(List<AnswerRequest> answerRequests) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        // Convert the list of QuestionResponse to JSON
-        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(answerRequests);
-
-        return String.format("""
-                You are an expert TOEIC evaluator and personalized language coach.
-                This is user's TOEIC test results in JSON format, follow these steps precisely:
-                
-                ```json
-                %s
-                ```
-                
-                ---
-                
-                Step 1: Score the test
-                - Count the number of correct answers.
-                - Display the score as: "<Correct>/<Total> correct answers".
-                - Calculate and show the accuracy rate as a percentage.
-                
-                ---
-                
-                Step 2: Analyze incorrect responses
-                For each incorrect answer, provide the following information in a clear list format:
-                - Question number
-                - TOEIC Part (e.g., Part 5, 6, or 7)
-                - Question text
-                - User’s selected answer
-                - Correct answer
-                - Error analysis:
-                  • Explain why the selected answer is incorrect.
-                  • Identify the nature of the mistake (e.g., grammar error, vocabulary misunderstanding, incorrect inference).
-                  • Include brief context or sentence breakdowns if necessary (e.g., subject-verb agreement, misplaced modifier, etc.).
-                
-                ---
-                
-                Step 3: Personalized study recommendations
-                Based on patterns of errors in Step 2, recommend targeted areas for improvement:
-                - Grammar topics (e.g., articles, verb tenses, transitions, pronouns, modifiers).
-                - Vocabulary skills (e.g., synonyms, collocations, word forms).
-                - Reading skills (e.g., scanning, skimming, inference).
-                - Suggest specific TOEIC Parts and question types to focus on for practice.
-                - If possible, suggest reliable resources (e.g., websites, books, YouTube channels) for self-study.
-                
-                ---
-                
-                Format the output to be highly readable, using headings and bullet points.
-                Keep the tone helpful and focused on improvement.
-                Do not include unnecessary explanations or repeat the input JSON.
-                """, json);
-    }
-
     @Override
-    public Flux<String> analyzeTestResult(List<AnswerRequest> answerRequests, String conversationId) {
-        PromptTemplate promptTemplate = PromptTemplate.builder()
-                .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
-                .template("I’ve just completed a TOEIC test. " +
-                        "<answerRequests> " +
-                        "Please evaluate my performance according to the steps provided earlier.")
-                .build();
-
-        String prompt = promptTemplate.render(Map.of("answerRequests", answerRequests));
-
-        return chatClient.prompt()
-                .system(testAnalysisPromptResource)
-                .user(prompt)
-                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
-                .stream()
-                .content();
+    public TestResultResponse analyzeTestResult(List<AnswerRequest> answerRequests) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String answerRequestsJson;
+        try {
+            answerRequestsJson = objectMapper.writeValueAsString(answerRequests);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        String prompt = """
+                You are an expert TOEIC evaluator and personalized language coach.
+                Objective:
+                Analyze a TOEIC test submission and generate explanations only. Do NOT determine whether the answer is correct or not.
+                {
+                  "testId": null, // Optional, can be null if not provided
+                  "score": int,
+                  "correctPercent": int,
+                  "answerResponses": [
+                    {
+                      "id": Long,
+                      "questionText": String,
+                      "correctAnswer": String,
+                      "userAnswer": String,
+                      "part": Integer,
+                      "options": [
+                        {"key": String, "value": String}
+                      ],
+                      "tags": [String],
+                      "isCorrect": boolean,
+                      "answerExplanation": String
+                    }
+                  ],
+                  "recommendations": String
+                }
+                
+                Input:
+                A JSON array of AnswerRequest objects in the following format:
+                
+                [
+                  {
+                    "id": Long,
+                    "questionText": String,
+                    "correctAnswer": String, // This is always the option key, such as "A", "B", "C", or "D"
+                    "answerExplanation": String, // This is the explanation for the correct answer
+                    "userAnswer": String, // This is always the option key, such as "A", "B", "C", or "D"
+                    "part": Integer,
+                    "options": [
+                      {"key": String, "value": String}
+                    ],
+                    "tags": [String]
+                  }
+                ]
+                
+                ---
+                
+                Instructions:
+                
+                1. Evaluate and Score:
+                - For each AnswerRequest, compare the `userAnswer` field with the `correctAnswer` field.
+                    - Compare `userAnswer` and `correctAnswer` **strictly by their key values only**.
+                    - **Important:** Do not infer correctness based on the option text or meaning.
+                    - If `userAnswer` equals `correctAnswer`, then set `isCorrect = true`.
+                    - If not equal, set `isCorrect = false`.
+                - Count the total number of correct answers.
+                - Compute:
+                    - score: total correct answers
+                    - correctPercent = (correct / total) × 100, rounded to the nearest integer.
+                
+                2. Transform AnswerRequests into AnswerResponses:
+                - For each AnswerRequest, create a corresponding AnswerResponse object:
+                    - Copy all fields from the original AnswerRequest.
+                    - Add:
+                        - isCorrect: determined **only** by strict key comparison.
+                        - explanation:
+                            - If isCorrect is true:
+                                - Explain why this is the correct option.
+                                - Include the option text (value) that corresponds to the selected key.
+                                - For example: "This is correct because option 'B' ('reviewed') is the past tense form indicating a completed action."
+                            - If isCorrect is false:
+                                - Explain why the selected answer is incorrect and what the correct answer means.
+                                - For example: "You selected option 'A' ('reviews'), which is present tense, but the correct answer is 'B' ('reviewed') indicating past tense."
+                
+                3. Recommendations:
+                - Generate a concise recommendation (2–3 sentences) suggesting study focus areas, e.g.,
+                    - Grammar topics (articles, tenses).
+                    - Vocabulary (collocations, synonyms).
+                    - Reading strategies.
+                    - Suggested resources for improvement.
+                - Mention relevant grammar or vocabulary topics, and optionally suggest learning resources.
+                
+                4. Output:
+                - Return only the JSON object matching TestResultResponse.
+                - Do not include any extra text or commentary outside the JSON.
+                - Ensure all fields are present.""";
+        String fullPrompt = prompt + "\n\nInput JSON:\n" + answerRequestsJson;
+        TestResultResponse testResultResponse = ChatClient.create(chatModel).prompt()
+                .user(fullPrompt)
+                .call()
+                .entity(TestResultResponse.class);
+        for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
+            answerResponse.setCorrect(Objects.equals(answerResponse.getUserAnswer(), answerResponse.getCorrectAnswer()));
+        }
+        return testResultResponse;
     }
 
     @Override

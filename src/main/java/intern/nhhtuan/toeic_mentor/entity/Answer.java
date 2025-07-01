@@ -23,8 +23,6 @@ public class Answer {
     @Column(name = "is_correct", nullable = false)
     private boolean isCorrect; // Indicates if the answer is correct
 
-    private String explanation; // Explanation for the answer, if any
-
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
