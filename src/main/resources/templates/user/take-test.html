@@ -131,6 +131,14 @@
             padding: 1rem;
             margin-bottom: 1rem;
         }
+        .result-correct {
+            border: 2px solid #22c55e;
+            background-color: #dcfce7;
+        }
+        .result-wrong {
+            border: 2px solid #ef4444;
+            background-color: #fee2e2;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -575,7 +583,19 @@
         clearInterval(timerInterval);
         hideConfirmationModal();
 
-        // Create a message container for the chatbot's analysis
+        // Gather user answers
+        const answerRequests = [];
+        document.querySelectorAll('.question-container').forEach((qBlock, idx) => {
+            const selectedOption = qBlock.querySelector('input[type="radio"]:checked');
+            // Copy all fields from the original question object
+            const question = questions[idx];
+            answerRequests.push({
+                ...question,
+                userAnswer: selectedOption ? selectedOption.value : null
+            });
+        });
+
+        // Show loading UI
         const analysisContainer = document.createElement('div');
         analysisContainer.className = 'bg-white p-6 rounded-lg shadow-lg mt-4 mb-8';
         analysisContainer.innerHTML = `
@@ -587,89 +607,78 @@
                 </button>
             </div>
         `;
-
-        // Add loading indicator
         const analysisContent = analysisContainer.querySelector('#analysis-content');
         analysisContent.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div><p>Analyzing your test results...</p></div>';
-
-        // Insert the analysis container after the test form
         document.getElementById('testForm').insertAdjacentElement('afterend', analysisContainer);
-
-        // Hide test form and show analysis container
         document.getElementById('testForm').classList.add('hidden');
 
-        // Submit the questions array and process the streaming response
-        const answerRequests = questions.map(q => ({
-            id: q.id,
-            questionText: q.questionText,
-            correctAnswer: q.correctAnswer,
-            userAnswer: q.userAnswer,
-            part: q.part,
-            options: q.options.map(opt => ({
-                key: opt.key,
-                value: opt.value
-            })),
-            tags: q.tags || []
-        }));
-
+        // Send answers to backend
         fetch('/submit-test', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(answerRequests)
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            // Clear the loading indicator
-            analysisContent.innerHTML = '';
-
-            // Process the streaming response
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-            let buffer = '';
-
-            // Function to process the stream
-            async function readStream() {
-                try {
-                    while (true) {
-                        const {done, value} = await reader.read();
-                        if (done) break;
-
-                        buffer += decoder.decode(value, {stream: true});
-                        let lines = buffer.split('\n');
-                        buffer = lines.pop(); // last line may be incomplete
-                        for (const line of lines) {
-                            if (line.trim() !== '') {
-                                const div = document.createElement('div');
-                                div.className = 'streamed-line bg-blue-50 rounded p-2 my-2 text-gray-800';
-                                div.textContent = line;
-                                analysisContent.appendChild(div);
-                                analysisContent.scrollIntoView({behavior: 'smooth', block: 'end'});
-                            }
-                        }
-                    }
-                    // Show back to dashboard button when stream is complete
-                    document.getElementById('back-to-dashboard-container').classList.remove('hidden');
-                    document.getElementById('analysis-dashboard-btn').addEventListener('click', goToDashboard);
-                } catch (error) {
-                    console.error('Error reading stream:', error);
-                    analysisContent.innerHTML += '<p class="text-red-500">Error: Stream interrupted. Please try again.</p>';
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to submit test');
+            return response.json();
+        })
+        .then(data => {
+            // Render result in the same style as test
+            let html = `<div class='mb-6 text-center'>
+                <span class='text-2xl font-bold'>Score: ${data.score} / ${data.answerResponses.size}</span><br>
+                <span class='text-lg font-semibold'>Correct Percent: ${data.correctPercent}%</span>
+            </div>`;
+            html += `<div id='resultQuestionsContainer'>`;
+            data.answerResponses.forEach((q, idx) => {
+                console.log('DEBUG isCorrect:', q.isCorrect, typeof q.isCorrect, q);
+                html += `<div class='question-container ${q.isCorrect ? 'result-correct' : 'result-wrong'} mb-6'>`;
+                html += `<div class='question-header mb-3'>
+                    <div class='flex items-center'>
+                        <h3 class='text-xl font-semibold mr-4'>Question ${idx + 1}</h3>
+                        <span class='badge bg-primary'>Part ${q.part}</span>
+                    </div>
+                </div>`;
+                if (q.passage) {
+                    html += `<div class='passage-container'><h4 class='font-semibold mb-2'>Passage:</h4><div class='passage-text'>${q.passage}</div></div>`;
                 }
+                if (q.passageImageUrls && q.passageImageUrls.length > 0) {
+                    html += `<div class='image-container' style='display: flex; flex-direction: row; gap: 32px; justify-content: center; align-items: flex-start; overflow-x: auto;'>`;
+                    q.passageImageUrls.forEach(url => {
+                        html += `<img src='${url}' alt='Question Image' style='margin-bottom: 0; max-width: 1000px; max-height: 700px; width: auto; height: auto; object-fit: contain;' />`;
+                    });
+                    html += `</div>`;
+                }
+                html += `<div class='mb-4'>${q.questionText}</div>`;
+                html += `<div class='options-container'>`;
+                q.options.forEach(option => {
+                    const isUser = q.userAnswer === option.key;
+                    const isCorrect = q.correctAnswer === option.key;
+                    html += `<div class='mb-2'>
+                        <label class='option-label flex items-center ${isCorrect ? 'border-green-500 bg-green-50' : isUser ? (q.isCorrect ? 'border-green-300' : 'border-red-500 bg-red-50') : ''}'>
+                            <input type='radio' disabled ${isUser ? 'checked' : ''} class='option-input'>
+                            <span class='font-medium mr-2'>${option.key}:</span> ${option.value}
+                            ${isCorrect ? "<span class='ml-2 text-green-600'>(Correct)</span>" : ''}
+                            ${isUser && !isCorrect ? "<span class='ml-2 text-red-600'>(Your answer)</span>" : ''}
+                        </label>
+                    </div>`;
+                });
+                html += `</div>`;
+                html += `<div class='mt-2'><span class='font-semibold'>Your answer:</span> <span class='${q.isCorrect ? 'text-green-600' : 'text-red-600'}'>${q.userAnswer || '-'}</span></div>`;
+                html += `<div class='mt-2'><span class='font-semibold'>Correct answer:</span> <span class='text-blue-600 font-bold'>${q.correctAnswer}</span></div>`;
+                html += `<div><span class='font-semibold'>Result:</span> <span class='${q.isCorrect ? 'text-green-600' : 'text-red-600'}'>${q.isCorrect ? 'Correct' : 'Incorrect'}</span></div>`;
+                html += `<div class='mt-2 text-gray-700'><span class='font-medium'>Explanation:</span> ${q.answerExplanation ? q.answerExplanation : '<span class="italic text-gray-400">No explanation provided.</span>'}</div>`;
+                html += `</div>`;
+            });
+            html += `</div>`;
+            if (data.recommendations) {
+                html += `<div class='p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded mt-8 text-lg text-gray-800'><span class='font-bold'>Recommendations:</span> ${data.recommendations}</div>`;
             }
-
-            // Start processing the stream
-            readStream();
-
-        }).catch(error => {
-            console.error('Error submitting test:', error);
-            analysisContent.innerHTML = '<p class="text-red-500">Failed to submit test. Please try again.</p>';
-
-            // Show back to dashboard button
+            analysisContent.innerHTML = html;
             document.getElementById('back-to-dashboard-container').classList.remove('hidden');
-            document.getElementById('analysis-dashboard-btn').addEventListener('click', goToDashboard);
+            document.getElementById('analysis-dashboard-btn').onclick = goToDashboard;
+        })
+        .catch(err => {
+            analysisContent.innerHTML = `<div class='text-red-600'>Error: ${err.message}</div>`;
         });
     }
 

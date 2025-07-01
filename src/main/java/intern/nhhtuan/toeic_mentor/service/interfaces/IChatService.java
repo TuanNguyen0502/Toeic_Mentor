@@ -1,8 +1,8 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import reactor.core.publisher.Flux;
 
 import java.io.InputStream;
@@ -23,7 +23,7 @@ public interface IChatService {
 
     List<String> getConversationIdsByEmail(String email);
 
-    Flux<String> analyzeTestResult(List<AnswerRequest> answerRequests, String conversationId);
+    TestResultResponse analyzeTestResult(List<AnswerRequest> answerRequests);
 
     void deleteByConversationId(String conversationId);
 
