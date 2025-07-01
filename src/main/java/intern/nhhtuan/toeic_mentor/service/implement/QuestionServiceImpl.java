@@ -78,6 +78,7 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setQuestionText(questionUpdateDTO.getContent());
             question.setCorrectAnswer(questionUpdateDTO.getCorrectAnswer());
             question.setStatus(questionUpdateDTO.getStatus());
+            question.setExplanation(questionUpdateDTO.getExplanation());
 
             // Save question with updated fields
             questionRepository.save(question);
@@ -120,6 +121,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .correctAnswer(question.getCorrectAnswer())
                 .tags(tags)
                 .status(question.getStatus())
+                .explanation(question.getExplanation())
                 .build();
     }
 
