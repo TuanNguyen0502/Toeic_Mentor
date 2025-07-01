@@ -267,6 +267,35 @@
     </div>
 </div>
 
+<!-- Report Question Modal -->
+<div id="reportModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+        <button id="closeReportModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl">&times;</button>
+        <h2 class="text-lg font-bold mb-4">Report Question</h2>
+        <form id="reportForm" class="space-y-4">
+            <input type="hidden" id="reportQuestionId" name="questionId">
+            <div>
+                <label for="reportCategory" class="block font-medium mb-1">Category <span class="text-red-500">*</span></label>
+                <select id="reportCategory" name="category" class="w-full border rounded px-3 py-2" required>
+                    <option value="">-- Select Category --</option>
+                    <option value="WRONG_QUESTION">Wrong Question</option>
+                    <option value="TYPING_ERROR">Typing Error</option>
+                    <option value="UNCLEAR_ANSWER">Unclear Answer</option>
+                    <option value="OTHER">Other</option>
+                </select>
+                <div id="categoryError" class="text-red-500 text-sm hidden">Please select a category.</div>
+            </div>
+            <div>
+                <label for="reportDescription" class="block font-medium mb-1">Description <span class="text-red-500">*</span></label>
+                <textarea id="reportDescription" name="description" rows="3" class="w-full border rounded px-3 py-2" required></textarea>
+                <div id="descriptionError" class="text-red-500 text-sm hidden">Please enter a description.</div>
+            </div>
+            <div id="reportFormMsg" class="text-sm mb-2"></div>
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded w-full">Submit Report</button>
+        </form>
+    </div>
+</div>
+
 <!-- Scripts -->
 
 <script th:inline="javascript">
@@ -637,6 +666,9 @@
                         <h3 class='text-xl font-semibold mr-4'>Question ${idx + 1}</h3>
                         <span class='badge bg-primary'>Part ${q.part}</span>
                     </div>
+                    <button class='ml-auto bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded report-question-btn' data-question-id='${q.id}' data-question-text='${q.questionText}'>
+                        <i class="fa fa-flag mr-1"></i> Report Question
+                    </button>
                 </div>`;
                 if (q.passage) {
                     html += `<div class='passage-container'><h4 class='font-semibold mb-2'>Passage:</h4><div class='passage-text'>${q.passage}</div></div>`;
@@ -674,6 +706,19 @@
                 html += `<div class='p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded mt-8 text-lg text-gray-800'><span class='font-bold'>Recommendations:</span> ${data.recommendations}</div>`;
             }
             analysisContent.innerHTML = html;
+
+            // Attach event listeners for report buttons
+            document.querySelectorAll('.report-question-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('reportQuestionId').value = this.getAttribute('data-question-id');
+                    document.getElementById('reportCategory').value = '';
+                    document.getElementById('reportDescription').value = '';
+                    document.getElementById('reportFormMsg').textContent = '';
+                    document.getElementById('categoryError').classList.add('hidden');
+                    document.getElementById('descriptionError').classList.add('hidden');
+                    document.getElementById('reportModal').classList.remove('hidden');
+                });
+            });
             document.getElementById('back-to-dashboard-container').classList.remove('hidden');
             document.getElementById('analysis-dashboard-btn').onclick = goToDashboard;
         })
@@ -694,6 +739,66 @@
         e.returnValue = message;
         return message;
     });
+
+    // Modal logic
+    (function() {
+        const modal = document.getElementById('reportModal');
+        const closeBtn = document.getElementById('closeReportModal');
+        closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.add('hidden');
+        });
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Validation
+            let valid = true;
+            const questionId = document.getElementById('reportQuestionId').value;
+            const category = document.getElementById('reportCategory').value;
+            const description = document.getElementById('reportDescription').value.trim();
+            if (!questionId || questionId === 'undefined' || isNaN(Number(questionId))) {
+                document.getElementById('reportFormMsg').textContent = 'Invalid question. Please try again.';
+                document.getElementById('reportFormMsg').className = 'text-red-600 mb-2';
+                return;
+            }
+            if (!category) {
+                document.getElementById('categoryError').classList.remove('hidden');
+                valid = false;
+            } else {
+                document.getElementById('categoryError').classList.add('hidden');
+            }
+            if (!description) {
+                document.getElementById('descriptionError').classList.remove('hidden');
+                valid = false;
+            } else {
+                document.getElementById('descriptionError').classList.add('hidden');
+            }
+            if (!valid) return;
+            // Prepare data
+            const data = {
+                questionId: questionId,
+                category: category,
+                description: description
+            };
+            // Submit to backend
+            fetch('/reports', {
+                method: 'POST',
+                body: new URLSearchParams(data),
+            }).then(async resp => {
+                if (resp.ok) {
+                    document.getElementById('reportFormMsg').textContent = 'Report submitted successfully!';
+                    document.getElementById('reportFormMsg').className = 'text-green-600 mb-2';
+                    setTimeout(() => modal.classList.add('hidden'), 1200);
+                } else {
+                    const err = await resp.text();
+                    document.getElementById('reportFormMsg').textContent = err || 'Failed to submit report.';
+                    document.getElementById('reportFormMsg').className = 'text-red-600 mb-2';
+                }
+            }).catch(() => {
+                document.getElementById('reportFormMsg').textContent = 'Failed to submit report.';
+                document.getElementById('reportFormMsg').className = 'text-red-600 mb-2';
+            });
+        });
+    })();
 </script>
 
 </body>
