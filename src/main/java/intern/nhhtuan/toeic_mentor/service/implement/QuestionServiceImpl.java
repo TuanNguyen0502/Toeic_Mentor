@@ -46,6 +46,7 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setPassage(dto.getPassage());
             question.setPart(partRepository.findByName(getPartName(dto.getPart())));
             question.setStatus(EQuestionStatus.IN_SECTION);
+            question.setExplanation(dto.getExplanation());
             question.setSection(section);
             // Lưu trước để có ID cho liên kết
             questionRepository.save(question);
@@ -167,15 +168,15 @@ public class QuestionServiceImpl implements IQuestionService {
             EPart partName = getPartName(part);
             // Fetch questions based on part and topic
             List<Question> questions;
+            // If topics are specified, fetch questions that match both part and topics
+            List<QuestionTag> tags = new ArrayList<>();
+            for (String tag : request.getTopic()) {
+                tags.addAll(questionTagService.findByTag(tag));
+            }
             // If no topics are specified, fetch all questions for the part
-            if (request.getTopic().size() == 0) {
+            if (request.getTopic().size() == 0 || tags.isEmpty()) {
                 questions = questionRepository.findDistinctByPart_NameAndStatus(partName, EQuestionStatus.APPROVED);
             } else {
-                // If topics are specified, fetch questions that match both part and topics
-                List<QuestionTag> tags = new ArrayList<>();
-                for (String tag : request.getTopic()) {
-                    tags.addAll(questionTagService.findByTag(tag));
-                }
                 questions = questionRepository.findDistinctByPart_NameAndTagsAndStatus(partName, tags, EQuestionStatus.APPROVED);
             }
             // Add the fetched questions to the matched list

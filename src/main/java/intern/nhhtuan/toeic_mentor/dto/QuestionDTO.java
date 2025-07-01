@@ -23,4 +23,5 @@ public class QuestionDTO {
     private List<String> tags;
     private Long sectionId;
     private EQuestionStatus status;
+    private String explanation;
 }
