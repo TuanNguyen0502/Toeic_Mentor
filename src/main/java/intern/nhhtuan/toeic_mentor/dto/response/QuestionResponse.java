@@ -15,6 +15,7 @@ public class QuestionResponse {
     private Long id;
     private String questionText;
     private String correctAnswer;
+    private String answerExplanation;
     private String userAnswer;
     private String passage;
     private List<String> passageImageUrls;

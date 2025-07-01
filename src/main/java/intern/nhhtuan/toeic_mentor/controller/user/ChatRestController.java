@@ -56,13 +56,9 @@ public class ChatRestController {
         // Determine the email of the authenticated user or use "anonymous" if not authenticated
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
 
-        // Save the test results to the database
-//        try {
-//            testService.saveTests(email, answerRequests);
-//        } catch (Exception e) {
-//            return Flux.error(new RuntimeException("Error saving test results: " + e.getMessage(), e));
-//        }
         TestResultResponse testResultResponse = chatService.analyzeTestResult(answerRequests);
+        // Save the test results to the database
+//        testService.saveTest(email, testResultResponse);
         return testResultResponse;
     }
 

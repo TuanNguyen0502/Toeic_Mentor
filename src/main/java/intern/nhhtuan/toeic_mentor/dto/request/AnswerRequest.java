@@ -15,6 +15,7 @@ public class AnswerRequest {
     private Long id;
     private String questionText;
     private String correctAnswer;
+    private String answerExplanation;
     private String userAnswer;
     private Integer part;
     private List<OptionResponse> options;

@@ -42,5 +42,5 @@ public class QuestionUpdateDTO {
     private EQuestionStatus status;
 
     @NotBlank(message = "Explanation cannot be blank")
-    private String explanation;
+    private String answerExplanation;
 }

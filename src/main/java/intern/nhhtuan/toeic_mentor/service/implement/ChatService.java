@@ -17,8 +17,6 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.template.st.StTemplateRenderer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
@@ -30,7 +28,6 @@ import reactor.core.publisher.Flux;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -118,7 +115,7 @@ public class ChatService implements IChatService {
                     "D": <text>
                   },
                   "correctAnswer": <A/B/C/D>,
-                  "explanation": <why the correct answer is correct>,
+                  "answerExplanation": <why the correct answer is correct>,
                   "tags": [<topic1>, <topic2>, ...],
                   "passage": <text for Part 6 and 7, or Part 5 null>,
                   "passageImageUrls": <if Part 7, use this: %s; if Part 5 or 6, set to null>,
@@ -129,7 +126,7 @@ public class ChatService implements IChatService {
                 - If the image belongs to Part 7, combine that passage with the visual content in the image when extracting and answering the questions.
                 - Additional passage text (if applicable): %s
                 - correctAnswer: Analyze and choose the best answer using grammar and context.
-                - explanation: Provide a short analysis of why the correct answer is correct, using grammar, vocabulary, or context.
+                - answerExplanation: Provide a short analysis of why the correct answer is correct, using grammar, vocabulary, or context.
                 - tags: Always include relevant topics such as: "grammar", "vocabulary", "pronoun", "transition", "verb tense", "article", ...
                 - passage: Use only for Part 6 and 7, keep the original passage with blanks. For Part 7, combine the detected passage from the image and the input above (if provided) For Part 5, set this to null.
                 - passageImageUrl: For Part 7, replace with: %s. For Part 5 and 6, set to null.
@@ -215,7 +212,7 @@ public class ChatService implements IChatService {
                       ],
                       "tags": [String],
                       "isCorrect": boolean,
-                      "explanation": String
+                      "answerExplanation": String
                     }
                   ],
                   "recommendations": String
@@ -229,6 +226,7 @@ public class ChatService implements IChatService {
                     "id": Long,
                     "questionText": String,
                     "correctAnswer": String, // This is always the option key, such as "A", "B", "C", or "D"
+                    "answerExplanation": String, // This is the explanation for the correct answer
                     "userAnswer": String, // This is always the option key, such as "A", "B", "C", or "D"
                     "part": Integer,
                     "options": [

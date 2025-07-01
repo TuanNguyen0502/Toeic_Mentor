@@ -37,8 +37,8 @@ public class Question {
     @Column(nullable = false)
     private EQuestionStatus status;
 
-    @Column(name = "explanation", columnDefinition = "TEXT")
-    private String explanation;
+    @Column(name = "answer_explanation", columnDefinition = "TEXT")
+    private String answerExplanation;
 
     @ManyToOne
     @JoinColumn(name = "part_id", referencedColumnName = "id")

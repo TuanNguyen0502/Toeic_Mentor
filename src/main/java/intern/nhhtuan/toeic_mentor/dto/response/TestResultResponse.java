@@ -28,7 +28,7 @@ public class TestResultResponse {
         private List<String> tags;
         @JsonProperty("isCorrect")
         private boolean isCorrect;
-        private String explanation;
+        private String answerExplanation;
 
     }
 
