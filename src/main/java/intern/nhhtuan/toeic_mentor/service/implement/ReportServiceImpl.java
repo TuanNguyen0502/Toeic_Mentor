@@ -7,6 +7,7 @@ import intern.nhhtuan.toeic_mentor.repository.QuestionRepository;
 import intern.nhhtuan.toeic_mentor.repository.ReportRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IReportService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +16,11 @@ import org.springframework.stereotype.Service;
 public class ReportServiceImpl implements IReportService {
     private final ReportRepository reportRepository;
     private final QuestionRepository questionRepository;
+    private final NotificationServiceImpl notificationService;
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public boolean saveReport(String email, ReportRequest request) {
         // Validate the request
         if (request.getQuestionId() == null || request.getCategory() == null || request.getDescription() == null) {
@@ -34,7 +37,10 @@ public class ReportServiceImpl implements IReportService {
                 .build();
 
         // Save the report to the repository
-        reportRepository.save(report);
+        Report savedReport = reportRepository.save(report);
+
+        notificationService.createReportNotifications(savedReport);
+
         return true; // Report saved successfully
     }
 }
