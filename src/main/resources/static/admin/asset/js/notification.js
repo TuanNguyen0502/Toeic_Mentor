@@ -36,8 +36,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const viewAllLi = notificationList.lastElementChild;
         notifications.forEach(notification => {
             const li = document.createElement('li');
+            // Add 'unread' class if notification.isRead is false
+            console.log(notification.isRead)
+            const notiClass = notification.isRead ? "noti-item w-full wg-user" : "noti-item w-full wg-user unread";
             li.innerHTML = `
-                <div class="noti-item w-full wg-user active">
+                <div class="${notiClass} active">
                     <div class="flex-grow">
                         <div class="flex items-center justify-between">
                             <a href="/admin/notifications/${notification.id}" class="body-title">${notification.title}</a>
@@ -127,3 +130,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+(function() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+        #notificationList .noti-item.unread {
+            background-color: #f0f6ff;
+            font-weight: bold;
+        }
+        #notificationList .noti-item.unread .body-title {
+            color: #0d6efd;
+        }
+        #notificationList .noti-item.unread:hover {
+            background-color: #e0eaff;
+        }
+    `;
+    document.head.appendChild(style);
+})();
