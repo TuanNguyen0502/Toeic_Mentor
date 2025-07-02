@@ -3,7 +3,6 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.QuestionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.ReportDetailDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.ReportResponse;
-import intern.nhhtuan.toeic_mentor.entity.Question;
 import intern.nhhtuan.toeic_mentor.dto.request.ReportRequest;
 import intern.nhhtuan.toeic_mentor.entity.Report;
 import intern.nhhtuan.toeic_mentor.entity.enums.EReportStatus;
@@ -43,20 +42,7 @@ public class ReportServiceImpl implements IReportService {
             }
         }
     }
-    @Transactional
-    public boolean saveReport(String email, ReportRequest request) {
-        // Validate the request
-        if (request.getQuestionId() == null || request.getCategory() == null || request.getDescription() == null) {
-            return false; // Invalid request
-        }
 
-        // Create a new report entity
-        Report report = Report.builder()
-                .category(request.getCategory())
-                .description(request.getDescription())
-                .status(EReportStatus.OPEN) // Default status
-                .user(userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found")))
-                .question(questionRepository.findById(request.getQuestionId()).orElseThrow(() -> new IllegalArgumentException("Question not found")))
     @Override
     public ReportDetailDTO getReportDetail(Long id) {
         Report report = reportRepository.findById(id)
@@ -71,20 +57,28 @@ public class ReportServiceImpl implements IReportService {
                 .category(report.getCategory().name())
                 .description(report.getDescription())
                 .status(report.getStatus())
-                .create_at(report.getCreatedAt().toString())
+                .admin_response("")
+                .create_at(String.valueOf(report.getCreatedAt()))
                 .build();
     }
 
-    private ReportResponse mapToResponse(Report report) {
-        ReportResponse response = new ReportResponse();
-        response.setId(report.getId());
-        response.setEmail(report.getUser().getEmail());
-        response.setQuestion_id(report.getQuestion().getId());
-        response.setCategory(report.getCategory().name());
-        response.setStatus(report.getStatus().name());
-        response.setCreate_at(report.getCreatedAt().toString());
-        return response;
-    }
+
+    @Override
+    @Transactional
+    public boolean saveReport(String email, ReportRequest request) {
+        // Validate the request
+        if (request.getQuestionId() == null || request.getCategory() == null || request.getDescription() == null) {
+            return false; // Invalid request
+        }
+
+        // Create a new report entity
+        Report report = Report.builder()
+                .category(request.getCategory())
+                .description(request.getDescription())
+                .status(EReportStatus.OPEN) // Default status
+                .user(userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found")))
+                .question(questionRepository.findById(request.getQuestionId()).orElseThrow(() -> new IllegalArgumentException("Question not found")))
+                .build();
 
         // Save the report to the repository
         Report savedReport = reportRepository.save(report);
@@ -93,4 +87,16 @@ public class ReportServiceImpl implements IReportService {
 
         return true; // Report saved successfully
     }
+
+    private ReportResponse mapToResponse(Report report) {
+        return ReportResponse.builder()
+                .id(report.getId())
+                .email(report.getUser().getEmail())
+                .question_id(report.getQuestion().getId())
+                .category(report.getCategory().name())
+                .status(report.getStatus().name())
+                .create_at(String.valueOf(report.getCreatedAt()))
+                .build();
+    }
+
 }
