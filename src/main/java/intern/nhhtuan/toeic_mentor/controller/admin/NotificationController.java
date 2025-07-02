@@ -20,8 +20,7 @@ public class NotificationController {
     @GetMapping
     public List<NotificationResponse> getNotifications(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime before,
-            @RequestParam(defaultValue = "10") int pageSize
-    ) {
+            @RequestParam(defaultValue = "10") int pageSize) {
 //        GET /api/notifications?userId=123&pageSize=10
 //        Server trả 10 notification mới nhất, sắp xếp giảm dần theo createdAt.
 //        Khi user scroll để load thêm:

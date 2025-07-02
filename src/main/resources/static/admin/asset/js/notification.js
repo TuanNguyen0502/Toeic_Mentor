@@ -36,19 +36,41 @@ document.addEventListener('DOMContentLoaded', function() {
         const viewAllLi = notificationList.lastElementChild;
         notifications.forEach(notification => {
             const li = document.createElement('li');
-            // Add 'unread' class if notification.isRead is false
-            console.log(notification.isRead)
             const notiClass = notification.isRead ? "noti-item w-full wg-user" : "noti-item w-full wg-user unread";
             li.innerHTML = `
                 <div class="${notiClass} active">
                     <div class="flex-grow">
                         <div class="flex items-center justify-between">
-                            <a href="/admin/notifications/${notification.id}" class="body-title">${notification.title}</a>
+                            <a href="${notification.urlToReportDetail}" class="body-title">${notification.title}</a>
                             <div class="time">${formatDateTime(notification.createdAt)}</div>
                         </div>
+                        <div class="text-tiny">${notification.message}</div>
                     </div>
                 </div>
             `;
+            // Attach click handler directly to the link
+            const link = li.querySelector('.body-title');
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const notiDiv = link.closest('.noti-item');
+                const notificationId = notification.id;
+                // Mark as read, then redirect
+                fetch(`/admin/notifications/${notificationId}/read`, { method: 'POST' })
+                    .then(() => {
+                        if (notiDiv.classList.contains('unread')) {
+                            notiDiv.classList.remove('unread');
+                            const countElem = document.getElementById('countUnreadNotification');
+                            let count = parseInt(countElem.textContent) || 0;
+                            if (count > 0) countElem.textContent = count - 1 === 0 ? '' : (count - 1);
+                        }
+                        // Redirect to urlToReportDetail if present
+                        if (notification.urlToReportDetail) {
+                            let url = notification.urlToReportDetail.replace(/[{}]/g, '');
+                            window.location.href = url;
+                        }
+                    });
+            });
             notificationList.insertBefore(li, viewAllLi);
         });
     }
@@ -128,6 +150,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadNotifications();
             }
         });
+    }
+
+    // Mark all as read button handler (attach directly after DOMContentLoaded)
+    const markAllBtn = document.getElementById('markAllAsReadBtn');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch('/admin/notifications/read-all', { method: 'POST' })
+                .then(() => {
+                    document.getElementById('countUnreadNotification').textContent = '0';
+                    document.querySelectorAll('#notificationList .noti-item.unread').forEach(div => {
+                        div.classList.remove('unread');
+                    });
+                });
+        });
+    } else {
+        console.log('Mark all as read button not found');
     }
 });
 
