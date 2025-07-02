@@ -3,6 +3,7 @@ package intern.nhhtuan.toeic_mentor.service.interfaces;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -13,5 +14,5 @@ public interface ITestService {
     int getTotalTests();
 
     @Transactional
-    void saveTests(String email, List<AnswerRequest> answerRequests);
+    void saveTest(String email, TestResultResponse testResultResponse);
 }

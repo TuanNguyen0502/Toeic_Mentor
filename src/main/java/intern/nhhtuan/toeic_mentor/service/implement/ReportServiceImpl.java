@@ -4,10 +4,13 @@ import intern.nhhtuan.toeic_mentor.dto.QuestionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.ReportDetailDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.ReportResponse;
 import intern.nhhtuan.toeic_mentor.entity.Question;
+import intern.nhhtuan.toeic_mentor.dto.request.ReportRequest;
 import intern.nhhtuan.toeic_mentor.entity.Report;
 import intern.nhhtuan.toeic_mentor.entity.enums.EReportStatus;
+import intern.nhhtuan.toeic_mentor.repository.QuestionRepository;
 import intern.nhhtuan.toeic_mentor.repository.ReportRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
+import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IReportService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,9 @@ public class ReportServiceImpl implements IReportService {
 
     private final ReportRepository reportRepository;
     private final IQuestionService questionService;
+    private final QuestionRepository questionRepository;
+    private final NotificationServiceImpl notificationService;
+    private final UserRepository userRepository;
 
     @Override
     public Page<ReportResponse> getReportsByStatus(String status, Pageable pageable) {
@@ -37,7 +43,20 @@ public class ReportServiceImpl implements IReportService {
             }
         }
     }
+    @Transactional
+    public boolean saveReport(String email, ReportRequest request) {
+        // Validate the request
+        if (request.getQuestionId() == null || request.getCategory() == null || request.getDescription() == null) {
+            return false; // Invalid request
+        }
 
+        // Create a new report entity
+        Report report = Report.builder()
+                .category(request.getCategory())
+                .description(request.getDescription())
+                .status(EReportStatus.OPEN) // Default status
+                .user(userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found")))
+                .question(questionRepository.findById(request.getQuestionId()).orElseThrow(() -> new IllegalArgumentException("Question not found")))
     @Override
     public ReportDetailDTO getReportDetail(Long id) {
         Report report = reportRepository.findById(id)
@@ -67,6 +86,11 @@ public class ReportServiceImpl implements IReportService {
         return response;
     }
 
+        // Save the report to the repository
+        Report savedReport = reportRepository.save(report);
 
+        notificationService.createReportNotifications(savedReport);
 
+        return true; // Report saved successfully
+    }
 }
