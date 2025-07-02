@@ -6,13 +6,12 @@ import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/admin/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
@@ -32,6 +31,13 @@ public class NotificationController {
         Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         return notificationService.getNotificationResponses(email, before, pageSize);
+    }
+
+    @GetMapping("/count")
+    public int countUnreadNotifications() {
+        Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return notificationService.countUnreadNotifications(email);
     }
 
     @GetMapping("/{id}")

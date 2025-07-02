@@ -47,6 +47,15 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    public int countUnreadNotifications(String email) {
+        return notificationRepository.findAllByReceiver_Email(email)
+                .stream()
+                .filter(notification -> !notification.isRead())
+                .mapToInt(notification -> 1)
+                .sum();
+    }
+
+    @Override
     public List<NotificationResponse> getNotificationResponses(String email, LocalDateTime before, int pageSize) {
         // Nếu client chưa gửi cursor thì lấy thời điểm hiện tại
         if (before == null) {

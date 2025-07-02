@@ -10,6 +10,8 @@ import java.util.List;
 public interface INotificationService {
     void createReportNotifications(Report report);
 
+    int countUnreadNotifications(String email);
+
     List<NotificationResponse> getNotificationResponses(String email, LocalDateTime before, int pageSize);
 
     NotificationDetailResponse getNotificationDetailResponse(Long notificationId);

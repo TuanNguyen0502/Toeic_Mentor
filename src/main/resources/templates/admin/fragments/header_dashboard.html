@@ -21,26 +21,15 @@
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
                             data-bs-toggle="dropdown" aria-expanded="false">
                                             <span class="header-item">
-                                                <span class="text-tiny" th:text="${notifications.size()}"></span>
+                                                <span class="text-tiny" id="countUnreadNotification"></span>
                                                 <i class="icon-bell"></i>
                                             </span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end has-content" aria-labelledby="dropdownMenuButton1">
+                    <ul class="dropdown-menu dropdown-menu-end has-content" aria-labelledby="dropdownMenuButton1" id="notificationList">
                         <li>
                             <h6>Notifications</h6>
                         </li>
-                        <li th:each="notification : ${notifications}">
-                            <div class="noti-item w-full wg-user active">
-                                <div class="flex-grow">
-                                    <div class="flex items-center justify-between">
-                                        <a th:href="@{/admin/notifications/{id}(id=${notification.getId()})}"
-                                           class="body-title" th:text="${notification.getTitle()}"></a>
-                                        <div class="time" th:text="${notification.getCreatedAt()}"></div>
-                                    </div>
-<!--                                    <div class="text-tiny">Hello?</div>-->
-                                </div>
-                            </div>
-                        </li>
+                        <!-- Notifications will be loaded here by JS -->
                         <li><a href="#" class="tf-button w-full">View all</a></li>
                     </ul>
                 </div>
@@ -86,4 +75,3 @@
         </div>
     </div>
 </div>
-
