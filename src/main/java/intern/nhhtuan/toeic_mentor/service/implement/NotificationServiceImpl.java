@@ -66,10 +66,9 @@ public class NotificationServiceImpl implements INotificationService {
                 .stream()
                 .map(notification -> NotificationResponse.builder()
                         .id(notification.getId())
-                        .userEmail(email)
                         .title(notification.getTitle())
                         .isRead(notification.isRead())
-                        .createdAt(notification.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
+                        .createdAt(notification.getCreatedAt().toString())
                         .build())
                 .toList();
     }
@@ -81,12 +80,11 @@ public class NotificationServiceImpl implements INotificationService {
 
         return NotificationDetailResponse.builder()
                 .notificationId(notification.getId())
-                .userEmail(notification.getReceiver().getEmail())
                 .urlToReportDetail("/reports/{" + notification.getReport().getId() + "}")
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .isRead(notification.isRead())
-                .createdAt(notification.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
+                .createdAt(notification.getCreatedAt().toString())
                 .build();
     }
 

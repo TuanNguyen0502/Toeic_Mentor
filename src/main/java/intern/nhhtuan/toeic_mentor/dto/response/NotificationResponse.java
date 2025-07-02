@@ -7,7 +7,6 @@ import lombok.Data;
 @Builder
 public class NotificationResponse {
     private Long id;
-    private String userEmail;
     private String title;
     private boolean isRead;
     private String createdAt;

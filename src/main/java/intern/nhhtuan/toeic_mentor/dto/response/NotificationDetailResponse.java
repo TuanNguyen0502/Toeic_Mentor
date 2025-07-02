@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class NotificationDetailResponse {
     private Long notificationId;
-    private String userEmail;
     private String urlToReportDetail;
     private String title;
     private String message;
