@@ -1,7 +1,8 @@
 package intern.nhhtuan.toeic_mentor.controller.admin;
 
+import intern.nhhtuan.toeic_mentor.dto.ReportDetailDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.ReportResponse;
-import intern.nhhtuan.toeic_mentor.entity.enums.EReportStatus;
+import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,9 +38,10 @@ public class ReportController {
 
     @GetMapping("/{id}")
     public String showReportDetail(@PathVariable Long id, Model model) {
-        ReportResponse report = reportService.getReportById(id);
+        ReportDetailDTO report = reportService.getReportDetail(id);
         if (report != null) {
             model.addAttribute("report", report);
+            model.addAttribute("eQuestionStatus", EQuestionStatus.values());
             return "admin/report/report-detail";
         } else {
             model.addAttribute("error", "Report not found");
