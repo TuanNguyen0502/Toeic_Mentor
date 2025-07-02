@@ -18,6 +18,19 @@ document.addEventListener('DOMContentLoaded', function() {
         hasMore: true
     };
 
+    function formatDateTime(dateTimeStr) {
+        if (!dateTimeStr) return '';
+        const date = new Date(dateTimeStr);
+        if (isNaN(date.getTime())) return '';
+        const pad = n => n.toString().padStart(2, '0');
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        const day = pad(date.getDate());
+        const month = pad(date.getMonth() + 1);
+        const year = date.getFullYear();
+        return `${minutes}:${hours} ${day}/${month}/${year}`;
+    }
+
     function renderNotifications(notifications) {
         const notificationList = document.getElementById('notificationList');
         const viewAllLi = notificationList.lastElementChild;
@@ -28,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="flex-grow">
                         <div class="flex items-center justify-between">
                             <a href="/admin/notifications/${notification.id}" class="body-title">${notification.title}</a>
-                            <div class="time">${notification.createdAt || ''}</div>
+                            <div class="time">${formatDateTime(notification.createdAt)}</div>
                         </div>
                     </div>
                 </div>
