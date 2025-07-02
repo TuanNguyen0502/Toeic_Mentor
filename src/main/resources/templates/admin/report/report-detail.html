@@ -63,86 +63,118 @@
                                             <dt class="col-sm-3">Description</dt>
                                             <dd class="col-sm-9" th:text="${report.description}">Report description here...</dd>
 
-                                            <dt class="col-sm-3">Status</dt>
-                                            <dd class="col-sm-9">
-                                                <span th:classappend="${report.status.name() == 'OPEN'} ? 'badge bg-warning text-dark' : (${report.status.name() == 'RESOLVED'} ? 'badge bg-success' : 'badge bg-danger')" th:text="${report.status}">OPEN</span>
-                                            </dd>
-
-                                            <dt class="col-sm-3">Admin Response</dt>
-                                            <dd class="col-sm-9" th:text="${report.admin_response}">No response yet.</dd>
-
                                             <dt class="col-sm-3">Created At</dt>
                                             <dd class="col-sm-9" th:text="${report.create_at}">2024-05-01</dd>
                                         </dl>
                                     </div>
                                 </div>
 
-                                <!-- Update Question Form -->
-                                <div class="card shadow">
+                                <!-- Update Report & Question Form -->
+                                <div class="card shadow mb-4">
                                     <div class="card-header bg-info text-white">
-                                        <h5 class="mb-0">Update Reported Question</h5>
+                                        <h5 class="mb-0">Update Report & Question</h5>
                                     </div>
                                     <div class="card-body">
-                                        <form th:action="@{/admin/questions/update}" th:object="${report.questionUpdateDTO}" method="post" enctype="multipart/form-data">
+                                        <!-- Success message -->
+                                        <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                                            <i class="bi bi-check-circle-fill me-2"></i>
+                                            <span th:text="${successMessage}">Question updated and notification sent successfully!</span>
+                                        </div>
+                                        <form th:action="@{/admin/reports/{id}(id=${report.id})}" th:object="${report}" method="post" enctype="multipart/form-data">
                                             <input type="hidden" th:field="*{id}"/>
+                                            <input type="hidden" th:field="*{email}"/>
+                                            <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
+                                                <ul class="mb-0">
+                                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                                                </ul>
+                                            </div>
+                                            <!-- Editable Report Fields -->
+                                            <div class="row mb-4">
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-semibold">Admin Response <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" th:field="*{admin_response}" required placeholder="Enter your response">
+                                                    <div class="text-danger small" th:if="${#fields.hasErrors('admin_response')}" th:errors="*{admin_response}"></div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-semibold">Report Status <span class="text-danger">*</span></label>
+                                                    <select class="form-select" th:field="*{status}" required>
+                                                        <option value="OPEN">OPEN</option>
+                                                        <option value="RESOLVED">RESOLVED</option>
+                                                        <option value="REJECTED">REJECTED</option>
+                                                    </select>
+                                                    <div class="text-danger small" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+                                                </div>
+                                            </div>
+                                            <hr class="my-4">
+                                            <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-pencil-square me-2"></i>Update Reported Question</h6>
                                             <div class="row mb-3">
                                                 <div class="col-md-4">
+                                                    <label class="form-label">ID</label>
+                                                    <input type="text" class="form-control" th:field="*{questionUpdateDTO.id}" readonly required>
+                                                </div>
+                                                <div class="col-md-4">
                                                     <label class="form-label">Part</label>
-                                                    <input type="number" class="form-control" th:field="*{part}" min="1" max="7" required>
+                                                    <input type="number" class="form-control" th:field="*{questionUpdateDTO.part}" min="1" max="7" required>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label class="form-label">Number</label>
-                                                    <input type="number" class="form-control" th:field="*{number}" required>
+                                                    <input type="number" class="form-control" th:field="*{questionUpdateDTO.number}" required>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Status</label>
-                                                    <select class="form-select" th:field="*{status}">
-                                                        <option th:each="status : ${eQuestionStatus}" th:value="${status}" th:text="${status.name()}"></option>
-                                                    </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Upload image</label>
+                                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                                    <img th:each="img : *{questionUpdateDTO.imageUrls}" th:src="${img}" class="rounded border" style="width: 120px; height: 80px; object-fit: cover;" alt="Question Image">
                                                 </div>
+                                                <a class="btn btn-outline-primary btn-sm" th:href="@{'/admin/questions/' + *{questionUpdateDTO.id} + '/images'}">
+                                                    <i class="bi bi-image"></i> Update Images
+                                                </a>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Passage</label>
-                                                <textarea class="form-control" th:field="*{passage}" rows="2"></textarea>
+                                                <textarea class="form-control" th:field="*{questionUpdateDTO.passage}" rows="2"></textarea>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Content <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" th:field="*{content}" required>
+                                                <input type="text" class="form-control" th:field="*{questionUpdateDTO.content}" required>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Options</label>
                                                 <div class="options-container">
-                                                    <div th:each="option, stat : *{options}" class="option-row d-flex align-items-center mb-2">
+                                                    <div th:each="option, stat : *{questionUpdateDTO.options}" class="option-row d-flex align-items-center mb-2">
                                                         <label class="fw-bold me-2" style="min-width: 60px; margin-right: 10px;" th:text="${option.key}"></label>
                                                         <input type="text" class="form-control flex-grow-1"
-                                                               th:field="*{options[__${option.key}__]}"
+                                                               th:field="*{questionUpdateDTO.options[__${option.key}__]}"
                                                                required>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Correct Answer <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" th:field="*{correctAnswer}" pattern="[A-Da-d]" required placeholder="A, B, C, or D">
+                                                <input type="text" class="form-control" th:field="*{questionUpdateDTO.correctAnswer}" pattern="[A-Da-d]" required placeholder="A, B, C, or D">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Explanation <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" th:field="*{questionUpdateDTO.answerExplanation}" required placeholder="Question's Explanation Here">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Tags</label>
                                                 <div class="row g-2">
-                                                    <div class="col-md-3" th:each="tag, stat : *{tags}">
-                                                        <input type="text" class="form-control mb-2" th:field="*{tags[__${stat.index}__]}" th:placeholder="'Tag ' + (${stat.index} + 1)">
+                                                    <div class="col-md-3" th:each="tag, stat : *{questionUpdateDTO.tags}">
+                                                        <input type="text" class="form-control mb-2" th:field="*{questionUpdateDTO.tags[__${stat.index}__]}" th:placeholder="'Tag ' + (${stat.index} + 1)">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Images</label>
-                                                <div class="d-flex flex-wrap gap-2 mb-2">
-                                                    <img th:each="img : *{imageUrls}" th:src="${img}" class="rounded border" style="width: 120px; height: 80px; object-fit: cover;" alt="Question Image">
-                                                </div>
-                                                <a class="btn btn-outline-primary btn-sm" th:href="@{'/admin/questions/' + *{id} + '/images'}">
-                                                    <i class="bi bi-image"></i> Update Images
-                                                </a>
+                                                <label class="form-label">Status</label>
+                                                <select class="form-select" th:field="*{questionUpdateDTO.status}">
+                                                    <option th:each="status : ${eQuestionStatus}" th:value="${status}" th:text="${status.name()}"></option>
+                                                </select>
                                             </div>
                                             <div class="d-flex justify-content-end">
-                                                <button class="btn btn-success" type="submit">Save Changes</button>
+                                                <button class="btn btn-success px-4 py-2" type="submit">
+                                                    <i class="bi bi-save me-2"></i>Save Changes
+                                                </button>
                                             </div>
                                         </form>
                                     </div>

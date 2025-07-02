@@ -10,4 +10,6 @@ public interface IReportService {
     Page<ReportResponse> getReportsByStatus(String status, Pageable pageable);
     ReportDetailDTO getReportDetail(Long id);
     boolean saveReport(String email, ReportRequest request);
+    void updateReport(ReportDetailDTO reportDetailDTO);
+
 }

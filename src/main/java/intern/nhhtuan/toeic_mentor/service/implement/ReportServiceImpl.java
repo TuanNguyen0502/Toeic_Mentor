@@ -11,6 +11,7 @@ import intern.nhhtuan.toeic_mentor.repository.ReportRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IReportService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -62,7 +63,6 @@ public class ReportServiceImpl implements IReportService {
                 .build();
     }
 
-
     @Override
     @Transactional
     public boolean saveReport(String email, ReportRequest request) {
@@ -86,6 +86,32 @@ public class ReportServiceImpl implements IReportService {
         notificationService.createReportNotifications(savedReport);
 
         return true; // Report saved successfully
+    }
+
+    @Override
+    @Transactional
+    public void updateReport(ReportDetailDTO reportDetailDTO) {
+        Report report = reportRepository.findById(reportDetailDTO.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Report not found with id: " + reportDetailDTO.getId()));
+
+        report.setStatus(reportDetailDTO.getStatus());
+            reportRepository.save(report);
+
+        switch (reportDetailDTO.getStatus()) {
+            case OPEN:
+                break;
+            case REJECTED:
+                notificationService.createResponseUserNotifications(reportDetailDTO);
+                break;
+            case RESOLVED:
+                boolean success = questionService.update(reportDetailDTO.getQuestionUpdateDTO());
+                if (success) {
+                    notificationService.createResponseUserNotifications(reportDetailDTO);
+                } else {
+                    throw new RuntimeException("Failed to update question.");
+                }
+                break;
+        }
     }
 
     private ReportResponse mapToResponse(Report report) {

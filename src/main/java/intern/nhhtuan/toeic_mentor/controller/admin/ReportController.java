@@ -9,7 +9,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller("AdminReportController")
 @RequestMapping("/admin/reports")
@@ -44,5 +47,21 @@ public class ReportController {
             model.addAttribute("error", "Report not found");
             return "admin/report/report-list";
         }
+    }
+
+    @PostMapping("/{id}")
+    public String updateReportDetail(@PathVariable Long id,
+                                     @Validated @ModelAttribute("report") ReportDetailDTO reportDetailDTO,
+                                     BindingResult bindingResult,
+                                     Model model,
+                                     RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("eQuestionStatus", EQuestionStatus.values());
+            return "admin/report/report-detail";
+        }
+
+        reportService.updateReport(reportDetailDTO);
+        redirectAttributes.addFlashAttribute("successMessage", "Question updated and notification sent successfully!");
+        return "redirect:/admin/reports/" + id;
     }
 }
