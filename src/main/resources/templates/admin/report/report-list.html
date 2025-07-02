@@ -77,8 +77,10 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr th:each="report : ${reports}">
-                                        <td th:text="${report.id}">1</td>
+                                    <tr th:each="report : ${reports}" style="cursor:pointer;" th:onclick="|window.location='@{/admin/reports/{id}(id=${report.id})}'|" class="table-row align-middle">
+                                        <td>
+                                            <a th:href="@{/admin/reports/{id}(id=${report.id})}" class="fw-bold text-decoration-underline text-primary" th:text="${report.id}"></a>
+                                        </td>
                                         <td th:text="${report.email}">email@example.com</td>
                                         <td th:text="${report.question_id}">101</td>
                                         <td>
