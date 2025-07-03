@@ -40,4 +40,7 @@ public class QuestionUpdateDTO {
     private List<String> tags;
 
     private EQuestionStatus status;
+
+    @NotBlank(message = "Explanation cannot be blank")
+    private String answerExplanation;
 }
