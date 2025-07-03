@@ -48,7 +48,6 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
-
     public void createResponseUserNotifications(ReportDetailDTO reportDetailDTO) {
         User userReceiver = userRepository.findByEmail(reportDetailDTO.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + reportDetailDTO.getEmail()));
@@ -62,8 +61,10 @@ public class NotificationServiceImpl implements INotificationService {
                 .build();
 
         notificationRepository.save(notification);
-    
-      public int countUnreadNotifications(String email) {
+    }
+
+    @Override
+    public int countUnreadNotifications(String email) {
         return notificationRepository.findAllByReceiver_Email(email)
                 .stream()
                 .filter(notification -> !notification.isRead())
