@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const day = pad(date.getDate());
         const month = pad(date.getMonth() + 1);
         const year = date.getFullYear();
-        return `${minutes}:${hours} ${day}/${month}/${year}`;
+        return `${hours}:${minutes} - ${day}/${month}/${year}`;
     }
 
     function renderNotifications(notifications) {
