@@ -15,7 +15,7 @@ import lombok.*;
 public class Report extends TrackingDate {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     private EReportType category;
