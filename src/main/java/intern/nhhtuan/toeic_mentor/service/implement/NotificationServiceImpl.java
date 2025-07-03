@@ -82,6 +82,19 @@ public class NotificationServiceImpl implements INotificationService {
                 .build();
 
         notificationRepository.save(notification);
+
+        // Send WebSocket notification to user
+        NotificationResponse notificationResponse = NotificationResponse.builder()
+                .id(notification.getId())
+                .urlToReportDetail("")
+                .type(notification.getType().getDescription())
+                .title(notification.getTitle())
+                .message(notification.getMessage())
+                .isRead(notification.isRead())
+                .createdAt(notification.getCreatedAt().toString())
+                .build();
+
+        socketNotifier.sendToUser(userReceiver.getEmail(), "/queue/notifications", notificationResponse);
     }
 
     @Override
