@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "reports")
+@Table(name = "notifications")
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder

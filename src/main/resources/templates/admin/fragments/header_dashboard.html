@@ -16,6 +16,31 @@
                 <i class="icon-moon"></i>
             </div>
 
+            <div class="popup-wrap noti type-header">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <span class="header-item">
+                                                <span class="text-tiny" id="countUnreadNotification"></span>
+                                                <i class="icon-bell"></i>
+                                            </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end has-content" aria-labelledby="dropdownMenuButton1"
+                        id="notificationList" style="max-height: 500px; overflow-y: auto;">
+                        <li>
+                            <h6 style="display: flex; align-items: center; justify-content: space-between;">
+                                Notifications
+                                <button id="markAllAsReadBtn" class="btn btn-link btn-sm"
+                                        style="padding: 0 0 0 10px; font-size: 13px;">Mark all as read
+                                </button>
+                            </h6>
+                        </li>
+                        <!-- Notifications will be loaded here by JS -->
+                        <li><a href="#" class="tf-button w-full">View all</a></li>
+                    </ul>
+                </div>
+            </div>
+
             <div class="header-item button-zoom-maximize">
                 <div class="">
                     <i class="icon-maximize"></i>
@@ -56,4 +81,3 @@
         </div>
     </div>
 </div>
-

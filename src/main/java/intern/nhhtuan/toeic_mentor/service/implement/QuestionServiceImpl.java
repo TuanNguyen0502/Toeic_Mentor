@@ -5,6 +5,7 @@ import intern.nhhtuan.toeic_mentor.dto.QuestionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.SectionQuestionResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
@@ -46,6 +47,7 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setPassage(dto.getPassage());
             question.setPart(partRepository.findByName(getPartName(dto.getPart())));
             question.setStatus(EQuestionStatus.IN_SECTION);
+            question.setAnswerExplanation(dto.getAnswerExplanation());
             question.setSection(section);
             // Lưu trước để có ID cho liên kết
             questionRepository.save(question);
@@ -77,6 +79,7 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setQuestionText(questionUpdateDTO.getContent());
             question.setCorrectAnswer(questionUpdateDTO.getCorrectAnswer());
             question.setStatus(questionUpdateDTO.getStatus());
+            question.setAnswerExplanation(questionUpdateDTO.getAnswerExplanation());
 
             // Save question with updated fields
             questionRepository.save(question);
@@ -119,6 +122,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .correctAnswer(question.getCorrectAnswer())
                 .tags(tags)
                 .status(question.getStatus())
+                .answerExplanation(question.getAnswerExplanation())
                 .build();
     }
 
@@ -167,15 +171,15 @@ public class QuestionServiceImpl implements IQuestionService {
             EPart partName = getPartName(part);
             // Fetch questions based on part and topic
             List<Question> questions;
+            // If topics are specified, fetch questions that match both part and topics
+            List<QuestionTag> tags = new ArrayList<>();
+            for (String tag : request.getTopic()) {
+                tags.addAll(questionTagService.findByTag(tag));
+            }
             // If no topics are specified, fetch all questions for the part
-            if (request.getTopic().size() == 0) {
+            if (request.getTopic().size() == 0 || tags.isEmpty()) {
                 questions = questionRepository.findDistinctByPart_NameAndStatus(partName, EQuestionStatus.APPROVED);
             } else {
-                // If topics are specified, fetch questions that match both part and topics
-                List<QuestionTag> tags = new ArrayList<>();
-                for (String tag : request.getTopic()) {
-                    tags.addAll(questionTagService.findByTag(tag));
-                }
                 questions = questionRepository.findDistinctByPart_NameAndTagsAndStatus(partName, tags, EQuestionStatus.APPROVED);
             }
             // Add the fetched questions to the matched list
@@ -229,16 +233,17 @@ public class QuestionServiceImpl implements IQuestionService {
                 .map(QuestionImage::getImage)
                 .toList();
 
-        return new QuestionResponse(
-                question.getId(),
-                question.getQuestionText(),
-                question.getCorrectAnswer(),
-                null,
-                question.getPassage(),
-                passageImageUrls,
-                Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")),
-                options,
-                tags
-        );
+        return QuestionResponse.builder()
+                .id(question.getId())
+                .questionText(question.getQuestionText())
+                .correctAnswer(question.getCorrectAnswer())
+                .answerExplanation(question.getAnswerExplanation())
+                .userAnswer(null)
+                .passage(question.getPassage())
+                .passageImageUrls(passageImageUrls)
+                .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
+                .options(options)
+                .tags(tags)
+                .build();
     }
 }

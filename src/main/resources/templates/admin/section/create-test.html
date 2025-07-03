@@ -280,6 +280,7 @@
                             ` : ''}
                         </div>
                         <div class="text-green-600 font-medium">Correct Answer: ${question.correctAnswer || 'Not specified'}</div>
+                        <div class="mb-2">${question.answerExplanation}</div>
                         ${question.tags && question.tags.length > 0 ? `
                             <div class="mt-2">
                                 <div class="font-medium mb-1">Tags:</div>

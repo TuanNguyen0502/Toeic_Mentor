@@ -24,7 +24,7 @@ public class Test {
     @Column(nullable = false)
     private Integer score; // Total score of the test
 
-    private String recommendation; // Recommendation based on the test result
+    private String recommendations; // Recommendation based on the test result
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
