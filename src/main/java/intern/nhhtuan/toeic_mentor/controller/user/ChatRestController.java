@@ -30,6 +30,9 @@ public class ChatRestController {
             conversationId = chatService.generateConversationId(message, email);
         }
 
+        // Ensure conversationId does not contain any newline characters
+        conversationId = conversationId.replaceAll("[\r\n]+", "");
+
         final String finalConversationId = conversationId;
         Flux<String> response;
 

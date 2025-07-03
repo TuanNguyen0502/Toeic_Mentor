@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Existing unread count fetch
-    fetch('/admin/notifications/count')
+    // Fetch unread notification count
+    fetch('/notifications/count')
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.text();
         })
         .then(count => {
-            document.getElementById('countUnreadNotification').textContent = count > 0 ? count : '';
+            document.getElementById('userCountUnreadNotification').textContent = count > 0 ? count : '';
         })
         .catch(error => {
             console.error('Error fetching notification count:', error);
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderNotifications(notifications) {
-        const notificationList = document.getElementById('notificationList');
+        const notificationList = document.getElementById('userNotificationList');
         const viewAllLi = notificationList.lastElementChild;
         notifications.forEach(notification => {
             const li = document.createElement('li');
@@ -56,19 +56,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 const notiDiv = link.closest('.noti-item');
                 const notificationId = notification.id;
                 // Mark as read, then redirect
-                fetch(`/admin/notifications/${notificationId}/read`, { method: 'POST' })
+                fetch(`/notifications/${notificationId}/read`, { method: 'POST' })
                     .then(() => {
                         if (notiDiv.classList.contains('unread')) {
                             notiDiv.classList.remove('unread');
-                            const countElem = document.getElementById('countUnreadNotification');
+                            const countElem = document.getElementById('userCountUnreadNotification');
                             let count = parseInt(countElem.textContent) || 0;
                             if (count > 0) countElem.textContent = count - 1 === 0 ? '' : (count - 1);
                         }
                         // Redirect to urlToReportDetail if present
-                        if (notification.urlToReportDetail) {
-                            let url = notification.urlToReportDetail.replace(/[{}]/g, '');
-                            window.location.href = url;
-                        }
+                        // if (notification.urlToReportDetail) {
+                        //     let url = notification.urlToReportDetail.replace(/[{}]/g, '');
+                        //     window.location.href = url;
+                        // }
                     });
             });
             notificationList.insertBefore(li, viewAllLi);
@@ -76,20 +76,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showLoading() {
-        let loadingLi = document.getElementById('notification-loading');
+        let loadingLi = document.getElementById('user-notification-loading');
         if (!loadingLi) {
             loadingLi = document.createElement('li');
-            loadingLi.id = 'notification-loading';
+            loadingLi.id = 'user-notification-loading';
             loadingLi.style.textAlign = 'center';
             loadingLi.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-            const notificationList = document.getElementById('notificationList');
+            const notificationList = document.getElementById('userNotificationList');
             const viewAllLi = notificationList.lastElementChild;
             notificationList.insertBefore(loadingLi, viewAllLi);
         }
     }
 
     function hideLoading() {
-        const loadingLi = document.getElementById('notification-loading');
+        const loadingLi = document.getElementById('user-notification-loading');
         if (loadingLi) loadingLi.remove();
     }
 
@@ -97,9 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (notificationsPage.loading || !notificationsPage.hasMore) return;
         notificationsPage.loading = true;
         showLoading();
-        let url = '/admin/notifications?pageSize=10';
+        let url = '/notifications?pageSize=10';
         if (notificationsPage.lastCreatedAt) {
-            // Use the ISO string as returned by the API, but remove milliseconds and timezone for compatibility with Spring's LocalDateTime
             let before = notificationsPage.lastCreatedAt;
             if (before.includes('T')) {
                 before = before.split('.')[0];
@@ -112,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(notifications => {
                 if (initial) {
                     // Remove old notification items (except header and view all)
-                    const notificationList = document.getElementById('notificationList');
+                    const notificationList = document.getElementById('userNotificationList');
                     const items = notificationList.querySelectorAll('li');
                     items.forEach((li, idx) => {
                         if (idx !== 0 && idx !== items.length - 1) li.remove();
@@ -136,8 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Load notifications on dropdown open
-    const notificationList = document.getElementById('notificationList');
-    const dropdownButton = document.getElementById('dropdownMenuButton1');
+    const notificationList = document.getElementById('userNotificationList');
+    const dropdownButton = document.getElementById('userDropdownNotificationBtn');
     if (dropdownButton && notificationList) {
         dropdownButton.addEventListener('click', function() {
             notificationsPage = { loading: false, lastCreatedAt: null, hasMore: true };
@@ -145,44 +144,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         notificationList.addEventListener('scroll', function() {
             if (!notificationsPage.hasMore || notificationsPage.loading) return;
-            // Check if scrolled to bottom
             if (notificationList.scrollTop + notificationList.clientHeight >= notificationList.scrollHeight - 10) {
                 loadNotifications();
             }
         });
     }
 
-    // Mark all as read button handler (attach directly after DOMContentLoaded)
-    const markAllBtn = document.getElementById('markAllAsReadBtn');
+    // Mark all as read button handler
+    const markAllBtn = document.getElementById('userMarkAllAsReadBtn');
     if (markAllBtn) {
         markAllBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            fetch('/admin/notifications/read-all', { method: 'POST' })
+            fetch('/notifications/read-all', { method: 'POST' })
                 .then(() => {
-                    document.getElementById('countUnreadNotification').textContent = '0';
-                    document.querySelectorAll('#notificationList .noti-item.unread').forEach(div => {
+                    document.getElementById('userCountUnreadNotification').textContent = '0';
+                    document.querySelectorAll('#userNotificationList .noti-item.unread').forEach(div => {
                         div.classList.remove('unread');
                     });
                 });
         });
-    } else {
-        console.log('Mark all as read button not found');
     }
 });
 
 (function() {
     const style = document.createElement('style');
     style.innerHTML = `
-        #notificationList .noti-item.unread {
+        #userNotificationList .noti-item.unread {
             background-color: #f0f6ff;
             font-weight: bold;
         }
-        #notificationList .noti-item.unread .body-title {
+        #userNotificationList .noti-item.unread .body-title {
             color: #0d6efd;
         }
-        #notificationList .noti-item.unread:hover {
+        #userNotificationList .noti-item.unread:hover {
             background-color: #e0eaff;
         }
     `;
     document.head.appendChild(style);
 })();
+

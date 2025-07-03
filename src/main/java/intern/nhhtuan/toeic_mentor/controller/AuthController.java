@@ -65,7 +65,7 @@ public class AuthController {
             if (isAdmin) {
                 return "redirect:/admin";
             } else {
-                return "redirect:/home";
+                return "redirect:/"; // Redirect đến trang chính của người dùng
             }
         }
 
@@ -131,6 +131,6 @@ public class AuthController {
 
     @GetMapping("/")
     public String index() {
-        return "redirect:/login";
+        return "user/index";
     }
 }
