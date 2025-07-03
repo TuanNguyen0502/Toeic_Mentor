@@ -11,6 +11,7 @@ import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.repository.NotificationRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationService;
+import intern.nhhtuan.toeic_mentor.util.WebSocketNotifier;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +27,7 @@ import java.util.List;
 public class NotificationServiceImpl implements INotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final WebSocketNotifier socketNotifier;
 
     @Override
     @Transactional
@@ -45,6 +47,25 @@ public class NotificationServiceImpl implements INotificationService {
         }).toList();
 
         notificationRepository.saveAll(notifications);
+
+        List<NotificationResponse> responses = notifications.stream()
+                .map(notification -> NotificationResponse.builder()
+                        .id(notification.getId())
+                        .urlToReportDetail("/admin/reports/" + notification.getReport().getId())
+                        .type(notification.getType().getDescription())
+                        .title(notification.getTitle())
+                        .message(notification.getMessage())
+                        .isRead(notification.isRead())
+                        .createdAt(notification.getCreatedAt().toString())
+                        .build()
+                ).toList();
+
+        socketNotifier.sendToRoleWithPayloads(
+                ERole.ROLE_ADMIN,
+                responses,
+                "/queue/admin/notifications",
+                (email, dto) -> socketNotifier.sendToUser(email, "/queue/admin/notifications", dto)
+        );
     }
 
     @Override

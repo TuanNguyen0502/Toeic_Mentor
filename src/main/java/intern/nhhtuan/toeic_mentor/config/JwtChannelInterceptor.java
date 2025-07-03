@@ -29,16 +29,14 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                 token = token.substring(7);
                 try {
                     String email = jwtService.extractUsername(token);
-                    if (email != null) {
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                        if (jwtService.isTokenValid(token, userDetails)) {
-                            UsernamePasswordAuthenticationToken auth =
-                                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                            accessor.setUser(auth);
-                        }
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    if (jwtService.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken auth =
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        accessor.setUser(auth); // attach Principal
                     }
                 } catch (Exception e) {
-                    System.out.println("WebSocket JWT invalid: " + e.getMessage());
+                    System.out.println("Invalid WebSocket token: " + e.getMessage());
                 }
             }
         }
