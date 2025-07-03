@@ -74,17 +74,36 @@
                                     </div>
                                 </div>
                             </li>
-                            <li class="side-wrap cart-wrap">
-                                <div class="cart-wrapper">
-                                    <a href="javascript:void(0)" class="js-cart-drawer">
-                                        <span class="cart-icon-count">
-                                            <span class="cart-icon"><i class="feather-shopping-bag"></i></span>
-                                            <span class="cart-count cart-counter"
-                                                  th:if="${#authentication.principal != 'anonymousUser'}"
-                                                  th:text="'(' + ${cart != null and cart.activeDetails != null ? cart.activeDetails.size() : 0} + ')'">
-                                            </span>
-                                        </span>
-                                    </a>
+                            <li class="side-wrap notification-wrap">
+                                <div class="notification-wrapper">
+                                    <div class="popup-wrap noti type-header">
+                                        <div class="dropdown">
+                                            <button class="btn btn-secondary dropdown-toggle" type="button"
+                                                    id="userDropdownNotificationBtn" data-bs-toggle="dropdown"
+                                                    aria-expanded="false">
+                                                <span class="header-item">
+                                                    <span class="text-tiny" id="userCountUnreadNotification"></span>
+                                                    <span class="cart-icon"><i class="feather-bell"></i></span>
+                                                </span>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end has-content"
+                                                aria-labelledby="userDropdownNotificationBtn" id="userNotificationList"
+                                                style="max-height: 500px; overflow-y: auto; min-width: 350px;">
+                                                <li>
+                                                    <h6
+                                                        style="display: flex; align-items: center; justify-content: space-between;">
+                                                        Notifications
+                                                        <button id="userMarkAllAsReadBtn" class="btn btn-link btn-sm"
+                                                                style="padding: 0 0 0 10px; font-size: 13px;">
+                                                            Mark all as read
+                                                        </button>
+                                                    </h6>
+                                                </li>
+                                                <!-- Notifications will be loaded here by JS -->
+                                                <li><a href="/notifications" class="tf-button w-full">View all</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                             </li>
                         </ul>

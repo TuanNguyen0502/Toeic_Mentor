@@ -619,10 +619,8 @@
 <a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
 <!-- back-to-top end -->
 </body>
-<!-- plugin js -->
-<script th:src="@{/user/asset/js/plugin.js}"></script>
-<!-- theme js -->
-<script th:src="@{/user/asset/js/main.js}"></script>
+<!-- Javascript -->
+<div th:insert="~{user/fragments/script::script}"></div>
 <script>
     function addToCart(button) {
         const isAuthenticated = [[${#authentication.principal != 'anonymousUser'}]];
@@ -719,7 +717,6 @@
         return cartItem ? cartItem.getAttribute('data-product-id') : null;
     }
 </script>
-<script th:src="@{/user/asset/js/search-autocomplete.js}"></script>
 <script>
     // Quickview functionality
     document.addEventListener('DOMContentLoaded', function() {
