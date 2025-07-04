@@ -6,7 +6,6 @@ import intern.nhhtuan.toeic_mentor.dto.response.NotificationResponse;
 import intern.nhhtuan.toeic_mentor.entity.Notification;
 import intern.nhhtuan.toeic_mentor.entity.Report;
 import intern.nhhtuan.toeic_mentor.entity.User;
-import intern.nhhtuan.toeic_mentor.entity.enums.ENotificationType;
 import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.repository.NotificationRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
@@ -19,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service

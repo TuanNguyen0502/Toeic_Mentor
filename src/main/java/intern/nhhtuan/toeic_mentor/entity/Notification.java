@@ -1,6 +1,5 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
-import intern.nhhtuan.toeic_mentor.entity.enums.ENotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,8 +15,9 @@ public class Notification extends TrackingDate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private ENotificationType type;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "action", referencedColumnName = "action", nullable = false)
+    private NotificationType notificationType;
 
     @Column(nullable = false)
     private String title;
@@ -32,6 +32,6 @@ public class Notification extends TrackingDate {
     private User receiver;
 
     @ManyToOne
-    @JoinColumn(name = "report_id", nullable = true)
+    @JoinColumn(name = "report_id")
     private Report report;
 }
