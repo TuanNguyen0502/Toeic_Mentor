@@ -397,7 +397,7 @@
             questionElement.id = `question-${index}`;
             questionElement.dataset.part = question.part;
 
-            // Create question header with flag button
+            // Create question header with flag and report button
             const questionHeader = document.createElement('div');
             questionHeader.className = 'question-header mb-3';
             questionHeader.innerHTML = `
@@ -405,9 +405,14 @@
                     <h3 class="text-xl font-semibold mr-4">Question ${index + 1}</h3>
                     <span class="badge bg-primary">Part ${question.part}</span>
                 </div>
-                <button type="button" class="flag-button" data-question="${index}">
-                    <i class="fas fa-star"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="flag-button" data-question="${index}">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button type="button" class="report-button text-red-500 hover:text-red-700" data-question="${index}" data-questionid="${question.id}" title="Report this question">
+                        <i class="fas fa-flag"></i>
+                    </button>
+                </div>
             `;
 
             // Create passage container if a passage exists
@@ -465,6 +470,18 @@
                     updateSidebarCounts();
                 });
             });
+
+            // Add event listener for the report button
+            const reportBtn = questionElement.querySelector('.report-button');
+            if (reportBtn) {
+                reportBtn.addEventListener('click', function() {
+                    const qid = this.getAttribute('data-questionid');
+                    document.getElementById('reportQuestionId').value = qid;
+                    document.getElementById('reportCategory').value = '';
+                    document.getElementById('categoryError').classList.add('hidden');
+                    document.getElementById('reportModal').classList.remove('hidden');
+                });
+            }
 
             // Initially hide the question
             questionElement.style.display = 'none';
