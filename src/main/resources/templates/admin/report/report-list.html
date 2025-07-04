@@ -49,20 +49,37 @@
                                     </nav>
                                 </div>
                             </div>
-                            <!-- Filter by status -->
-                            <form method="get" th:action="@{/admin/reports}" class="row g-3 align-items-center mb-4 bg-light p-3 rounded shadow-sm">
-                                <div class="col-auto">
-                                    <label for="status" class="col-form-label fw-semibold">Filter by status:</label>
+                            <!-- Filter and Sort -->
+                            <div class="row g-3 align-items-center mb-4 bg-light p-3 rounded shadow-sm">
+                                <div class="col-md-6">
+                                    <form method="get" th:action="@{/admin/reports}" class="row g-3 align-items-center">
+                                        <div class="col-auto">
+                                            <label for="status" class="col-form-label fw-semibold">Filter by status:</label>
+                                        </div>
+                                        <div class="col-auto">
+                                            <select name="status" id="status" onchange="this.form.submit()" class="form-select">
+                                                <option value="" th:selected="${status == null}">All</option>
+                                                <option value="OPEN" th:selected="${status == 'OPEN'}">Open</option>
+                                                <option value="RESOLVED" th:selected="${status == 'RESOLVED'}">Resolved</option>
+                                                <option value="REJECTED" th:selected="${status == 'REJECTED'}">Rejected</option>
+                                            </select>
+                                        </div>
+                                    </form>
                                 </div>
-                                <div class="col-auto">
-                                    <select name="status" id="status" onchange="this.form.submit()" class="form-select">
-                                        <option value="" th:selected="${status == null}">All</option>
-                                        <option value="OPEN" th:selected="${status == 'OPEN'}">Open</option>
-                                        <option value="RESOLVED" th:selected="${status == 'RESOLVED'}">Resolved</option>
-                                        <option value="REJECTED" th:selected="${status == 'REJECTED'}">Rejected</option>
-                                    </select>
+                                <div class="col-md-6">
+                                    <form method="get" th:action="@{/admin/reports}" class="d-flex justify-content-end align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <label for="sort" class="col-form-label fw-semibold me-2">Sort by:</label>
+                                            <select name="sort" id="sort" onchange="this.form.submit()" class="form-select me-2" style="width: auto;">
+                                                <option value="createdAt,desc" th:selected="${sort != null and sort.toString().contains('createdAt: DESC')}">Newest First</option>
+                                                <option value="createdAt,asc" th:selected="${sort != null and sort.toString().contains('createdAt: ASC')}">Oldest First</option>
+                                            </select>
+                                            <input type="hidden" name="page" value="0">
+                                            <input type="hidden" name="status" th:value="${status}">
+                                        </div>
+                                    </form>
                                 </div>
-                            </form>
+                            </div>
                             <!-- Report Table -->
                             <div class="table-responsive shadow rounded">
                                 <table class="table table-hover align-middle mb-0">
@@ -104,13 +121,16 @@
                             <nav class="mt-4 d-flex justify-content-center" th:if="${totalPages > 1}">
                                 <ul class="pagination">
                                     <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                                        <a class="page-link" th:href="@{/admin/reports(page=${currentPage - 1}, status=${status})}" tabindex="-1">&laquo; Prev</a>
+                                        <a class="page-link" th:href="@{/admin/reports(page=${currentPage - 1}, status=${status}, sort=createdAt,desc)}" th:if="${sort == null or sort.toString().contains('createdAt: DESC')}" tabindex="-1">&laquo; Prev</a>
+                                        <a class="page-link" th:href="@{/admin/reports(page=${currentPage - 1}, status=${status}, sort=createdAt,asc)}" th:if="${sort != null and sort.toString().contains('createdAt: ASC')}" tabindex="-1">&laquo; Prev</a>
                                     </li>
                                     <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
-                                        <a class="page-link" th:href="@{/admin/reports(page=${i}, status=${status})}" th:text="${i + 1}"></a>
+                                        <a class="page-link" th:href="@{/admin/reports(page=${i}, status=${status}, sort=createdAt,desc)}" th:if="${sort == null or sort.toString().contains('createdAt: DESC')}" th:text="${i + 1}"></a>
+                                        <a class="page-link" th:href="@{/admin/reports(page=${i}, status=${status}, sort=createdAt,asc)}" th:if="${sort != null and sort.toString().contains('createdAt: ASC')}" th:text="${i + 1}"></a>
                                     </li>
                                     <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                                        <a class="page-link" th:href="@{/admin/reports(page=${currentPage + 1}, status=${status})}">Next &raquo;</a>
+                                        <a class="page-link" th:href="@{/admin/reports(page=${currentPage + 1}, status=${status}, sort=createdAt,desc)}" th:if="${sort == null or sort.toString().contains('createdAt: DESC')}">Next &raquo;</a>
+                                        <a class="page-link" th:href="@{/admin/reports(page=${currentPage + 1}, status=${status}, sort=createdAt,asc)}" th:if="${sort != null and sort.toString().contains('createdAt: ASC')}">Next &raquo;</a>
                                     </li>
                                 </ul>
                             </nav>
