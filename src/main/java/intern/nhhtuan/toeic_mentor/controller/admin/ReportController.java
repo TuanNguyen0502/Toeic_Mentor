@@ -6,7 +6,10 @@ import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -23,7 +26,7 @@ public class ReportController {
     @GetMapping("")
     public String showReports(
             @RequestParam(required = false) String status,
-            Pageable pageable,
+            @PageableDefault(page = 0, size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
 
         Page<ReportResponse> reports = reportService.getReportsByStatus(status, pageable);
@@ -32,6 +35,7 @@ public class ReportController {
         model.addAttribute("totalPages", reports.getTotalPages());
         model.addAttribute("currentPage", reports.getNumber());
         model.addAttribute("status", status);
+        model.addAttribute("sort", pageable.getSort());
 
         return "admin/report/report-list";
     }

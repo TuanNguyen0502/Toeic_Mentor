@@ -15,7 +15,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,12 +33,14 @@ public class ReportServiceImpl implements IReportService {
     @Override
     public Page<ReportResponse> getReportsByStatus(String status, Pageable pageable) {
         if (status == null || status.isEmpty()) {
+//            Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+//            Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
             return reportRepository.findAll(pageable)
                     .map(this::mapToResponse);
         } else {
             try {
                 EReportStatus reportStatus = EReportStatus.valueOf(status.toUpperCase());
-                return reportRepository.findByStatusOrderByCreatedAtDesc(reportStatus, pageable)
+                return reportRepository.findByStatus(reportStatus, pageable)
                         .map(this::mapToResponse);
             } catch (IllegalArgumentException e) {
                 return Page.empty(pageable);
