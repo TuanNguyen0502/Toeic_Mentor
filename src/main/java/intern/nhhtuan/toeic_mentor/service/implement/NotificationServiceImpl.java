@@ -8,6 +8,7 @@ import intern.nhhtuan.toeic_mentor.entity.Report;
 import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.repository.NotificationRepository;
+import intern.nhhtuan.toeic_mentor.repository.NotificationTypeRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationService;
 import intern.nhhtuan.toeic_mentor.util.WebSocketNotifier;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements INotificationService {
     private final NotificationRepository notificationRepository;
+    private final NotificationTypeRepository notificationTypeRepository;
     private final UserRepository userRepository;
     private final WebSocketNotifier socketNotifier;
 
@@ -38,7 +40,7 @@ public class NotificationServiceImpl implements INotificationService {
             return Notification.builder()
                     .receiver(admin)
                     .report(report)
-                    .type(ENotificationType.ERROR_REPORT)
+                    .notificationType(notificationTypeRepository.findByAction("NEW_REPORT"))
                     .title("New Report for Question #" + report.getQuestion().getId())
                     .message("User " + report.getUser().getFullName() + " submitted a new report.")
                     .build();
@@ -50,7 +52,6 @@ public class NotificationServiceImpl implements INotificationService {
                 .map(notification -> NotificationResponse.builder()
                         .id(notification.getId())
                         .urlToReportDetail("/admin/reports/" + notification.getReport().getId())
-                        .type(notification.getType().getDescription())
                         .title(notification.getTitle())
                         .message(notification.getMessage())
                         .isRead(notification.isRead())
@@ -74,7 +75,7 @@ public class NotificationServiceImpl implements INotificationService {
         Notification notification = Notification.builder()
                 .receiver(userReceiver)
                 .report(Report.builder().id(reportDetailDTO.getId()).build())
-                .type(ENotificationType.USER)
+                .notificationType(notificationTypeRepository.findByAction("COMPLETE_REPORT"))
                 .title("Response to Report #" + reportDetailDTO.getId())
                 .message(reportDetailDTO.getAdmin_response())
                 .build();
@@ -85,7 +86,6 @@ public class NotificationServiceImpl implements INotificationService {
         NotificationResponse notificationResponse = NotificationResponse.builder()
                 .id(notification.getId())
                 .urlToReportDetail("")
-                .type(notification.getType().getDescription())
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .isRead(notification.isRead())
@@ -116,7 +116,6 @@ public class NotificationServiceImpl implements INotificationService {
                 .map(notification -> NotificationResponse.builder()
                         .id(notification.getId())
                         .urlToReportDetail("/admin/reports/{" + notification.getReport().getId().toString() + "}")
-                        .type(notification.getType().getDescription())
                         .title(notification.getTitle())
                         .message(notification.getMessage())
                         .isRead(notification.isRead())

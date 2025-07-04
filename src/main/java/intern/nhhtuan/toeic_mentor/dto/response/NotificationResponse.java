@@ -9,7 +9,6 @@ import lombok.Data;
 public class NotificationResponse {
     private Long id;
     private String urlToReportDetail;
-    private String type;
     private String title;
     private String message;
     @JsonProperty("isRead")
