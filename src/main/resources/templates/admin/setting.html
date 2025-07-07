@@ -241,6 +241,8 @@
                                         <div class="body-text">Setting notification for receiving notifications</div>
                                     </div>
                                     <div class="right flex-grow">
+                                        <!-- Add error message for BadCredentialsException -->
+                                        <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
                                         <!-- Alert message div -->
                                         <div id="settingsAlert" style="display: none; margin-bottom: 20px;"
                                              class="alert">

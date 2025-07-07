@@ -29,13 +29,13 @@ public class NotificationSettingServiceImpl implements INotificationSettingServi
     public List<NotificationSettingResponse> getNotificationSettingsByEmail(String email) {
         // Validate the email
         if (email == null || email.isEmpty()) {
-            return List.of();
+            throw new IllegalArgumentException("Email cannot be null or empty");
         }
 
         // Fetch the user by email
         User user = userService.findByEmail(email);
         if (user == null) {
-            return List.of(); // Return empty list if user not found
+            throw new IllegalArgumentException("User not found with email: " + email);
         }
 
         // Fetch all notification settings for the user
