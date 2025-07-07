@@ -3,6 +3,8 @@ package intern.nhhtuan.toeic_mentor.controller.admin;
 import intern.nhhtuan.toeic_mentor.dto.ReportDetailDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.ReportResponse;
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
+import intern.nhhtuan.toeic_mentor.entity.enums.EReportStatus;
+import intern.nhhtuan.toeic_mentor.entity.enums.EReportType;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller("AdminReportController")
 @RequestMapping("/admin/reports")
 @RequiredArgsConstructor
@@ -26,16 +31,52 @@ public class ReportController {
     @GetMapping("")
     public String showReports(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String sort,
             @PageableDefault(page = 0, size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
 
-        Page<ReportResponse> reports = reportService.getReportsByStatus(status, pageable);
+        // Build filters map
+        Map<String, String> filters = new HashMap<>();
+        if (status != null && !status.isEmpty()) {
+            filters.put("status", status);
+        }
+        if (category != null && !category.isEmpty()) {
+            filters.put("category", category);
+        }
+        if (email != null && !email.isEmpty()) {
+            filters.put("email", email);
+        }
+
+        // Handle sort
+        Pageable effectivePageable = pageable;
+        if (sort != null && !sort.isEmpty()) {
+            String[] sortParts = sort.split(",");
+            if (sortParts.length == 2) {
+                String sortField = sortParts[0];
+                String sortDir = sortParts[1];
+                effectivePageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                        sortDir.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending());
+            }
+        }
+
+        Page<ReportResponse> reports;
+        if (filters.isEmpty()) {
+            reports = reportService.getReportsByStatus(status, effectivePageable);
+        } else {
+            reports = reportService.getReportsWithFilters(filters, effectivePageable);
+        }
 
         model.addAttribute("reports", reports.getContent());
         model.addAttribute("totalPages", reports.getTotalPages());
         model.addAttribute("currentPage", reports.getNumber());
         model.addAttribute("status", status);
-        model.addAttribute("sort", pageable.getSort());
+        model.addAttribute("category", category);
+        model.addAttribute("email", email);
+        model.addAttribute("sort", sort);
+        model.addAttribute("reportStatuses", EReportStatus.values());
+        model.addAttribute("reportTypes", EReportType.values());
 
         return "admin/report/report-list";
     }

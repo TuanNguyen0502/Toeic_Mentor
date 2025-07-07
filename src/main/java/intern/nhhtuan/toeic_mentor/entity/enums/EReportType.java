@@ -11,4 +11,8 @@ public enum EReportType {
     EReportType(String description) {
         this.description = description;
     }
+
+    public String getDescription() {
+        return description;
+    }
 }
