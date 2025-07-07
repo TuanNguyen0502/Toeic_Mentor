@@ -12,10 +12,10 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationSettingId implements Serializable {
+public class RoleNotificationId implements Serializable {
 
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "role_id")
+    private Long roleId;
 
     @Column(name = "notification_type_id")
     private Long notificationTypeId;
