@@ -6,6 +6,7 @@ import intern.nhhtuan.toeic_mentor.dto.response.NotificationResponse;
 import intern.nhhtuan.toeic_mentor.entity.Notification;
 import intern.nhhtuan.toeic_mentor.entity.Report;
 import intern.nhhtuan.toeic_mentor.entity.User;
+import intern.nhhtuan.toeic_mentor.entity.enums.ENotificationTypeAction;
 import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.repository.NotificationRepository;
 import intern.nhhtuan.toeic_mentor.repository.NotificationTypeRepository;
@@ -40,7 +41,7 @@ public class NotificationServiceImpl implements INotificationService {
             return Notification.builder()
                     .receiver(admin)
                     .report(report)
-                    .notificationType(notificationTypeRepository.findByAction("NEW_REPORT"))
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_REPORT))
                     .title("New Report for Question #" + report.getQuestion().getId())
                     .message("User " + report.getUser().getFullName() + " submitted a new report.")
                     .build();
@@ -75,7 +76,7 @@ public class NotificationServiceImpl implements INotificationService {
         Notification notification = Notification.builder()
                 .receiver(userReceiver)
                 .report(Report.builder().id(reportDetailDTO.getId()).build())
-                .notificationType(notificationTypeRepository.findByAction("COMPLETE_REPORT"))
+                .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.COMPLETE_REPORT))
                 .title("Response to Report #" + reportDetailDTO.getId())
                 .message(reportDetailDTO.getAdmin_response())
                 .build();
