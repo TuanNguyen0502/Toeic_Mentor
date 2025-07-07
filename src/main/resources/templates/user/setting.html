@@ -1,0 +1,253 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<head th:replace="~{user/fragments/head :: head('TOEIC Mentor - Setting')}"></head>
+<body>
+<!-- header-area start -->
+<div th:insert="~{user/fragments/header::header}"></div>
+<!-- header end -->
+<div th:insert="~{user/fragments/main_menu::main-menu}"></div>
+<main>
+    <!-- breadcrumb start -->
+    <section class="breadcrumb-area">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="breadcrumb-index">
+                        <!-- breadcrumb-list start -->
+                        <ul class="breadcrumb-ul">
+                            <li class="breadcrumb-li">
+                                <a class="breadcrumb-link" th:href="@{/}">Home</a>
+                            </li>
+                            <li class="breadcrumb-li">
+                                <span class="breadcrumb-text">Setting</span>
+                            </li>
+                        </ul>
+                        <!-- breadcrumb-list end -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- breadcrumb end -->
+    <!-- password-area start -->
+    <section class="customer-page section-pt">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="acc-form">
+                        <div class="log-acc-page" id="ForgotPasswordForm">
+                            <!-- account title start -->
+                            <div class="section-capture">
+                                <div class="section-title">
+                                    <h2 data-animate="animate__fadeInUp"><span>Setting</span></h2>
+                                    <p data-animate="animate__fadeInUp">You can change your setting here</p>
+                                </div>
+                            </div>
+                            <!-- account title end -->
+
+                            <!-- reset password form start -->
+                            <div class="acc-page">
+                                <div class="login">
+                                    <form method="post" th:action="@{/settings/notifications}"
+                                          id="notificationSettingsForm">
+                                        <!-- Alert message div -->
+                                        <div id="settingsAlert" style="display: none; margin-bottom: 20px;"
+                                             class="alert">
+                                            <span id="settingsMessage"></span>
+                                        </div>
+
+                                        <div class="login-form-container">
+                                            <ul class="fill-form">
+                                                <li class="log-email" data-animate="animate__fadeInUp"
+                                                    th:each="setting, settingStat : ${notificationSettingResponses}">
+                                                    <div class="body-title mb-10">
+                                                        <span th:text="'Enable ' + ${setting.getNotificationType().name().toLowerCase().replace('_', ' ')}  + ' notification?'"></span>
+                                                        <br><span th:text="${setting.getDescription()}"></span>
+                                                    </div>
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <label class="switch">
+                                                            <input type="checkbox" class="switch-input"
+                                                                   th:name="${'notificationSettingRequests[' + settingStat.index + '].enabled'}"
+                                                                   th:id="${setting.notificationType.name() + 'Enabled'}"
+                                                                   th:checked="${setting.enabled}">
+                                                            <span class="slider round">
+                                                            <span class="switch-handle"></span>
+                                                        </span>
+                                                            <input type="hidden"
+                                                                   th:name="${'notificationSettingRequests[' + settingStat.index + '].notificationType'}"
+                                                                   th:value="${setting.notificationType}">
+                                                        </label>
+                                                        <span class="body-title-2 switch-status"
+                                                              th:text="${setting.enabled ? 'Yes' : 'No'}">No</span>
+                                                    </div>
+                                                </li>
+                                            </ul>
+
+                                            <div class="form-action-button" data-animate="animate__fadeInUp">
+                                                <button type="submit" class="btn btn-style2">Save Setting</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- reset password form end -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- password-area end -->
+    <!-- news-letter start -->
+    <div th:insert="~{user/fragments/newsletter::newsletter}"></div>
+    <!-- news-letter end -->
+</main>
+<!-- main end -->
+<!-- footer start -->
+<div th:insert="~{user/fragments/footer::footer}"></div>
+<!-- footer end -->
+
+<!-- back-to-top start -->
+<a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
+<!-- back-to-top end -->
+<!-- plugin js -->
+<script th:src="@{/user/asset/js/plugin.js}"></script>
+<!-- theme js -->
+<script th:src="@{/user/asset/js/main.js}"></script>
+<style>
+    /* The switch - the box around the slider */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    /* Hide default HTML checkbox */
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    /* The slider */
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+
+    input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const switchInputs = document.querySelectorAll('.switch-input');
+
+        // Initialize switches and add event listeners
+        switchInputs.forEach(input => {
+            const statusText = input.closest('div').querySelector('.switch-status');
+
+            // Set initial state
+            if (input.checked) {
+                statusText.textContent = 'Yes';
+            }
+
+            // Add change event listener
+            input.addEventListener('change', function () {
+                statusText.textContent = this.checked ? 'Yes' : 'No';
+            });
+        });
+
+        // Form submission handling
+        const form = document.getElementById('notificationSettingsForm');
+        const alertDiv = document.getElementById('settingsAlert');
+        const messageSpan = document.getElementById('settingsMessage');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Collect all notification settings
+            const settings = Array.from(switchInputs).map(input => ({
+                notificationType: input.closest('div').querySelector('input[type="hidden"]').value,
+                enabled: input.checked
+            }));
+
+            // Send as JSON
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(settings),
+                credentials: 'same-origin'
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alertDiv.style.display = 'block';
+                    if (data.includes('successfully')) {
+                        alertDiv.className = 'alert alert-success';
+                    } else {
+                        alertDiv.className = 'alert alert-error';
+                    }
+                    messageSpan.textContent = data;
+
+                    setTimeout(() => {
+                        alertDiv.style.display = 'none';
+                    }, 3000);
+                })
+                .catch(error => {
+                    alertDiv.style.display = 'block';
+                    alertDiv.className = 'alert alert-error';
+                    messageSpan.textContent = 'An error occurred while saving settings';
+
+                    setTimeout(() => {
+                        alertDiv.style.display = 'none';
+                    }, 3000);
+                });
+        });
+    });
+</script>
+</body>
+
+<!-- Mirrored from spacingtech.com/html/etro/etro/password-reset.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 18 Mar 2025 13:01:39 GMT -->
+</html>

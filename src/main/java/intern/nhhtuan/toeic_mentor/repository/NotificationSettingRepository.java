@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface NotificationSettingRepository extends JpaRepository<NotificationSetting, Long> {
+    NotificationSetting findByUser_EmailAndNotificationType_Action(String userEmail, ENotificationTypeAction notificationTypeAction);
+
     @Query("""
     SELECT ns.enabled
     FROM NotificationSetting ns
@@ -16,5 +18,4 @@ public interface NotificationSettingRepository extends JpaRepository<Notificatio
       AND ns.notificationType.action = :action
     """)
     Optional<Boolean> isEnabled(@Param("userId") Long userId, @Param("action") ENotificationTypeAction action);
-
 }

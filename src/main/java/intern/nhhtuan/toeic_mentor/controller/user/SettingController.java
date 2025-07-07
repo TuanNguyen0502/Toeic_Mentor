@@ -1,4 +1,4 @@
-package intern.nhhtuan.toeic_mentor.controller.admin;
+package intern.nhhtuan.toeic_mentor.controller.user;
 
 import intern.nhhtuan.toeic_mentor.dto.request.NotificationSettingRequest;
 import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationSettingService;
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/admin/settings")
+@RestController("UserSettingController")
+@RequestMapping("/settings")
 @RequiredArgsConstructor
 public class SettingController {
     private final INotificationSettingService notificationSettingService;
