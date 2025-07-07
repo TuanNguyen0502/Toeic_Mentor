@@ -1,12 +1,11 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
+import intern.nhhtuan.toeic_mentor.entity.enums.ENotificationTypeAction;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Set;
 
 @Entity
 @Table(name = "notification_types")
@@ -16,12 +15,12 @@ import java.util.Set;
 @AllArgsConstructor
 public class NotificationType {
     @Id
-    @Column(name = "action", length = 100)
-    private String action;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "description")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "action", unique = true, nullable = false)
+    private ENotificationTypeAction action;
+
     private String description;
-
-    @ManyToMany(mappedBy = "notificationTypes")
-    private Set<Role> roles;
 }

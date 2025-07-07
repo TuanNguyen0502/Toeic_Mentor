@@ -15,10 +15,6 @@ public class Notification extends TrackingDate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "action", referencedColumnName = "action", nullable = false)
-    private NotificationType notificationType;
-
     @Column(nullable = false)
     private String title;
 
@@ -34,4 +30,8 @@ public class Notification extends TrackingDate {
     @ManyToOne
     @JoinColumn(name = "report_id")
     private Report report;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "notification_type_id", nullable = false)
+    private NotificationType notificationType;
 }

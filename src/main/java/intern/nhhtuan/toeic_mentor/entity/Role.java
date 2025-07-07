@@ -27,12 +27,4 @@ public class Role {
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
     private List<User> users;
-
-    @ManyToMany
-    @JoinTable(
-            name = "role_notifications",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "notification_type")
-    )
-    private Set<NotificationType> notificationTypes;
 }

@@ -7,26 +7,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "notification_settings")
+@Table(name = "role_notifications")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NotificationSetting {
+public class RoleNotification {
 
     @EmbeddedId
-    private NotificationSettingId id;
+    private RoleNotificationId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
-    @JoinColumn(name = "user_id")
-    private User user;
+    @MapsId("roleId")
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("notificationTypeId")
     @JoinColumn(name = "notification_type_id")
     private NotificationType notificationType;
-
-    @Column(nullable = false)
-    private boolean enabled = true;
 }

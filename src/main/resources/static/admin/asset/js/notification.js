@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.text();
         })
         .then(count => {
-            document.getElementById('countUnreadNotification').textContent = count > 0 ? count : '';
+            document.getElementById('countUnreadNotification').textContent = count > 0 ? count : '0';
         })
         .catch(error => {
             console.error('Error fetching notification count:', error);
