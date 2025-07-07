@@ -8,6 +8,7 @@ import intern.nhhtuan.toeic_mentor.entity.Report;
 import intern.nhhtuan.toeic_mentor.entity.enums.EReportStatus;
 import intern.nhhtuan.toeic_mentor.repository.QuestionRepository;
 import intern.nhhtuan.toeic_mentor.repository.ReportRepository;
+import intern.nhhtuan.toeic_mentor.repository.specification.ReportSpecification;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IReportService;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +49,12 @@ public class ReportServiceImpl implements IReportService {
                 return Page.empty(pageable);
             }
         }
+    }
+
+    @Override
+    public Page<ReportResponse> getReportsWithFilters(Map<String, String> filters, Pageable pageable) {
+        return reportRepository.findAll(ReportSpecification.withFilters(filters), pageable)
+                .map(this::mapToResponse);
     }
 
     @Override
