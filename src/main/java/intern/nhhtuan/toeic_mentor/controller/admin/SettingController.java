@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 public class SettingController {
 
-    @GetMapping("")
-    public String settings() {
-        return "admin/setting";
-    }
+//    @GetMapping("")
+//    public String settings() {
+//        return "admin/setting";
+//    }
 }

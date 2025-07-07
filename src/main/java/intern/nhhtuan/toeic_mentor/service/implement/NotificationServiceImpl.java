@@ -4,11 +4,13 @@ import intern.nhhtuan.toeic_mentor.dto.ReportDetailDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.NotificationDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.NotificationResponse;
 import intern.nhhtuan.toeic_mentor.entity.Notification;
+import intern.nhhtuan.toeic_mentor.entity.NotificationType;
 import intern.nhhtuan.toeic_mentor.entity.Report;
 import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.entity.enums.ENotificationTypeAction;
 import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.repository.NotificationRepository;
+import intern.nhhtuan.toeic_mentor.repository.NotificationSettingRepository;
 import intern.nhhtuan.toeic_mentor.repository.NotificationTypeRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationService;
@@ -21,12 +23,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements INotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationSettingRepository notificationSettingRepository;
     private final UserRepository userRepository;
     private final WebSocketNotifier socketNotifier;
 
@@ -34,18 +38,27 @@ public class NotificationServiceImpl implements INotificationService {
     @Transactional
     public void createReportNotifications(Report report) {
         List<User> admins = userRepository.findAllByRole_Name(ERole.ROLE_ADMIN);
-
         if (admins.isEmpty()) return;
 
-        List<Notification> notifications = admins.stream().map(admin -> {
-            return Notification.builder()
-                    .receiver(admin)
-                    .report(report)
-                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_REPORT))
-                    .title("New Report for Question #" + report.getQuestion().getId())
-                    .message("User " + report.getUser().getFullName() + " submitted a new report.")
-                    .build();
-        }).toList();
+        NotificationType type = notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_REPORT);
+
+        List<User> enabledAdmins = admins.stream()
+                .filter(admin -> notificationSettingRepository
+                        .isEnabled(admin.getId(), ENotificationTypeAction.NEW_REPORT)
+                        .orElse(false)
+                ).toList();
+
+        if (enabledAdmins.isEmpty()) return;
+
+        List<Notification> notifications = enabledAdmins.stream().map(admin ->
+                Notification.builder()
+                        .receiver(admin)
+                        .report(report)
+                        .notificationType(type)
+                        .title("New Report for Question #" + report.getQuestion().getId())
+                        .message("User " + report.getUser().getFullName() + " submitted a new report.")
+                        .build()
+        ).toList();
 
         notificationRepository.saveAll(notifications);
 
@@ -60,12 +73,17 @@ public class NotificationServiceImpl implements INotificationService {
                         .build()
                 ).toList();
 
-        socketNotifier.sendToRoleWithPayloads(
-                ERole.ROLE_ADMIN,
-                responses,
-                "/queue/admin/notifications",
-                (email, dto) -> socketNotifier.sendToUser(email, "/queue/admin/notifications", dto)
-        );
+        responses.forEach(response -> {
+            Notification notification = notifications.stream()
+                    .filter(n -> n.getId().equals(response.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (notification != null) {
+                String email = notification.getReceiver().getEmail();
+                socketNotifier.sendToUser(email, "/queue/admin/notifications", response);
+            }
+        });
     }
 
     @Override
@@ -73,27 +91,33 @@ public class NotificationServiceImpl implements INotificationService {
         User userReceiver = userRepository.findByEmail(reportDetailDTO.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + reportDetailDTO.getEmail()));
 
-        Notification notification = Notification.builder()
-                .receiver(userReceiver)
-                .report(Report.builder().id(reportDetailDTO.getId()).build())
-                .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.COMPLETE_REPORT))
-                .title("Response to Report #" + reportDetailDTO.getId())
-                .message(reportDetailDTO.getAdmin_response())
-                .build();
+        // check user setting notification
+        Optional<Boolean> enableNotification = notificationSettingRepository.isEnabled(userReceiver.getId(), ENotificationTypeAction.COMPLETE_REPORT);
 
-        notificationRepository.save(notification);
+        if (enableNotification.orElse(false)) {
+            // User has enabled notification for this action
+            Notification notification = Notification.builder()
+                    .receiver(userReceiver)
+                    .report(Report.builder().id(reportDetailDTO.getId()).build())
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.COMPLETE_REPORT))
+                    .title("Response to Report #" + reportDetailDTO.getId())
+                    .message(reportDetailDTO.getAdmin_response())
+                    .build();
 
-        // Send WebSocket notification to user
-        NotificationResponse notificationResponse = NotificationResponse.builder()
-                .id(notification.getId())
-                .urlToReportDetail("")
-                .title(notification.getTitle())
-                .message(notification.getMessage())
-                .isRead(notification.isRead())
-                .createdAt(notification.getCreatedAt().toString())
-                .build();
+            notificationRepository.save(notification);
 
-        socketNotifier.sendToUser(userReceiver.getEmail(), "/queue/notifications", notificationResponse);
+            // Send WebSocket notification to user
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(userReceiver.getEmail(), "/queue/notifications", notificationResponse);
+        }
     }
 
     @Override
