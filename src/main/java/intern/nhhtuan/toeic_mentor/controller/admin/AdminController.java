@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.controller.admin;
 
 import intern.nhhtuan.toeic_mentor.dto.response.AdminDashboardResponse;
+import intern.nhhtuan.toeic_mentor.entity.enums.ENotificationTypeAction;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IPartService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ITestService;
@@ -31,5 +32,11 @@ public class AdminController {
 
         model.addAttribute("adminDashboardResponse", adminDashboardResponse);
         return "admin/index";
+    }
+
+    @GetMapping("/settings")
+    public String settings(Model model) {
+        model.addAttribute("eNotificationTypeActions", ENotificationTypeAction.values());
+        return "admin/setting";
     }
 }
