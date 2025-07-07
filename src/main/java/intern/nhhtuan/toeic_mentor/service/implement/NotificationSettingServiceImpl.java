@@ -49,6 +49,7 @@ public class NotificationSettingServiceImpl implements INotificationSettingServi
                     .findByUser_EmailAndNotificationType_Action(email, notificationType.getAction());
             NotificationSettingResponse response = new NotificationSettingResponse();
             response.setNotificationType(notificationType.getAction());
+            response.setDescription(notificationType.getDescription());
             response.setEnabled(setting != null && setting.isEnabled());
             responses.add(response);
         }

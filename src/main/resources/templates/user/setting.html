@@ -63,6 +63,7 @@
                                                     th:each="setting, settingStat : ${notificationSettingResponses}">
                                                     <div class="body-title mb-10">
                                                         <span th:text="'Enable ' + ${setting.getNotificationType().name().toLowerCase().replace('_', ' ')}  + ' notification?'"></span>
+                                                        <br><span th:text="${setting.getDescription()}"></span>
                                                     </div>
                                                     <div style="display: flex; align-items: center; gap: 10px;">
                                                         <label class="switch">

@@ -6,5 +6,6 @@ import lombok.Data;
 @Data
 public class NotificationSettingResponse {
     private ENotificationTypeAction notificationType;
+    private String description;
     private boolean enabled;
 }
