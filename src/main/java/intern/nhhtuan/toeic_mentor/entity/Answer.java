@@ -20,6 +20,9 @@ public class Answer {
     @Column(length = 1, nullable = false)
     private String answer;
 
+    @Column(name = "is_correct", nullable = false)
+    private boolean isCorrect; // Indicates if the answer is correct
+
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;

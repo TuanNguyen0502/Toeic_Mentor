@@ -1,585 +1,636 @@
 <html lang="en">
 
 <!-- Added by HTTrack -->
-<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
 <head th:replace="~{web/fragments/head :: head('TOEIC Mentor - 404')}"></head>
 <body>
-        <!-- top notification start -->
-        <div class="top-notification-bar">
-            <div class="container">
-                <ul class="notification-entry">
-                    <li class="notify-wrap notify-mail">
-                        <div class="notify-text">
-                            <ul class="grid-wrap">
-                                <li class="grid-wrapper">
-                                    <p class="notification-free"><span class="top-c">Free delivery</span> on orders over $100 discount</p>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                </ul>
+<!-- top notification start -->
+<div class="top-notification-bar">
+    <div class="container">
+        <ul class="notification-entry">
+            <li class="notify-wrap notify-mail">
+                <div class="notify-text">
+                    <ul class="grid-wrap">
+                        <li class="grid-wrapper">
+                            <p class="notification-free"><span class="top-c">Free delivery</span> on orders over $100
+                                discount</p>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- top notification end -->
+<!-- header-area start -->
+<div th:insert="~{web/fragments/header::header}"></div>
+<!-- header end -->
+<div th:insert="~{web/fragments/main_menu::main-menu}"></div>
+<main>
+    <!-- breadcrumb start -->
+    <section class="breadcrumb-area">
+        <div class="container">
+            <div class="col">
+                <div class="row">
+                    <div class="breadcrumb-index">
+                        <!-- breadcrumb-list start -->
+                        <ul class="breadcrumb-ul">
+                            <li class="breadcrumb-li">
+                                <a class="breadcrumb-link" href="index8.html">Home</a>
+                            </li>
+                            <li class="breadcrumb-li">
+                                <span class="breadcrumb-text">404</span>
+                            </li>
+                        </ul>
+                        <!-- breadcrumb-list end -->
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- top notification end -->
-        <!-- header-area start -->
-        <div th:insert="~{web/fragments/header::header}"></div>
-        <!-- header end -->
-        <div th:insert="~{web/fragments/main_menu::main-menu}"></div>
-        <main>
-            <!-- breadcrumb start -->
-            <section class="breadcrumb-area">
-                <div class="container">
-                    <div class="col">
-                        <div class="row">
-                            <div class="breadcrumb-index">
-                                <!-- breadcrumb-list start -->
-                                <ul class="breadcrumb-ul">
-                                    <li class="breadcrumb-li">
-                                        <a class="breadcrumb-link" href="index8.html">Home</a>
+    </section>
+    <!-- breadcrumb end -->
+    <section class="page-not-found section-pt">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="search-error-wrapper">
+                        <h2>404</h2>
+                        <p>Sorry but the page you are looking for does not exist, have been removed, name changed or is
+                            temporarity unavailable.</p>
+                        <a th:href="@{/home}" class="btn btn-style2">Go to home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- news-letter start -->
+    <div th:insert="~{web/fragments/newsletter::newsletter}"></div>
+    <!-- news-letter end -->
+</main>
+<!-- main end -->
+<!-- footer start -->
+<div th:insert="~{web/fragments/footer::footer}"></div>
+<!-- footer end -->
+<!-- mobile-menu start -->
+<div class="mobile-menu" id="mobile-menu">
+    <div class="mobile-contents">
+        <div class="menu-close">
+            <button class="menu-close-btn">
+                <span class="menu-close-icon"><i class="feather-x"></i></span>
+            </button>
+        </div>
+        <div class="header-contact">
+            <div class="mobilemenu-content">
+                <div class="main-wrap">
+                    <ul class="main-menu">
+                        <li class="menu-link">
+                            <a href="#menu-home" class="link-title" data-bs-toggle="collapse" aria-expanded="false">
+                                <span class="sp-link-title">Home</span>
+                                <span class="menu-arrow"><i class="feather-plus"></i></span>
+                            </a>
+                            <div class="menu-dropdown menu-single collapse" id="menu-home">
+                                <ul class="ul">
+                                    <li class="menusingle-li">
+                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/index1.html"
+                                           class="menusingle-title">
+                                            <span class="sp-link-title">Home 01</span>
+                                        </a>
                                     </li>
-                                    <li class="breadcrumb-li">
-                                        <span class="breadcrumb-text">404</span>
+                                    <li class="menusingle-li">
+                                        <a href="index2.html" class="menusingle-title">
+                                            <span class="sp-link-title">Home 02</span>
+                                        </a>
                                     </li>
                                 </ul>
-                                <!-- breadcrumb-list end -->
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- breadcrumb end -->
-            <section class="page-not-found section-pt">
-                <div class="container">
-                    <div class="row">
-                        <div class="col">
-                            <div class="search-error-wrapper">
-                                <h2>404</h2>
-                                <p>Sorry but the page you are looking for does not exist, have been removed, name changed or is temporarity unavailable.</p>
-                                <a th:href="@{/home}" class="btn btn-style2">Go to home</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- news-letter start -->
-            <div th:insert="~{web/fragments/newsletter::newsletter}"></div>
-            <!-- news-letter end -->
-        </main>
-        <!-- main end -->
-        <!-- footer start -->
-        <div th:insert="~{web/fragments/footer::footer}"></div>
-        <!-- footer end -->
-        <!-- mobile-menu start -->
-        <div class="mobile-menu" id="mobile-menu">
-            <div class="mobile-contents">
-                <div class="menu-close">
-                    <button class="menu-close-btn">
-                    <span class="menu-close-icon"><i class="feather-x"></i></span>
-                    </button>
-                </div>
-                <div class="header-contact">
-                    <div class="mobilemenu-content">
-                        <div class="main-wrap">
-                            <ul class="main-menu">
-                                <li class="menu-link">
-                                    <a href="#menu-home" class="link-title" data-bs-toggle="collapse" aria-expanded="false">
-                                        <span class="sp-link-title">Home</span>
-                                        <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                    </a>
-                                    <div class="menu-dropdown menu-single collapse" id="menu-home">
-                                        <ul class="ul">
-                                            <li class="menusingle-li">
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/index1.html" class="menusingle-title">
-                                                    <span class="sp-link-title">Home 01</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusingle-li">
-                                                <a href="index2.html" class="menusingle-title">
-                                                    <span class="sp-link-title">Home 02</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-                                <li class="menu-link">
-                                    <a href="#menu-shop-banner" class="link-title" data-bs-toggle="collapse" aria-expanded="false">
-                                        <span class="sp-link-title">Shop</span>
-                                        <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                    </a>
-                                    <div class="menu-dropdown menu-banner collapse" id="menu-shop-banner">
-                                        <ul class="ul container p-0">
-                                            <li class="menubanner-li">
-                                                <div class="menubanner-img banner-hover">
-                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html" class="collection-img banner-img">
-                                                        <img th:src="@{/web/assert/image/home1/menu-banner/menubanner-1.jpg}" class="img-fluid" alt="menubanner-1">
-                                                    </a>
-                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html" class="collection-title">
-                                                        <span>New collection</span>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                            <li class="menubanner-li">
-                                                <div class="menubanner-img banner-hover">
-                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html" class="collection-img banner-img">
-                                                        <img th:src="@{/web/assert/image/home1/menu-banner/menubanner-2.jpg}" class="img-fluid" alt="menubanner-2">
-                                                    </a>
-                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html" class="collection-title">
-                                                        <span>Best collection</span>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                            <li class="menubanner-li">
-                                                <div class="menubanner-img banner-hover">
-                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html" class="collection-img banner-img">
-                                                        <img th:src="@{/web/assert/image/home1/menu-banner/menubanner-3.jpg}" class="img-fluid" alt="menubanner-3">
-                                                    </a>
-                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html" class="collection-title">
-                                                        <span>Sale collection</span>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-                                <li class="menu-link">
-                                    <a href="#menu-collection" class="link-title" data-bs-toggle="collapse" aria-expanded="false">
-                                        <span class="sp-link-title">Collection</span>
-                                        <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                    </a>
-                                    <div class="menu-dropdown menu-mega collapse" id="menu-collection">
-                                        <ul class="ul container p-0">
-                                            <li class="menumega-li shop-li">
-                                                <div class="shop-title">
-                                                    <a href="collection-without.html">
-                                                        <span class="sp-link-title">Collection</span>
-                                                    </a>
-                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html">
-                                                        <span class="sp-link-title">Collection left</span>
-                                                    </a>
-                                                    <a href="collection-right.html">
-                                                        <span class="sp-link-title">Collection right</span>
-                                                    </a>
-                                                    <a href="collection-list-without.html">
-                                                        <span class="sp-link-title">Collection list</span>
-                                                    </a>
-                                                    <a href="collection-list.html">
-                                                        <span class="sp-link-title">Collection list left</span>
-                                                    </a>
-                                                    <a href="collection-list-right.html">
-                                                        <span class="sp-link-title">Collection list right</span>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                            <li class="menumega-li">
-                                                <a href="#menu-product" class="menumega-title" data-bs-toggle="collapse" aria-expanded="false">
-                                                    <span class="sp-link-title">Product page</span>
-                                                    <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                                </a>
-                                                <div class="menumegasup-dropdown collapse" id="menu-product">
-                                                    <ul class="menumegasup-ul">
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Product style 1</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template2.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Product style 2</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template3.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Product style 3</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template4.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Product style 4</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template5.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Product style 5</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template6.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Product style 6</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-                                            <li class="menumega-li">
-                                                <a href="#menu-shop1" class="menumega-title" data-bs-toggle="collapse" aria-expanded="false">
-                                                    <span class="sp-link-title">Shop page</span>
-                                                    <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                                </a>
-                                                <div class="menumegasup-dropdown collapse" id="menu-shop1">
-                                                    <ul class="menumegasup-ul">
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/cart-page.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Cart page</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/cart-empty.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Cart empty</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/wishlist-empty.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Wishlist empty</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/wishlist-product.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Wishlist product</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/return-policy.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Order & returns</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/login-account.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Manage account</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Saved items</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-                                            <li class="menumega-li">
-                                                <a href="#menu-shop2" class="menumega-title" data-bs-toggle="collapse" aria-expanded="false">
-                                                    <span class="sp-link-title">Account page</span>
-                                                    <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                                </a>
-                                                <div class="menumegasup-dropdown collapse" id="menu-shop2">
-                                                    <ul class="menumegasup-ul">
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/order-history.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Order</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/profile.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Profile</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/pro-address.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Address</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/change-password.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">Change password</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/pro-tickets.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">My ticket</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menumegasup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/login-account.html" class="menumegasup-title">
-                                                                <span class="sp-link-title">My account</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-                                <li class="menu-link">
-                                    <a href="#menu-blog" class="link-title" data-bs-toggle="collapse" aria-expanded="false">
-                                        <span class="sp-link-title">Blog</span>
-                                        <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                    </a>
-                                    <div class="menu-dropdown menu-single collapse" id="menu-blog">
-                                        <ul class="ul">
-                                            <li class="menusingle-li">
-                                                <a href="blog-grid-without.html" class="menusingle-title">
-                                                    <span class="sp-link-title">Blog grid</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusingle-li">
-                                                <a href="blog-grid.html" class="menusingle-title">
-                                                    <span class="sp-link-title">Blog grid left</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusingle-li">
-                                                <a href="blog-grid-right.html" class="menusingle-title">
-                                                    <span class="sp-link-title">Blog grid right</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusingle-li">
-                                                <a href="article-post-without.html" class="menusingle-title">
-                                                    <span class="sp-link-title">Article post</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusingle-li">
-                                                <a href="article-post.html" class="menusingle-title">
-                                                    <span class="sp-link-title">Article post left</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusingle-li">
-                                                <a href="article-post-right.html" class="menusingle-title">
-                                                    <span class="sp-link-title">Article post right</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-                                <li class="menu-link">
-                                    <a href="#menu-sub" class="link-title" data-bs-toggle="collapse" aria-expanded="false">
-                                        <span class="sp-link-title">Pages</span>
-                                        <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                    </a>
-                                    <div class="menu-dropdown menu-sub collapse" id="menu-sub">
-                                        <ul class="ul">
-                                            <li class="menusub-li">
-                                                <a href="about-us.html" class="menusub-title">
-                                                    <span class="sp-link-title">About us</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="#menu-sup-account" class="menusub-title" data-bs-toggle="collapse" aria-expanded="false">
-                                                    <span class="sp-link-title">Account</span>
-                                                    <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                                </a>
-                                                <div class="menusup-dropdown collapse" id="menu-sup-account">
-                                                    <ul class="menusup-ul">
-                                                        <li class="menusup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/login-account.html" class="menusup-title">
-                                                                <span class="sp-link-title">Login</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menusup-li">
-                                                            <a href="register.html" class="menusup-title">
-                                                                <span class="sp-link-title">Register</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/billing-info.html" class="menusub-title">
-                                                    <span class="sp-link-title">Billing info</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="#menu-sup-contact" class="menusub-title" data-bs-toggle="collapse" aria-expanded="false">
-                                                    <span class="sp-link-title">Contact us</span>
-                                                    <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                                </a>
-                                                <div class="menusup-dropdown collapse" id="menu-sup-contact">
-                                                    <ul class="menusup-ul">
-                                                        <li class="menusup-li">
-                                                            <a href="contact-us.html" class="menusup-title">
-                                                                <span class="sp-link-title">Contact us</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menusup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/contact-us-2.html" class="menusup-title">
-                                                                <span class="sp-link-title">Contact us 2</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="#menu-sup-checkout" class="menusub-title" data-bs-toggle="collapse" aria-expanded="false">
-                                                    <span class="sp-link-title">Checkout</span>
-                                                    <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                                </a>
-                                                <div class="menusup-dropdown collapse" id="menu-sup-checkout">
-                                                    <ul class="menusup-ul">
-                                                        <li class="menusup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/checkout-style1.html" class="menusup-title">
-                                                                <span class="sp-link-title">Checkout</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menusup-li">
-                                                            <a href="checkout-style2.html" class="menusup-title">
-                                                                <span class="sp-link-title">Checkout 2</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menusup-li">
-                                                            <a href="checkout-style3.html" class="menusup-title">
-                                                                <span class="sp-link-title">Checkout 3</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="cancellation.html" class="menusub-title">
-                                                    <span class="sp-link-title">Cancellation</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="faq.html" class="menusub-title">
-                                                    <span class="sp-link-title">Faq's</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/order-complete.html" class="menusub-title">
-                                                    <span class="sp-link-title">Order complete</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="#menu-sup-policy" class="menusub-title" data-bs-toggle="collapse" aria-expanded="false">
-                                                    <span class="sp-link-title">Policy</span>
-                                                    <span class="menu-arrow"><i class="feather-plus"></i></span>
-                                                </a>
-                                                <div class="menusup-dropdown collapse" id="menu-sup-policy">
-                                                    <ul class="menusup-ul">
-                                                        <li class="menusup-li">
-                                                            <a href="privacy-policyt.html" class="menusup-title">
-                                                                <span class="sp-link-title">Privacy policy</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menusup-li">
-                                                            <a href="payment-policy.html" class="menusup-title">
-                                                                <span class="sp-link-title">Payment policy</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menusup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/return-policy.html" class="menusup-title">
-                                                                <span class="sp-link-title">Return policy</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menusup-li">
-                                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/shipping-policy.html" class="menusup-title">
-                                                                <span class="sp-link-title">Shipping policy</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/sitemap.html" class="menusub-title">
-                                                    <span class="sp-link-title">Sitemap</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/terms-condition.html" class="menusub-title">
-                                                    <span class="sp-link-title">Terms & condition</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/track-page.html" class="menusub-title">
-                                                    <span class="sp-link-title">Track page</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="404.html" class="menusub-title">
-                                                    <span class="sp-link-title">404</span>
-                                                </a>
-                                            </li>
-                                            <li class="menusub-li">
-                                                <a href="coming-soon.html" class="menusub-title">
-                                                    <span class="sp-link-title">Coming soon</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-                                <li class="menu-link">
-                                    <div class="contact-num">
-                                        <div class="contact-wrap service-line">
-                                            <span class="contact-details"><i class="feather-headphones"></i></span>
-                                            <a href="tel:+2101234567890">(210) 123 456 7890</a>
+                        </li>
+                        <li class="menu-link">
+                            <a href="#menu-shop-banner" class="link-title" data-bs-toggle="collapse"
+                               aria-expanded="false">
+                                <span class="sp-link-title">Shop</span>
+                                <span class="menu-arrow"><i class="feather-plus"></i></span>
+                            </a>
+                            <div class="menu-dropdown menu-banner collapse" id="menu-shop-banner">
+                                <ul class="ul container p-0">
+                                    <li class="menubanner-li">
+                                        <div class="menubanner-img banner-hover">
+                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html"
+                                               class="collection-img banner-img">
+                                                <img th:src="@{/web/assert/image/home1/menu-banner/menubanner-1.jpg}"
+                                                     class="img-fluid" alt="menubanner-1">
+                                            </a>
+                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html"
+                                               class="collection-title">
+                                                <span>New collection</span>
+                                            </a>
                                         </div>
-                                    </div>
-                                 </li>
-                                 <li class="menu-link">
-                                    <div class="contact-wrap price-tag">
-                                        <span class="contact-details"><i class="feather-tag"></i></span>
-                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html">Mega sale</a>
-                                    </div>
-                                 </li>
-                            </ul>
-                        </div>
-                    </div>
+                                    </li>
+                                    <li class="menubanner-li">
+                                        <div class="menubanner-img banner-hover">
+                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html"
+                                               class="collection-img banner-img">
+                                                <img th:src="@{/web/assert/image/home1/menu-banner/menubanner-2.jpg}"
+                                                     class="img-fluid" alt="menubanner-2">
+                                            </a>
+                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html"
+                                               class="collection-title">
+                                                <span>Best collection</span>
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li class="menubanner-li">
+                                        <div class="menubanner-img banner-hover">
+                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html"
+                                               class="collection-img banner-img">
+                                                <img th:src="@{/web/assert/image/home1/menu-banner/menubanner-3.jpg}"
+                                                     class="img-fluid" alt="menubanner-3">
+                                            </a>
+                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html"
+                                               class="collection-title">
+                                                <span>Sale collection</span>
+                                            </a>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="menu-link">
+                            <a href="#menu-collection" class="link-title" data-bs-toggle="collapse"
+                               aria-expanded="false">
+                                <span class="sp-link-title">Collection</span>
+                                <span class="menu-arrow"><i class="feather-plus"></i></span>
+                            </a>
+                            <div class="menu-dropdown menu-mega collapse" id="menu-collection">
+                                <ul class="ul container p-0">
+                                    <li class="menumega-li shop-li">
+                                        <div class="shop-title">
+                                            <a href="collection-without.html">
+                                                <span class="sp-link-title">Collection</span>
+                                            </a>
+                                            <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html">
+                                                <span class="sp-link-title">Collection left</span>
+                                            </a>
+                                            <a href="collection-right.html">
+                                                <span class="sp-link-title">Collection right</span>
+                                            </a>
+                                            <a href="collection-list-without.html">
+                                                <span class="sp-link-title">Collection list</span>
+                                            </a>
+                                            <a href="collection-list.html">
+                                                <span class="sp-link-title">Collection list left</span>
+                                            </a>
+                                            <a href="collection-list-right.html">
+                                                <span class="sp-link-title">Collection list right</span>
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li class="menumega-li">
+                                        <a href="#menu-product" class="menumega-title" data-bs-toggle="collapse"
+                                           aria-expanded="false">
+                                            <span class="sp-link-title">Product page</span>
+                                            <span class="menu-arrow"><i class="feather-plus"></i></span>
+                                        </a>
+                                        <div class="menumegasup-dropdown collapse" id="menu-product">
+                                            <ul class="menumegasup-ul">
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Product style 1</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template2.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Product style 2</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template3.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Product style 3</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template4.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Product style 4</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template5.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Product style 5</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/product-template6.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Product style 6</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="menumega-li">
+                                        <a href="#menu-shop1" class="menumega-title" data-bs-toggle="collapse"
+                                           aria-expanded="false">
+                                            <span class="sp-link-title">Shop page</span>
+                                            <span class="menu-arrow"><i class="feather-plus"></i></span>
+                                        </a>
+                                        <div class="menumegasup-dropdown collapse" id="menu-shop1">
+                                            <ul class="menumegasup-ul">
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/cart-page.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Cart page</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/cart-empty.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Cart empty</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/wishlist-empty.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Wishlist empty</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/wishlist-product.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Wishlist product</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/return-policy.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Order & returns</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/login-account.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Manage account</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Saved items</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="menumega-li">
+                                        <a href="#menu-shop2" class="menumega-title" data-bs-toggle="collapse"
+                                           aria-expanded="false">
+                                            <span class="sp-link-title">Account page</span>
+                                            <span class="menu-arrow"><i class="feather-plus"></i></span>
+                                        </a>
+                                        <div class="menumegasup-dropdown collapse" id="menu-shop2">
+                                            <ul class="menumegasup-ul">
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/order-history.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Order</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/profile.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Profile</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/pro-address.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Address</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/change-password.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">Change password</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/pro-tickets.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">My ticket</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menumegasup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/login-account.html"
+                                                       class="menumegasup-title">
+                                                        <span class="sp-link-title">My account</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="menu-link">
+                            <a href="#menu-blog" class="link-title" data-bs-toggle="collapse" aria-expanded="false">
+                                <span class="sp-link-title">Blog</span>
+                                <span class="menu-arrow"><i class="feather-plus"></i></span>
+                            </a>
+                            <div class="menu-dropdown menu-single collapse" id="menu-blog">
+                                <ul class="ul">
+                                    <li class="menusingle-li">
+                                        <a href="blog-grid-without.html" class="menusingle-title">
+                                            <span class="sp-link-title">Blog grid</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusingle-li">
+                                        <a href="blog-grid.html" class="menusingle-title">
+                                            <span class="sp-link-title">Blog grid left</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusingle-li">
+                                        <a href="blog-grid-right.html" class="menusingle-title">
+                                            <span class="sp-link-title">Blog grid right</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusingle-li">
+                                        <a href="article-post-without.html" class="menusingle-title">
+                                            <span class="sp-link-title">Article post</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusingle-li">
+                                        <a href="article-post.html" class="menusingle-title">
+                                            <span class="sp-link-title">Article post left</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusingle-li">
+                                        <a href="article-post-right.html" class="menusingle-title">
+                                            <span class="sp-link-title">Article post right</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="menu-link">
+                            <a href="#menu-sub" class="link-title" data-bs-toggle="collapse" aria-expanded="false">
+                                <span class="sp-link-title">Pages</span>
+                                <span class="menu-arrow"><i class="feather-plus"></i></span>
+                            </a>
+                            <div class="menu-dropdown menu-sub collapse" id="menu-sub">
+                                <ul class="ul">
+                                    <li class="menusub-li">
+                                        <a href="about-us.html" class="menusub-title">
+                                            <span class="sp-link-title">About us</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="#menu-sup-account" class="menusub-title" data-bs-toggle="collapse"
+                                           aria-expanded="false">
+                                            <span class="sp-link-title">Account</span>
+                                            <span class="menu-arrow"><i class="feather-plus"></i></span>
+                                        </a>
+                                        <div class="menusup-dropdown collapse" id="menu-sup-account">
+                                            <ul class="menusup-ul">
+                                                <li class="menusup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/login-account.html"
+                                                       class="menusup-title">
+                                                        <span class="sp-link-title">Login</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menusup-li">
+                                                    <a href="register.html" class="menusup-title">
+                                                        <span class="sp-link-title">Register</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/billing-info.html"
+                                           class="menusub-title">
+                                            <span class="sp-link-title">Billing info</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="#menu-sup-contact" class="menusub-title" data-bs-toggle="collapse"
+                                           aria-expanded="false">
+                                            <span class="sp-link-title">Contact us</span>
+                                            <span class="menu-arrow"><i class="feather-plus"></i></span>
+                                        </a>
+                                        <div class="menusup-dropdown collapse" id="menu-sup-contact">
+                                            <ul class="menusup-ul">
+                                                <li class="menusup-li">
+                                                    <a href="contact-us.html" class="menusup-title">
+                                                        <span class="sp-link-title">Contact us</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menusup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/contact-us-2.html"
+                                                       class="menusup-title">
+                                                        <span class="sp-link-title">Contact us 2</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="#menu-sup-checkout" class="menusub-title" data-bs-toggle="collapse"
+                                           aria-expanded="false">
+                                            <span class="sp-link-title">Checkout</span>
+                                            <span class="menu-arrow"><i class="feather-plus"></i></span>
+                                        </a>
+                                        <div class="menusup-dropdown collapse" id="menu-sup-checkout">
+                                            <ul class="menusup-ul">
+                                                <li class="menusup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/checkout-style1.html"
+                                                       class="menusup-title">
+                                                        <span class="sp-link-title">Checkout</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menusup-li">
+                                                    <a href="checkout-style2.html" class="menusup-title">
+                                                        <span class="sp-link-title">Checkout 2</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menusup-li">
+                                                    <a href="checkout-style3.html" class="menusup-title">
+                                                        <span class="sp-link-title">Checkout 3</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="cancellation.html" class="menusub-title">
+                                            <span class="sp-link-title">Cancellation</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="faq.html" class="menusub-title">
+                                            <span class="sp-link-title">Faq's</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/order-complete.html"
+                                           class="menusub-title">
+                                            <span class="sp-link-title">Order complete</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="#menu-sup-policy" class="menusub-title" data-bs-toggle="collapse"
+                                           aria-expanded="false">
+                                            <span class="sp-link-title">Policy</span>
+                                            <span class="menu-arrow"><i class="feather-plus"></i></span>
+                                        </a>
+                                        <div class="menusup-dropdown collapse" id="menu-sup-policy">
+                                            <ul class="menusup-ul">
+                                                <li class="menusup-li">
+                                                    <a href="privacy-policyt.html" class="menusup-title">
+                                                        <span class="sp-link-title">Privacy policy</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menusup-li">
+                                                    <a href="payment-policy.html" class="menusup-title">
+                                                        <span class="sp-link-title">Payment policy</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menusup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/return-policy.html"
+                                                       class="menusup-title">
+                                                        <span class="sp-link-title">Return policy</span>
+                                                    </a>
+                                                </li>
+                                                <li class="menusup-li">
+                                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/shipping-policy.html"
+                                                       class="menusup-title">
+                                                        <span class="sp-link-title">Shipping policy</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/sitemap.html"
+                                           class="menusub-title">
+                                            <span class="sp-link-title">Sitemap</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/terms-condition.html"
+                                           class="menusub-title">
+                                            <span class="sp-link-title">Terms & condition</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/track-page.html"
+                                           class="menusub-title">
+                                            <span class="sp-link-title">Track page</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="404.html" class="menusub-title">
+                                            <span class="sp-link-title">404</span>
+                                        </a>
+                                    </li>
+                                    <li class="menusub-li">
+                                        <a href="coming-soon.html" class="menusub-title">
+                                            <span class="sp-link-title">Coming soon</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="menu-link">
+                            <div class="contact-num">
+                                <div class="contact-wrap service-line">
+                                    <span class="contact-details"><i class="feather-headphones"></i></span>
+                                    <a href="tel:+2101234567890">(210) 123 456 7890</a>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="menu-link">
+                            <div class="contact-wrap price-tag">
+                                <span class="contact-details"><i class="feather-tag"></i></span>
+                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html">Mega
+                                    sale</a>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
-        <!-- mobile-menu end -->
-        <!-- cart-drawer start -->
-        <div th:insert="~{web/fragments/cart_drawer::cart-drawer}"></div>
-        <!-- cart-drawer end -->
-        <!-- bottom-menu start -->
-        <div class="bottom-menu">
-            <ul class="bottom-menu-element">
-                <li class="bottom-menu-wrap">
-                    <div class="bottom-menu-wrapper">
-                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/index1.html" class="bottom-menu-home">
-                            <span class="bottom-menu-icon"><i class="feather-home"></i></span>
-                            <span class="bottom-menu-title">Home</span>
-                        </a>
-                    </div>
-                </li>
-                <li class="bottom-menu-wrap">
-                    <div class="bottom-menu-wrapper">
-                        <a href="account.html" class="bottom-menu-user">
-                            <span class="bottom-menu-icon"><i class="feather-user"></i></span>
-                            <span class="bottom-menu-title">Account</span>
-                        </a>
-                    </div>
-                </li>
-                <li class="bottom-menu-wrap">
-                    <div class="bottom-menu-wrapper">
-                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html" class="bottom-menu-collection">
-                            <span class="bottom-menu-icon"><i class="feather-grid"></i></span>
-                            <span class="bottom-menu-title">Shop</span>
-                        </a>
-                    </div>
-                </li>
-                <li class="bottom-menu-wrap">
-                    <div class="bottom-menu-wrapper">
-                        <a href="wishlist.html" class="bottom-menu-wishlist">
+    </div>
+</div>
+<!-- mobile-menu end -->
+<!-- cart-drawer start -->
+<div th:insert="~{web/fragments/cart_drawer::cart-drawer}"></div>
+<!-- cart-drawer end -->
+<!-- bottom-menu start -->
+<div class="bottom-menu">
+    <ul class="bottom-menu-element">
+        <li class="bottom-menu-wrap">
+            <div class="bottom-menu-wrapper">
+                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/index1.html"
+                   class="bottom-menu-home">
+                    <span class="bottom-menu-icon"><i class="feather-home"></i></span>
+                    <span class="bottom-menu-title">Home</span>
+                </a>
+            </div>
+        </li>
+        <li class="bottom-menu-wrap">
+            <div class="bottom-menu-wrapper">
+                <a href="account.html" class="bottom-menu-user">
+                    <span class="bottom-menu-icon"><i class="feather-user"></i></span>
+                    <span class="bottom-menu-title">Account</span>
+                </a>
+            </div>
+        </li>
+        <li class="bottom-menu-wrap">
+            <div class="bottom-menu-wrapper">
+                <a href="../../../../../../../TechStore-master/src/main/resources/templates/web/collection.html"
+                   class="bottom-menu-collection">
+                    <span class="bottom-menu-icon"><i class="feather-grid"></i></span>
+                    <span class="bottom-menu-title">Shop</span>
+                </a>
+            </div>
+        </li>
+        <li class="bottom-menu-wrap">
+            <div class="bottom-menu-wrapper">
+                <a href="wishlist.html" class="bottom-menu-wishlist">
                             <span class="bottom-menu-icon-wrap">
                                 <span class="bottom-menu-icon"><i class="feather-heart"></i></span>
                                 <span class="bottom-menu-counter wishlist-counter">5</span>
                             </span>
-                            <span class="bottom-menu-title">Wishlist</span>
-                        </a>
-                    </div>
-                </li>
-                <li class="bottom-menu-wrap">
-                    <div class="bottom-menu-wrapper">
-                        <a href="javascript:void(0)" class="bottom-menu-cart">
+                    <span class="bottom-menu-title">Wishlist</span>
+                </a>
+            </div>
+        </li>
+        <li class="bottom-menu-wrap">
+            <div class="bottom-menu-wrapper">
+                <a href="javascript:void(0)" class="bottom-menu-cart">
                             <span class="bottom-menu-icon-wrap">
                                 <span class="bottom-menu-icon"><i class="feather-shopping-bag"></i></span>
                                 <span class="bottom-menu-counter cart-counter">4</span>
                             </span>
-                            <span class="bottom-menu-title">Cart</span>
-                        </a>
-                    </div>
-                </li>
-            </ul>
-        </div>
-        <!-- bottom-menu end -->
-        <!-- fullscreen start -->
-        <div class="bg-screen"></div>
-        <!-- fullscreen end -->
-        <!-- back-to-top start -->
-        <a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
-        <!-- back-to-top end -->
-        <!-- plugin js -->
-        <script th:src="@{/web/assert/js/plugin.js}"></script>
-        <!-- theme js -->
-        <script th:src="@{/web/assert/js/main.js}"></script>
-    </body>
+                    <span class="bottom-menu-title">Cart</span>
+                </a>
+            </div>
+        </li>
+    </ul>
+</div>
+<!-- bottom-menu end -->
+<!-- fullscreen start -->
+<div class="bg-screen"></div>
+<!-- fullscreen end -->
+<!-- back-to-top start -->
+<a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
+<!-- back-to-top end -->
+<!-- Javascript -->
+<div th:insert="~{user/fragments/script::script}"></div>
+</body>
 
 <!-- Mirrored from spacingtech.com/html/etro/etro/404.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 18 Mar 2025 13:01:55 GMT -->
 </html>

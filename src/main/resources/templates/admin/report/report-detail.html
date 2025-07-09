@@ -1,0 +1,208 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" lang="en">
+
+<head th:insert="~{admin/fragments/head::head}"></head>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<body>
+
+<!-- #wrapper -->
+<div id="wrapper">
+    <!-- #page -->
+    <div id="page" class="">
+        <!-- layout-wrap -->
+        <div class="layout-wrap">
+            <!-- preload -->
+            <div id="preload" class="preload-container">
+                <div class="preloading">
+                    <span></span>
+                </div>
+            </div>
+            <!-- /preload -->
+            <!-- section-menu-left -->
+            <div th:insert="~{admin/fragments/menu-left::section-menu-left}"></div>
+            <!-- /section-menu-left -->
+            <!-- section-content-right -->
+            <div class="section-content-right">
+                <!-- header-dashboard -->
+                <div th:insert="~{admin/fragments/header_dashboard::header-dashboard}"></div>
+                <!-- /header-dashboard -->
+                <!-- main-content -->
+                <div class="main-content">
+                    <!-- main-content-wrap -->
+                    <div class="main-content-inner">
+                        <!-- main-content-wrap -->
+                        <div class="main-content-wrap">
+                            <div class="container py-4">
+                                <!-- Breadcrumbs -->
+                                <nav aria-label="breadcrumb" class="mb-4">
+                                    <ol class="breadcrumb">
+                                        <li class="breadcrumb-item"><a th:href="@{/admin}">Dashboard</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/admin/reports}">Report</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page">Report Detail</li>
+                                    </ol>
+                                </nav>
+
+                                <!-- Report Detail Card -->
+                                <div class="card mb-4 shadow">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Report Detail</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-3">ID</dt>
+                                            <dd class="col-sm-9" th:text="${report.id}">1</dd>
+
+                                            <dt class="col-sm-3">User Email</dt>
+                                            <dd class="col-sm-9" th:text="${report.email}">user@example.com</dd>
+
+                                            <dt class="col-sm-3">Category</dt>
+                                            <dd class="col-sm-9" th:text="${report.category}">Spam</dd>
+
+                                            <dt class="col-sm-3">Description</dt>
+                                            <dd class="col-sm-9" th:text="${report.description}">Report description here...</dd>
+
+                                            <dt class="col-sm-3">Created At</dt>
+                                            <dd class="col-sm-9" th:text="${report.create_at}">2024-05-01</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+
+                                <!-- Update Report & Question Form -->
+                                <div class="card shadow mb-4">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">Update Report & Question</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Success message -->
+                                        <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                                            <i class="bi bi-check-circle-fill me-2"></i>
+                                            <span th:text="${successMessage}">Question updated and notification sent successfully!</span>
+                                        </div>
+                                        <form th:action="@{/admin/reports/{id}(id=${report.id})}" th:object="${report}" method="post" enctype="multipart/form-data">
+                                            <input type="hidden" th:field="*{id}"/>
+                                            <input type="hidden" th:field="*{email}"/>
+                                            <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
+                                                <ul class="mb-0">
+                                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                                                </ul>
+                                            </div>
+                                            <!-- Editable Report Fields -->
+                                            <div class="row mb-4">
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-semibold">Admin Response <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" th:field="*{admin_response}" required placeholder="Enter your response">
+                                                    <div class="text-danger small" th:if="${#fields.hasErrors('admin_response')}" th:errors="*{admin_response}"></div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-semibold">Report Status <span class="text-danger">*</span></label>
+                                                    <select class="form-select" th:field="*{status}" required>
+                                                        <option value="OPEN">OPEN</option>
+                                                        <option value="RESOLVED">RESOLVED</option>
+                                                        <option value="REJECTED">REJECTED</option>
+                                                    </select>
+                                                    <div class="text-danger small" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+                                                </div>
+                                            </div>
+                                            <hr class="my-4">
+                                            <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-pencil-square me-2"></i>Update Reported Question</h6>
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">ID</label>
+                                                    <input type="text" class="form-control" th:field="*{questionUpdateDTO.id}" readonly required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Part</label>
+                                                    <input type="number" class="form-control" th:field="*{questionUpdateDTO.part}" min="1" max="7" required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Number</label>
+                                                    <input type="number" class="form-control" th:field="*{questionUpdateDTO.number}" required>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Upload image</label>
+                                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                                    <img th:each="img : *{questionUpdateDTO.imageUrls}" th:src="${img}" class="rounded border" style="width: 120px; height: 80px; object-fit: cover;" alt="Question Image">
+                                                </div>
+                                                <a class="btn btn-outline-primary btn-sm" th:href="@{'/admin/questions/' + *{questionUpdateDTO.id} + '/images'}">
+                                                    <i class="bi bi-image"></i> Update Images
+                                                </a>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Passage</label>
+                                                <textarea class="form-control" th:field="*{questionUpdateDTO.passage}" rows="2"></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Content <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" th:field="*{questionUpdateDTO.content}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Options</label>
+                                                <div class="options-container">
+                                                    <div th:each="option, stat : *{questionUpdateDTO.options}" class="option-row d-flex align-items-center mb-2">
+                                                        <label class="fw-bold me-2" style="min-width: 60px; margin-right: 10px;" th:text="${option.key}"></label>
+                                                        <input type="text" class="form-control flex-grow-1"
+                                                               th:field="*{questionUpdateDTO.options[__${option.key}__]}"
+                                                               required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Correct Answer <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" th:field="*{questionUpdateDTO.correctAnswer}" pattern="[A-Da-d]" required placeholder="A, B, C, or D">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Explanation <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" th:field="*{questionUpdateDTO.answerExplanation}" required placeholder="Question's Explanation Here">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Tags</label>
+                                                <div class="row g-2">
+                                                    <div class="col-md-3" th:each="tag, stat : *{questionUpdateDTO.tags}">
+                                                        <input type="text" class="form-control mb-2" th:field="*{questionUpdateDTO.tags[__${stat.index}__]}" th:placeholder="'Tag ' + (${stat.index} + 1)">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Status</label>
+                                                <select class="form-select" th:field="*{questionUpdateDTO.status}">
+                                                    <option th:each="status : ${eQuestionStatus}" th:value="${status}" th:text="${status.name()}"></option>
+                                                </select>
+                                            </div>
+                                            <div class="d-flex justify-content-end">
+                                                <button class="btn btn-success px-4 py-2" type="submit">
+                                                    <i class="bi bi-save me-2"></i>Save Changes
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /main-content-wrap -->
+                    </div>
+                    <!-- /main-content-wrap -->
+                    <!-- bottom-page -->
+                    <div th:insert="~{admin/fragments/bottom_page::bottom-page}"></div>
+                    <!-- /bottom-page -->
+                </div>
+                <!-- /main-content -->
+            </div>
+            <!-- /section-content-right -->
+        </div>
+        <!-- /layout-wrap -->
+    </div>
+    <!-- /#page -->
+</div>
+<!-- /#wrapper -->
+
+<!-- Javascript -->
+<div th:insert="~{admin/fragments/script::script}"></div>
+<script th:src="@{/admin/asset/js/pagination.js}"></script>
+<script th:src="@{/admin/asset/js/search.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

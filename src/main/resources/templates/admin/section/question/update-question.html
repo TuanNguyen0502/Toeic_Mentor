@@ -166,6 +166,17 @@
                                     </fieldset>
 
                                     <fieldset class="name">
+                                        <div class="body-title">Explanation <span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="text" name="answerExplanation"
+                                               tabindex="0" aria-required="true" required
+                                               placeholder="Question's Explanation Here" th:field="*{answerExplanation}">
+                                        <div class="block-warning" th:if="${#fields.hasErrors('answerExplanation')}">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" th:errors="*{answerExplanation}"></div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
                                         <div class="body-title">Tags</div>
                                         <div class="tags-container">
                                             <div th:each="tag, stat : *{tags}">

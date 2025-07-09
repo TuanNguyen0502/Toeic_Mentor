@@ -1,0 +1,13 @@
+<div th:fragment="script">
+    <!-- WebSocket Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    
+    <!-- plugin js -->
+    <script th:src="@{/user/asset/js/plugin.js}"></script>
+    <!-- theme js -->
+    <script th:src="@{/user/asset/js/main.js}"></script>
+    <script th:src="@{/user/asset/js/search-autocomplete.js}"></script>
+    <script th:src="@{/user/asset/js/notification.js}"></script>
+    <script th:src="@{/user/asset/js/websocket.js}"></script>
+</div>

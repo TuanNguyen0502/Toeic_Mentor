@@ -1,4 +1,9 @@
 <div class="header-dashboard" th:fragment="header-dashboard">
+    <!-- WebSocket Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script th:src="@{/admin/asset/js/websocket.js}"></script>
+    
     <div class="wrap">
         <div class="header-left">
             <a th:href="@{/admin/dashboard}">
@@ -14,6 +19,31 @@
         <div class="header-grid">
             <div class="header-item button-dark-light">
                 <i class="icon-moon"></i>
+            </div>
+
+            <div class="popup-wrap noti type-header">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <span class="header-item">
+                                                <span class="text-tiny" id="countUnreadNotification"></span>
+                                                <i class="icon-bell"></i>
+                                            </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end has-content" aria-labelledby="dropdownMenuButton1"
+                        id="notificationList" style="max-height: 500px; overflow-y: auto;">
+                        <li>
+                            <h6 style="display: flex; align-items: center; justify-content: space-between;">
+                                Notifications
+                                <button id="markAllAsReadBtn" class="btn btn-link btn-sm"
+                                        style="padding: 0 0 0 10px; font-size: 13px;">Mark all as read
+                                </button>
+                            </h6>
+                        </li>
+                        <!-- Notifications will be loaded here by JS -->
+                        <li><a href="#" class="tf-button w-full">View all</a></li>
+                    </ul>
+                </div>
             </div>
 
             <div class="header-item button-zoom-maximize">
@@ -39,7 +69,14 @@
                                             </span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end has-content" aria-labelledby="dropdownMenuButton3">
-
+                        <li>
+                            <a th:href="@{/admin/settings}" class="user-item">
+                                <div class="icon">
+                                    <i class="icon-settings"></i>
+                                </div>
+                                <div class="body-title-2">Setting</div>
+                            </a>
+                        </li>
                         <li>
                             <a href="#" class="user-item"
                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -56,4 +93,3 @@
         </div>
     </div>
 </div>
-
