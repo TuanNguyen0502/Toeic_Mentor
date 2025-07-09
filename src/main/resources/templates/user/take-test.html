@@ -309,12 +309,15 @@
     // Global variables
     let currentQuestionIndex = 0;
     const userAnswers = {};
-    const flaggedQuestions = new Set(); // Add this for tracking flagged questions
+    const flaggedQuestions = new Set();
     let timerInterval;
-    let timeRemaining = testDuration * 60; // Convert minutes to seconds
+    let timeRemaining = testDuration * 60;
+    let questionStartTime = Date.now(); // Track when user starts a question
+    const timeSpentOnQuestions = {}; // Track time spent on each question
 
     // Initialize when document is ready
     document.addEventListener('DOMContentLoaded', function() {
+        questionStartTime = Date.now(); // Initialize start time
         // Set up questions
         renderQuestions();
         updateQuestionNavigation();
@@ -554,9 +557,19 @@
         }
     }
 
+    // Function to update time spent on current question
+    function updateTimeSpentOnCurrentQuestion() {
+        const currentTime = Date.now();
+        const timeSpent = Math.floor((currentTime - questionStartTime) / 1000); // Convert to seconds
+        timeSpentOnQuestions[currentQuestionIndex] = (timeSpentOnQuestions[currentQuestionIndex] || 0) + timeSpent;
+        questions[currentQuestionIndex].timeSpent = timeSpentOnQuestions[currentQuestionIndex];
+        questionStartTime = currentTime; // Reset start time for next question
+    }
+
     // Go to a specific question
     function goToQuestion(index) {
         if (index >= 0 && index < questions.length) {
+            updateTimeSpentOnCurrentQuestion(); // Record time spent on current question
             currentQuestionIndex = index;
             updateCurrentQuestion();
         }
@@ -565,6 +578,7 @@
     // Go to the next question
     function goToNextQuestion() {
         if (currentQuestionIndex < questions.length - 1) {
+            updateTimeSpentOnCurrentQuestion(); // Record time spent on current question
             currentQuestionIndex++;
             updateCurrentQuestion();
         }
@@ -573,6 +587,7 @@
     // Go to the previous question
     function goToPrevQuestion() {
         if (currentQuestionIndex > 0) {
+            updateTimeSpentOnCurrentQuestion(); // Record time spent on current question
             currentQuestionIndex--;
             updateCurrentQuestion();
         }
@@ -628,6 +643,7 @@
 
     // Submit test function
     function submitTest() {
+        updateTimeSpentOnCurrentQuestion(); // Record time spent on final question
         // Check if all questions are answered
         const unanswered = Array.from(document.querySelectorAll('.question-container')).some(qBlock => {
             return !qBlock.querySelector('input[type="radio"]:checked');
