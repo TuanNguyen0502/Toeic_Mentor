@@ -659,7 +659,7 @@
         document.getElementById('testForm').classList.add('hidden');
 
         // Send answers to backend
-        fetch('/submit-test', {
+        fetch('/tests/results', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(answerRequests)
