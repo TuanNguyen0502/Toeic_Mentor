@@ -195,32 +195,12 @@ public class ChatService implements IChatService {
         String prompt = """
                 You are an expert TOEIC evaluator and personalized language coach.
                 Objective:
-                Analyze a TOEIC test submission and generate explanations only. Do NOT determine whether the answer is correct or not.
-                {
-                  "testId": null, // Optional, can be null if not provided
-                  "score": int,
-                  "correctPercent": int,
-                  "answerResponses": [
-                    {
-                      "id": Long,
-                      "questionText": String,
-                      "correctAnswer": String,
-                      "userAnswer": String,
-                      "part": Integer,
-                      "options": [
-                        {"key": String, "value": String}
-                      ],
-                      "tags": [String],
-                      "isCorrect": boolean,
-                      "answerExplanation": String
-                    }
-                  ],
-                  "recommendations": String
-                }
+                Analyze a TOEIC test submission and generate a comprehensive result summary including correctness,
+                detailed explanations for all options (A, B, C, D) explaining why each option is correct or incorrect,
+                performance evaluation in descriptive text, and improvement recommendations.
                 
                 Input:
                 A JSON array of AnswerRequest objects in the following format:
-                
                 [
                   {
                     "id": Long,
@@ -232,7 +212,9 @@ public class ChatService implements IChatService {
                     "options": [
                       {"key": String, "value": String}
                     ],
-                    "tags": [String]
+                    "tags": [String],
+                    "timeSpent": Integer,           // Time spent in seconds
+                    "difficulty": Integer           // From 1 (easiest) to 5 (hardest)
                   }
                 ]
                 
@@ -241,11 +223,10 @@ public class ChatService implements IChatService {
                 Instructions:
                 
                 1. Evaluate and Score:
-                - For each AnswerRequest, compare the `userAnswer` field with the `correctAnswer` field.
-                    - Compare `userAnswer` and `correctAnswer` **strictly by their key values only**.
-                    - **Important:** Do not infer correctness based on the option text or meaning.
-                    - If `userAnswer` equals `correctAnswer`, then set `isCorrect = true`.
-                    - If not equal, set `isCorrect = false`.
+                - For each AnswerRequest:
+                    - Compare userAnswer with correctAnswer strictly by key value.
+                    - If userAnswer equals correctAnswer, set isCorrect = true.
+                    - Otherwise, set isCorrect = false.
                 - Count the total number of correct answers.
                 - Compute:
                     - score: total correct answers
@@ -255,28 +236,73 @@ public class ChatService implements IChatService {
                 - For each AnswerRequest, create a corresponding AnswerResponse object:
                     - Copy all fields from the original AnswerRequest.
                     - Add:
-                        - isCorrect: determined **only** by strict key comparison.
-                        - explanation:
-                            - If isCorrect is true:
-                                - Explain why this is the correct option.
-                                - Include the option text (value) that corresponds to the selected key.
-                                - For example: "This is correct because option 'B' ('reviewed') is the past tense form indicating a completed action."
-                            - If isCorrect is false:
-                                - Explain why the selected answer is incorrect and what the correct answer means.
-                                - For example: "You selected option 'A' ('reviews'), which is present tense, but the correct answer is 'B' ('reviewed') indicating past tense."
+                        - isCorrect: as determined above.
+                        - answerExplanation: convert to a List of Strings containing explanations for all options A–D:
+                            - For each option key in options, generate a sentence explaining:
+                                - If the option is the correct answer: why it is correct.
+                                - If the option is incorrect: why it is not correct.
+                            - Example:
+                                "answerExplanation": [
+                                  "Option A ('reviewed'): Correct because it is the past tense indicating completed action.",
+                                  "Option B ('reviews'): Incorrect because it is present tense.",
+                                  "Option C ('was reviewing'): Incorrect because it suggests an ongoing past action.",
+                                  "Option D ('has reviewed'): Incorrect because it indicates relevance to the present."
+                                ]
                 
-                3. Recommendations:
+                3. Performance Evaluation:
+                - Analyze:
+                    - Overall correctPercent.
+                    - Average timeSpent.
+                    - Average difficulty.
+                - Generate a short paragraph summarizing:
+                    - Accuracy level.
+                    - Speed relative to question difficulty.
+                    - Balanced pacing or need for improvement.
+                - Example outputs:
+                    - High accuracy and fast speed: "Bạn đạt tỷ lệ chính xác cao và hoàn thành các câu hỏi nhanh chóng, kể cả với mức độ khó cao. Đây là hiệu suất rất tốt."
+                    - Medium accuracy and slow speed: "Bạn trả lời chính xác khoảng 60% câu hỏi, nhưng mất khá nhiều thời gian, đặc biệt ở câu hỏi khó. Bạn nên luyện tập tăng tốc độ đọc hiểu."
+                    - Low accuracy and fast speed: "Bạn hoàn thành bài thi nhanh, nhưng tỷ lệ đúng thấp. Cần cân nhắc đọc kỹ hơn để cải thiện độ chính xác."
+                
+                4. Recommendations:
                 - Generate a concise recommendation (2–3 sentences) suggesting study focus areas, e.g.,
-                    - Grammar topics (articles, tenses).
+                    - Grammar topics (articles, tenses, passive voice).
                     - Vocabulary (collocations, synonyms).
                     - Reading strategies.
                     - Suggested resources for improvement.
                 - Mention relevant grammar or vocabulary topics, and optionally suggest learning resources.
+                - Include 2–3 reference URLs to credible resources for practice.
                 
-                4. Output:
-                - Return only the JSON object matching TestResultResponse.
-                - Do not include any extra text or commentary outside the JSON.
-                - Ensure all fields are present.""";
+                5. Output:
+                Return a JSON object of type TestResultResponse in the following format:
+                {
+                  "testId": null,           // Optional
+                  "score": Integer,         // total correct answers
+                  "correctPercent": Integer,
+                  "answerResponses": [
+                    {
+                      "id": Long,
+                      "questionText": String,
+                      "correctAnswer": String,
+                      "userAnswer": String,
+                      "part": Integer,
+                      "options": [
+                        {"key": String, "value": String}
+                      ],
+                      "tags": [String],
+                      "isCorrect": Boolean,
+                      "answerExplanation": [String]   // List of 4 explanations (one per option)
+                    }
+                  ],
+                  "recommendations": String,     // concise improvement suggestions
+                  "performance": String,         // descriptive paragraph combining correctness, speed, difficulty
+                  "referenceUrls": [String]      // list of URLs
+                }
+                
+                6. Constraints:
+                - Do NOT include any text or commentary outside the JSON.
+                - Ensure all fields are populated as specified.
+                - Use only the options.key to determine correctness.
+                - Explanations must be clear and specific.""";
         String fullPrompt = prompt + "\n\nInput JSON:\n" + answerRequestsJson;
         TestResultResponse testResultResponse = ChatClient.create(chatModel).prompt()
                 .user(fullPrompt)

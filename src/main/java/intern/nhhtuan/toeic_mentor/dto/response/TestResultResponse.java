@@ -13,6 +13,8 @@ public class TestResultResponse {
     private int correctPercent;
     private List<AnswerResponse> answerResponses;
     private String recommendations;
+    private String performance;
+    private List<String> referenceUrls;
 
     @Getter
     @Setter
@@ -28,8 +30,7 @@ public class TestResultResponse {
         private List<String> tags;
         @JsonProperty("isCorrect")
         private boolean isCorrect;
-        private String answerExplanation;
-
+        private List<String> answerExplanation;
     }
 
     @Data
