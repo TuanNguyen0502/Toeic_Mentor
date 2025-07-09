@@ -415,6 +415,16 @@
                 </div>
             `;
 
+            // Add tags if they exist
+            if (question.tags && question.tags.length > 0) {
+                const tagsContainer = document.createElement('div');
+                tagsContainer.className = 'flex flex-wrap gap-2 mt-2';
+                tagsContainer.innerHTML = question.tags.map(tag =>
+                    `<span class="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">${tag}</span>`
+                ).join('');
+                questionHeader.appendChild(tagsContainer);
+            }
+
             // Create passage container if a passage exists
             let passageHtml = '';
             if (question.passage) {
