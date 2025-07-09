@@ -139,6 +139,28 @@
             border: 2px solid #ef4444;
             background-color: #fee2e2;
         }
+        /* Add new styles for the view toggle */
+        .view-toggle {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            padding: 2px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .view-toggle-option {
+            padding: 6px 12px;
+            border-radius: 9999px;
+            transition: all 0.2s;
+        }
+        .view-toggle-option.active {
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .detail-section {
+            transition: all 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -709,9 +731,16 @@
                 </div>`;
             }
 
+            // Add view toggle switch
+            html += `<div class='flex justify-center mb-6'>
+                <div class='view-toggle'>
+                    <button type='button' class='view-toggle-option active' data-view='simple'>Simple View</button>
+                    <button type='button' class='view-toggle-option' data-view='detailed'>Detailed View</button>
+                </div>
+            </div>`;
+
             html += `<div id='resultQuestionsContainer'>`;
             data.answerResponses.forEach((q, idx) => {
-                console.log('DEBUG isCorrect:', q.isCorrect, typeof q.isCorrect, q);
                 html += `<div class='question-container ${q.isCorrect ? 'result-correct' : 'result-wrong'} mb-6'>`;
                 html += `<div class='question-header mb-3'>
                     <div class='flex items-center'>
@@ -722,18 +751,33 @@
                         <i class="fa fa-flag mr-1"></i> Report Question
                     </button>
                 </div>`;
+
+                // Simple view elements (always visible)
+                html += `<div class='mb-4'>${q.questionText}</div>`;
+                html += `<div class='simple-answer-section'>
+                    <div class='mt-2'><span class='font-semibold'>Your answer:</span>
+                        <span class='${q.isCorrect ? 'text-green-600' : 'text-red-600'}'>${q.userAnswer || '-'}</span>
+                    </div>
+                    <div class='mt-2'><span class='font-semibold'>Correct answer:</span>
+                        <span class='text-blue-600 font-bold'>${q.correctAnswer}</span>
+                    </div>
+                </div>`;
+
+                // Detailed view elements (hidden by default)
+                html += `<div class='detail-section hidden'>`;
                 if (q.passage) {
                     html += `<div class='passage-container'><h4 class='font-semibold mb-2'>Passage:</h4><div class='passage-text'>${q.passage}</div></div>`;
                 }
                 if (q.passageImageUrls && q.passageImageUrls.length > 0) {
-                    html += `<div class='image-container' style='display: flex; flex-direction: row; gap: 32px; justify-content: center; align-items: flex-start; overflow-x: auto;'>`;
+                    html += `<div class='image-container'>`;
                     q.passageImageUrls.forEach(url => {
                         html += `<img src='${url}' alt='Question Image' style='margin-bottom: 0; max-width: 1000px; max-height: 700px; width: auto; height: auto; object-fit: contain;' />`;
                     });
                     html += `</div>`;
                 }
-                html += `<div class='mb-4'>${q.questionText}</div>`;
-                html += `<div class='options-container'>`;
+
+                // All options with highlighting
+                html += `<div class='options-container mt-4'>`;
                 q.options.forEach(option => {
                     const isUser = q.userAnswer === option.key;
                     const isCorrect = q.correctAnswer === option.key;
@@ -747,25 +791,18 @@
                     </div>`;
                 });
                 html += `</div>`;
-                html += `<div class='mt-2'><span class='font-semibold'>Your answer:</span> <span class='${q.isCorrect ? 'text-green-600' : 'text-red-600'}'>${q.userAnswer || '-'}</span></div>`;
-                html += `<div class='mt-2'><span class='font-semibold'>Correct answer:</span> <span class='text-blue-600 font-bold'>${q.correctAnswer}</span></div>`;
-                html += `<div><span class='font-semibold'>Result:</span> <span class='${q.isCorrect ? 'text-green-600' : 'text-red-600'}'>${q.isCorrect ? 'Correct' : 'Incorrect'}</span></div>`;
 
-                // Handle answerExplanation as a list
+                // Explanation section
                 if (q.answerExplanation && q.answerExplanation.length > 0) {
-                    html += `<div class='mt-2 text-gray-700'>
+                    html += `<div class='mt-4 text-gray-700'>
                         <span class='font-medium'>Explanation:</span>
                         <ul class='list-disc ml-6 mt-1'>
                             ${q.answerExplanation.map(exp => `<li>${exp}</li>`).join('')}
                         </ul>
                     </div>`;
-                } else {
-                    html += `<div class='mt-2 text-gray-700'>
-                        <span class='font-medium'>Explanation:</span>
-                        <span class="italic text-gray-400">No explanation provided.</span>
-                    </div>`;
                 }
-                html += `</div>`;
+                html += `</div>`; // End detail-section
+                html += `</div>`; // End question-container
             });
             html += `</div>`;
 
@@ -795,6 +832,22 @@
             }
 
             analysisContent.innerHTML = html;
+
+            // Add event listeners for view toggle
+            const viewToggleOptions = document.querySelectorAll('.view-toggle-option');
+            const detailSections = document.querySelectorAll('.detail-section');
+
+            viewToggleOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const view = this.dataset.view;
+                    viewToggleOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+
+                    detailSections.forEach(section => {
+                        section.classList.toggle('hidden', view === 'simple');
+                    });
+                });
+            });
 
             // Attach event listeners for report buttons
             document.querySelectorAll('.report-question-btn').forEach(btn => {
