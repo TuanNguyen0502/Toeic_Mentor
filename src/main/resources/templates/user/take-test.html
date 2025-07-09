@@ -700,6 +700,15 @@
                 <span class='text-2xl font-bold'>Score: ${data.score} / ${data.answerResponses.size}</span><br>
                 <span class='text-lg font-semibold'>Correct Percent: ${data.correctPercent}%</span>
             </div>`;
+
+            // Add performance section if available
+            if (data.performance) {
+                html += `<div class='p-4 bg-blue-50 border-l-4 border-blue-400 rounded mb-6'>
+                    <h3 class='font-bold text-lg mb-2'>Your Performance</h3>
+                    <p class='text-gray-800'>${data.performance}</p>
+                </div>`;
+            }
+
             html += `<div id='resultQuestionsContainer'>`;
             data.answerResponses.forEach((q, idx) => {
                 console.log('DEBUG isCorrect:', q.isCorrect, typeof q.isCorrect, q);
@@ -741,13 +750,50 @@
                 html += `<div class='mt-2'><span class='font-semibold'>Your answer:</span> <span class='${q.isCorrect ? 'text-green-600' : 'text-red-600'}'>${q.userAnswer || '-'}</span></div>`;
                 html += `<div class='mt-2'><span class='font-semibold'>Correct answer:</span> <span class='text-blue-600 font-bold'>${q.correctAnswer}</span></div>`;
                 html += `<div><span class='font-semibold'>Result:</span> <span class='${q.isCorrect ? 'text-green-600' : 'text-red-600'}'>${q.isCorrect ? 'Correct' : 'Incorrect'}</span></div>`;
-                html += `<div class='mt-2 text-gray-700'><span class='font-medium'>Explanation:</span> ${q.answerExplanation ? q.answerExplanation : '<span class="italic text-gray-400">No explanation provided.</span>'}</div>`;
+
+                // Handle answerExplanation as a list
+                if (q.answerExplanation && q.answerExplanation.length > 0) {
+                    html += `<div class='mt-2 text-gray-700'>
+                        <span class='font-medium'>Explanation:</span>
+                        <ul class='list-disc ml-6 mt-1'>
+                            ${q.answerExplanation.map(exp => `<li>${exp}</li>`).join('')}
+                        </ul>
+                    </div>`;
+                } else {
+                    html += `<div class='mt-2 text-gray-700'>
+                        <span class='font-medium'>Explanation:</span>
+                        <span class="italic text-gray-400">No explanation provided.</span>
+                    </div>`;
+                }
                 html += `</div>`;
             });
             html += `</div>`;
+
+            // Add recommendations section if available
             if (data.recommendations) {
-                html += `<div class='p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded mt-8 text-lg text-gray-800'><span class='font-bold'>Recommendations:</span> ${data.recommendations}</div>`;
+                html += `<div class='p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded mt-8 mb-4'>
+                    <h3 class='font-bold text-lg mb-2'>Recommendations</h3>
+                    <p class='text-gray-800'>${data.recommendations}</p>
+                </div>`;
             }
+
+            // Add reference URLs section if available
+            if (data.referenceUrls && data.referenceUrls.length > 0) {
+                html += `<div class='p-4 bg-green-50 border-l-4 border-green-400 rounded mt-4'>
+                    <h3 class='font-bold text-lg mb-2'>Reference Materials</h3>
+                    <ul class='list-disc ml-6'>
+                        ${data.referenceUrls.map(url => `
+                            <li class='mb-2'>
+                                <a href='${url}' target='_blank' rel='noopener noreferrer'
+                                   class='text-blue-600 hover:text-blue-800 underline'>
+                                    ${url}
+                                </a>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>`;
+            }
+
             analysisContent.innerHTML = html;
 
             // Attach event listeners for report buttons
