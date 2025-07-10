@@ -1,11 +1,11 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
+import intern.nhhtuan.toeic_mentor.dto.QuestionAnswerStats;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.dto.QuestionUpdateDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.TestRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.SectionQuestionResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
@@ -15,14 +15,19 @@ import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionOptionService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionTagService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@EnableAsync
 public class QuestionServiceImpl implements IQuestionService {
     private final QuestionRepository questionRepository;
     private final IQuestionOptionService questionOptionService;
@@ -30,6 +35,7 @@ public class QuestionServiceImpl implements IQuestionService {
     private final QuestionImageRepository imageRepository;
     private final PartRepository partRepository;
     private final SectionRepository sectionRepository;
+    private final AnswerRepository answerRepository;
 
     @Transactional
     @Override
@@ -211,6 +217,57 @@ public class QuestionServiceImpl implements IQuestionService {
     @Override
     public Optional<Question> findById(Long aLong) {
         return questionRepository.findById(aLong);
+    }
+
+    @Transactional
+    @Async
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
+    public void calculateDifficulty() {
+        try {
+            System.out.println("Chạy lúc 12h đêm: " + System.currentTimeMillis() / 1000);
+
+            // Lấy tất cả Question đưa vào Map để tra nhanh
+            List<Question> allQuestions = questionRepository.findAll();
+            Map<Long, Question> questionMap = allQuestions.stream()
+                    .collect(Collectors.toMap(Question::getId, Function.identity()));
+
+            List<QuestionAnswerStats> statsList = answerRepository.getAnswerStatistics();
+
+            List<Question> toUpdate = new ArrayList<>();
+
+            for (QuestionAnswerStats stats : statsList) {
+                double wrongRatio = stats.getTotalCount() > 0
+                        ? (double) stats.getWrongCount() / stats.getTotalCount()
+                        : 0;
+
+                int difficulty;
+                if (wrongRatio <= 0.2) {
+                    difficulty = 1;
+                } else if (wrongRatio <= 0.4) {
+                    difficulty = 2;
+                } else if (wrongRatio <= 0.6) {
+                    difficulty = 3;
+                } else if (wrongRatio <= 0.8) {
+                    difficulty = 4;
+                } else {
+                    difficulty = 5;
+                }
+
+                Question q = questionMap.get(stats.getQuestionId());
+                if (q.getDifficulty() == null || q.getDifficulty() != difficulty) {
+                    q.setDifficulty(difficulty);
+                    toUpdate.add(q);
+                }
+            }
+
+            // Lưu lại toàn bộ
+            questionRepository.saveAll(toUpdate);
+
+            System.out.println("Updated " + toUpdate.size() + " questions");
+        } catch (Exception ex) {
+            // log lỗi
+            ex.printStackTrace();
+        }
     }
 
     private EPart getPartName(Integer part) {
