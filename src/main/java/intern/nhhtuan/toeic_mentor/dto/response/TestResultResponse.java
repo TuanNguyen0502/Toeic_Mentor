@@ -28,6 +28,7 @@ public class TestResultResponse {
         private Integer part;
         private List<OptionResponse> options;
         private List<String> tags;
+        private int timeSpent; // Time spent on the question in seconds
         @JsonProperty("isCorrect")
         private boolean isCorrect;
         private List<String> answerExplanation;

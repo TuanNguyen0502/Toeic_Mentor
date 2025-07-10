@@ -154,6 +154,8 @@ public class TestServiceImpl implements ITestService {
         Test test = new Test();
         test.setScore(testResultResponse.getScore());
         test.setRecommendations(testResultResponse.getRecommendations());
+        test.setPerformance(testResultResponse.getPerformance());
+        test.setReferenceUrls(testResultResponse.getReferenceUrls());
         test.setUser(userService.findByEmail(email));
         test.setCreatedAt(LocalDateTime.now());
 
@@ -166,6 +168,9 @@ public class TestServiceImpl implements ITestService {
         for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
             Answer answer = new Answer();
             answer.setAnswer(answerResponse.getUserAnswer());
+            answer.setCorrect(answerResponse.isCorrect());
+            answer.setAnswerExplanation(answerResponse.getAnswerExplanation());
+            answer.setTimeSpent(answerResponse.getTimeSpent());
             answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
             answer.setTest(test);
             answers.add(answer); // Lưu Answer vào danh sách

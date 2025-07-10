@@ -289,6 +289,7 @@ public class ChatService implements IChatService {
                         {"key": String, "value": String}
                       ],
                       "tags": [String],
+                      "timeSpent": Integer, // Time spent in seconds
                       "isCorrect": Boolean,
                       "answerExplanation": [String]   // List of 4 explanations (one per option)
                     }

@@ -238,6 +238,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .questionText(question.getQuestionText())
                 .correctAnswer(question.getCorrectAnswer())
                 .answerExplanation(question.getAnswerExplanation())
+                .difficulty(question.getDifficulty())
                 .userAnswer(null)
                 .passage(question.getPassage())
                 .passageImageUrls(passageImageUrls)

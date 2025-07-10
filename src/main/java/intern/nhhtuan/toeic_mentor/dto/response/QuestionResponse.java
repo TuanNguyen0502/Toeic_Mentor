@@ -22,6 +22,7 @@ public class QuestionResponse {
     private Integer part;
     private List<OptionResponse> options;
     private List<String> tags;
+    private Integer difficulty; // Difficulty level of the question
 
     @Data
     @AllArgsConstructor

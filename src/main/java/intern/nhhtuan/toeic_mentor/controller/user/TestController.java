@@ -29,7 +29,7 @@ public class TestController {
 
         TestResultResponse testResultResponse = chatService.analyzeTestResult(answerRequests);
         // Save the test results to the database
-//        testService.saveTest(email, testResultResponse);
+        testService.saveTest(email, testResultResponse);
         return testResultResponse;
     }
 }
