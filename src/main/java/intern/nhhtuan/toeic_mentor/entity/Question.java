@@ -40,6 +40,9 @@ public class Question {
     @Column(name = "answer_explanation", columnDefinition = "TEXT")
     private String answerExplanation;
 
+    @Column(name = "difficulty")
+    private Integer difficulty; // Difficulty level of the question
+
     @ManyToOne
     @JoinColumn(name = "part_id", referencedColumnName = "id")
     private Part part;

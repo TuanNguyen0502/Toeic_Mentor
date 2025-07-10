@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
+import intern.nhhtuan.toeic_mentor.util.StringListJsonConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,12 @@ public class Test {
     private Integer score; // Total score of the test
 
     private String recommendations; // Recommendation based on the test result
+
+    private String performance; // Performance description based on the test result
+
+    @Convert(converter = StringListJsonConverter.class)
+    @Column(columnDefinition = "json")
+    private List<String> referenceUrls; // List of reference URLs for further study
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
