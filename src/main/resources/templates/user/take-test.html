@@ -883,6 +883,13 @@
                 </div>`;
                 }
 
+                // Add download PDF button
+                html += `<div class='text-center mt-8 mb-4'>
+                    <button id='downloadPdfBtn' class='bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded text-lg font-semibold'>
+                        <i class="fas fa-download mr-2"></i>Download PDF Report
+                    </button>
+                </div>`;
+
                 analysisContent.innerHTML = html;
 
                 // Add event listeners for view toggle
@@ -913,6 +920,48 @@
                         document.getElementById('reportModal').classList.remove('hidden');
                     });
                 });
+
+                // Attach event listener for download PDF button
+                const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+                if (downloadPdfBtn) {
+                    downloadPdfBtn.addEventListener('click', function() {
+                        downloadPdfBtn.disabled = true;
+                        downloadPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating PDF...';
+                        
+                        // Gather user answers for PDF generation
+                        const answerRequests = [];
+                        document.querySelectorAll('.question-container').forEach((qBlock, idx) => {
+                            const selectedOption = qBlock.querySelector('input[type="radio"]:checked');
+                            const question = questions[idx];
+                            answerRequests.push({
+                                ...question,
+                                userAnswer: selectedOption ? selectedOption.value : null
+                            });
+                        });
+
+                        // Download PDF using test ID from the response
+                        const testId = data.testId; // Assuming the response contains testId
+                        if (!testId) {
+                            alert('Test ID not found. Cannot download PDF.');
+                            downloadPdfBtn.disabled = false;
+                            downloadPdfBtn.innerHTML = '<i class="fas fa-download mr-2"></i>Download PDF Report';
+                            return;
+                        }
+                        
+                        // Create a temporary link to download PDF
+                        const link = document.createElement('a');
+                        link.href = `/tests/${testId}/pdf`;
+                        link.download = `toeic_test_result_${testId}.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // Reset button state
+                        downloadPdfBtn.disabled = false;
+                        downloadPdfBtn.innerHTML = '<i class="fas fa-download mr-2"></i>Download PDF Report';
+                    });
+                }
+
                 document.getElementById('back-to-dashboard-container').classList.remove('hidden');
                 document.getElementById('analysis-dashboard-btn').onclick = goToDashboard;
             })
