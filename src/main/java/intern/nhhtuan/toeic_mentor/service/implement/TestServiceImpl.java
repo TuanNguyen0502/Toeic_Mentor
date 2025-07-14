@@ -1,22 +1,29 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
+import com.lowagie.text.pdf.BaseFont;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
-import intern.nhhtuan.toeic_mentor.entity.Answer;
-import intern.nhhtuan.toeic_mentor.entity.Part;
-import intern.nhhtuan.toeic_mentor.entity.Test;
-import intern.nhhtuan.toeic_mentor.entity.TestPart;
+import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.repository.TestRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.*;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.cloudinary.transformation.Expression.tags;
+import intern.nhhtuan.toeic_mentor.entity.QuestionTag;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +34,7 @@ public class TestServiceImpl implements ITestService {
     private final IUserService userService;
     private final IQuestionService questionService;
     private final IPartService partService;
+
 
     @Override
     public List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest) {
@@ -194,5 +202,68 @@ public class TestServiceImpl implements ITestService {
             testPart.setPart(part);
             testPartService.save(testPart);
         }
+        
+        // Set the testId in the response
+        testResultResponse.setTestId(test.getId());
+    }
+
+    @Override
+    public TestResultResponse getTestResult(Long testId, String email) {
+        Optional<Test> testOpt = testRepository.findById(testId);
+        if (testOpt.isEmpty()) {
+            throw new RuntimeException("Test not found with ID: " + testId);
+        }
+        
+        Test test = testOpt.get();
+        
+        // Verify that the test belongs to the user
+        if (!test.getUser().getEmail().equals(email)) {
+            throw new RuntimeException("Access denied: Test does not belong to user: " + email);
+        }
+        
+        // Convert Test entity to TestResultResponse
+        List<TestResultResponse.AnswerResponse> answerResponses = new ArrayList<>();
+        
+        for (Answer answer : test.getAnswers()) {
+            Question question = answer.getQuestion();
+            
+            // Convert options to OptionResponse format
+            List<TestResultResponse.OptionResponse> options = question.getOptions().stream()
+                    .map(opt -> TestResultResponse.OptionResponse.builder()
+                            .key(opt.getKey())
+                            .value(opt.getValue())
+                            .build())
+                    .collect(Collectors.toList());
+            
+            // Convert tags to List<String>
+            List<String> tags = question.getTags().stream()
+                    .map(QuestionTag::getTag)
+                    .collect(Collectors.toList());
+            
+            TestResultResponse.AnswerResponse answerResponse = TestResultResponse.AnswerResponse.builder()
+                    .id(question.getId())
+                    .questionText(question.getQuestionText())
+                    .correctAnswer(question.getCorrectAnswer()) // Get correct answer from question
+                    .userAnswer(answer.getAnswer()) // Get user's answer from answer
+                    .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
+                    .options(options)
+                    .tags(tags)
+                    .timeSpent(answer.getTimeSpent())
+                    .isCorrect(answer.isCorrect())
+                    .answerExplanation(answer.getAnswerExplanation())
+                    .build();
+            
+            answerResponses.add(answerResponse);
+        }
+        
+        return TestResultResponse.builder()
+                .testId(test.getId())
+                .score(test.getScore())
+                .correctPercent((int) ((test.getScore() * 100.0) / answerResponses.size()))
+                .answerResponses(answerResponses)
+                .recommendations(test.getRecommendations())
+                .performance(test.getPerformance())
+                .referenceUrls(test.getReferenceUrls())
+                .build();
     }
 }

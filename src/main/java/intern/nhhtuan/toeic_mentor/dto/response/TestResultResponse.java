@@ -20,6 +20,7 @@ public class TestResultResponse {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class AnswerResponse {
         private Long id;
         private String questionText;
@@ -37,6 +38,7 @@ public class TestResultResponse {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class OptionResponse {
         private String key;
         private String value;

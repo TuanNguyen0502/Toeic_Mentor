@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        body { 
+            font-family: DejaVu Sans, Arial, sans-serif; 
+            font-size: 12px; 
+            line-height: 1.4;
+            color: #333;
+            margin: 20px;
+        }
+        h1, h2 { 
+            text-align: center; 
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        h1 {
+            font-size: 24px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            font-size: 18px;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+        }
+        .score-section {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .score-display {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .correct { 
+            color: #27ae60; 
+            font-weight: bold;
+        }
+        .incorrect { 
+            color: #e74c3c; 
+            font-weight: bold;
+        }
+        .question { 
+            margin-bottom: 20px; 
+            padding: 15px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .question-header {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .option { 
+            margin-left: 20px; 
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+        .option.correct {
+            background-color: #d5f4e6;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .option.incorrect {
+            background-color: #fadbd8;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .answer-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f1f2f6;
+            border-radius: 3px;
+        }
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            border-radius: 3px;
+        }
+        .performance-section, .recommendations-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .performance-section {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+        }
+        .recommendations-section {
+            background-color: #fef9e7;
+            border-left: 4px solid #f39c12;
+        }
+        .reference-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #eafaf1;
+            border-left: 4px solid #27ae60;
+            border-radius: 5px;
+        }
+        .reference-list {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .reference-list li {
+            margin-bottom: 5px;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .tags {
+            font-size: 10px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #bdc3c7;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>TOEIC Test Result Report</h1>
+
+<div class="score-section">
+    <div class="score-display">
+        Score: <span th:text="${score} + ' / ' + ${total}"></span>
+    </div>
+    <div>
+        <strong>Correct Percentage:</strong> <span th:text="${correctPercent} + '%'"></span>
+    </div>
+</div>
+
+<div th:if="${performance}" class="performance-section">
+    <h2>Performance Summary</h2>
+    <p th:text="${performance}"></p>
+</div>
+
+<div th:if="${recommendations}" class="recommendations-section">
+    <h2>Recommendations</h2>
+    <p th:text="${recommendations}"></p>
+</div>
+
+<h2>Detailed Question Analysis</h2>
+<div th:each="ans, iterStat : ${answers}" class="question" th:classappend="${iterStat.index > 0 and iterStat.index % 5 == 0} ? 'page-break'">
+    <div class="question-header">
+        Question <span th:text="${iterStat.index + 1}"></span> (Part <span th:text="${ans.part}"></span>)
+    </div>
+
+    <div th:text="${ans.questionText}" style="margin-bottom: 10px;"></div>
+
+    <div style="margin-bottom: 10px;">
+        <strong>Options:</strong>
+        <div th:each="opt : ${ans.options}" 
+             th:classappend="${opt.key == ans.correctAnswer ? 'correct' : (opt.key == ans.userAnswer and not ans.correct) ? 'incorrect' : ''}"
+             class="option">
+            <span th:text="${opt.key} + '. ' + ${opt.value}"></span>
+        </div>
+    </div>
+
+    <div class="answer-info">
+        <div><strong>Your Answer:</strong> <span th:text="${ans.userAnswer ?: '-'}"></span></div>
+        <div><strong>Correct Answer:</strong> <span th:text="${ans.correctAnswer}"></span></div>
+        <div>
+            <strong>Result:</strong>
+            <span th:class="${ans.correct} ? 'correct' : 'incorrect'"
+                  th:text="${ans.correct} ? '✓ Correct' : '✗ Incorrect'"></span>
+        </div>
+        <div><strong>Time Spent:</strong> <span th:text="${ans.timeSpent} + ' seconds'"></span></div>
+    </div>
+
+    <div th:if="${ans.tags != null and ans.tags.size() > 0}" class="tags">
+        <strong>Tags:</strong>
+        <span th:each="tag : ${ans.tags}" class="tag" th:text="${tag}"></span>
+    </div>
+
+    <div th:if="${ans.answerExplanation != null and ans.answerExplanation.size() > 0}" class="explanation">
+        <strong>Explanation:</strong>
+        <ul style="margin: 5px 0; padding-left: 20px;">
+            <li th:each="exp : ${ans.answerExplanation}" th:text="${exp}"></li>
+        </ul>
+    </div>
+</div>
+
+<div th:if="${referenceUrls != null and referenceUrls.size() > 0}" class="reference-section">
+    <h2>Reference Materials</h2>
+    <ul class="reference-list">
+        <li th:each="url : ${referenceUrls}" th:text="${url}"></li>
+    </ul>
+</div>
+
+</body>
+</html>
