@@ -1,6 +1,5 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
-import com.lowagie.text.pdf.BaseFont;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
@@ -8,22 +7,15 @@ import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.repository.TestRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.*;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
-import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.cloudinary.transformation.Expression.tags;
-import intern.nhhtuan.toeic_mentor.entity.QuestionTag;
 
 @Service
 @RequiredArgsConstructor
@@ -235,11 +227,6 @@ public class TestServiceImpl implements ITestService {
                             .build())
                     .collect(Collectors.toList());
             
-            // Convert tags to List<String>
-            List<String> tags = question.getTags().stream()
-                    .map(QuestionTag::getTag)
-                    .collect(Collectors.toList());
-            
             TestResultResponse.AnswerResponse answerResponse = TestResultResponse.AnswerResponse.builder()
                     .id(question.getId())
                     .questionText(question.getQuestionText())
@@ -247,7 +234,7 @@ public class TestServiceImpl implements ITestService {
                     .userAnswer(answer.getAnswer()) // Get user's answer from answer
                     .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
                     .options(options)
-                    .tags(tags)
+                    .tags(question.getTags())
                     .timeSpent(answer.getTimeSpent())
                     .isCorrect(answer.isCorrect())
                     .answerExplanation(answer.getAnswerExplanation())

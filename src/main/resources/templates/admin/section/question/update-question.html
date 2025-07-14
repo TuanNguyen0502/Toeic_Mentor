@@ -3,6 +3,46 @@
 
 <!-- Mirrored from themesflat.co/html/remos/add-attributes.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:48 GMT -->
 <head th:insert="~{admin/fragments/head::head}"></head>
+<style>
+    .tags-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .tag-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .remove-tag-btn {
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .add-tag-btn {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .add-tag-btn:hover {
+        background: #45a049;
+    }
+</style>
 
 <body class="body">
 
@@ -178,16 +218,16 @@
 
                                     <fieldset class="name">
                                         <div class="body-title">Tags</div>
-                                        <div class="tags-container">
-                                            <div th:each="tag, stat : *{tags}">
-                                                <div class="tag-row">
-                                                    <input type="text" class="flex-grow"
-                                                           th:field="*{tags[__${stat.index}__]}"
-                                                           th:placeholder="'Tag ' + (${stat.index} + 1)"
-                                                           tabindex="0" required>
-                                                </div>
+                                        <div class="tags-container" id="tagsContainer">
+                                            <div th:each="tag, stat : *{tags}" class="tag-row">
+                                                <input type="text" class="flex-grow"
+                                                       th:field="*{tags[__${stat.index}__]}"
+                                                       th:placeholder="'Enter tag'"
+                                                       tabindex="0">
+                                                <button type="button" class="remove-tag-btn" onclick="removeTag(this)">×</button>
                                             </div>
                                         </div>
+                                        <button type="button" class="add-tag-btn" onclick="addNewTag()">Add Tag</button>
                                     </fieldset>
 
                                     <fieldset class="name">
@@ -253,6 +293,45 @@
         } else {
             // If valid, clear the custom validity message
             input.setCustomValidity('');
+        }
+    }
+</script>
+<script>
+    function addNewTag() {
+        const container = document.getElementById('tagsContainer');
+        const newIndex = container.children.length;
+
+        const tagRow = document.createElement('div');
+        tagRow.className = 'tag-row';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'flex-grow';
+        input.name = 'tags[' + newIndex + ']';
+        input.placeholder = 'Enter tag';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-tag-btn';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = function() { removeTag(this); };
+
+        tagRow.appendChild(input);
+        tagRow.appendChild(removeBtn);
+        container.appendChild(tagRow);
+    }
+
+    function removeTag(button) {
+        const tagRow = button.parentElement;
+        tagRow.remove();
+        updateTagIndexes();
+    }
+
+    function updateTagIndexes() {
+        const container = document.getElementById('tagsContainer');
+        const inputs = container.getElementsByTagName('input');
+        for(let i = 0; i < inputs.length; i++) {
+            inputs[i].name = 'tags[' + i + ']';
         }
     }
 </script>

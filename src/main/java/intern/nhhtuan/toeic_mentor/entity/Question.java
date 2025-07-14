@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
 import intern.nhhtuan.toeic_mentor.entity.enums.EQuestionStatus;
+import intern.nhhtuan.toeic_mentor.util.StringListJsonConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,6 +44,10 @@ public class Question {
     @Column(name = "difficulty")
     private Integer difficulty; // Difficulty level of the question
 
+    @Convert(converter = StringListJsonConverter.class)
+    @Column(columnDefinition = "json")
+    private List<String> tags; // List of tags associated with the question
+
     @ManyToOne
     @JoinColumn(name = "part_id", referencedColumnName = "id")
     private Part part;
@@ -53,9 +58,6 @@ public class Question {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionImage> passageImageUrls = new ArrayList<>();
-
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<QuestionTag> tags = new ArrayList<>();
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionOption> options = new ArrayList<>();
