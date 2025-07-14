@@ -13,8 +13,8 @@ import intern.nhhtuan.toeic_mentor.entity.enums.ESectionStatus;
 import intern.nhhtuan.toeic_mentor.repository.*;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionOptionService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionService;
-import intern.nhhtuan.toeic_mentor.service.interfaces.IQuestionTagService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Limit;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 public class QuestionServiceImpl implements IQuestionService {
     private final QuestionRepository questionRepository;
     private final IQuestionOptionService questionOptionService;
-    private final IQuestionTagService questionTagService;
     private final QuestionImageRepository imageRepository;
     private final PartRepository partRepository;
     private final SectionRepository sectionRepository;
@@ -54,6 +53,7 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setPart(partRepository.findByName(getPartName(dto.getPart())));
             question.setStatus(EQuestionStatus.IN_SECTION);
             question.setAnswerExplanation(dto.getAnswerExplanation());
+            question.setTags(dto.getTags());
             question.setSection(section);
             // Lưu trước để có ID cho liên kết
             questionRepository.save(question);
@@ -68,9 +68,6 @@ public class QuestionServiceImpl implements IQuestionService {
 
             // Lưu options
             questionOptionService.saveOptions(dto.getOptions(), question);
-
-            // Lưu tags
-            questionTagService.saveTags(dto.getTags(), question);
         }
     }
 
@@ -86,15 +83,13 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setCorrectAnswer(questionUpdateDTO.getCorrectAnswer());
             question.setStatus(questionUpdateDTO.getStatus());
             question.setAnswerExplanation(questionUpdateDTO.getAnswerExplanation());
+            question.setTags(questionUpdateDTO.getTags());
 
             // Save question with updated fields
             questionRepository.save(question);
 
             // Save new options
             questionOptionService.saveOptions(questionUpdateDTO.getOptions(), question);
-
-            // Save new tags
-            questionTagService.saveTags(questionUpdateDTO.getTags(), question);
 
             return true;
         }
@@ -113,10 +108,6 @@ public class QuestionServiceImpl implements IQuestionService {
         Map<String, String> options = question.getOptions().stream()
                 .collect(Collectors.toMap(QuestionOption::getKey, QuestionOption::getValue));
 
-        List<String> tags = question.getTags().stream()
-                .map(QuestionTag::getTag)
-                .collect(Collectors.toList());
-
         return QuestionUpdateDTO.builder()
                 .id(question.getId())
                 .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
@@ -126,7 +117,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .content(question.getQuestionText())
                 .options(options)
                 .correctAnswer(question.getCorrectAnswer())
-                .tags(tags)
+                .tags(question.getTags())
                 .status(question.getStatus())
                 .answerExplanation(question.getAnswerExplanation())
                 .build();
@@ -146,9 +137,7 @@ public class QuestionServiceImpl implements IQuestionService {
                                 .map(QuestionOption::getValue)
                                 .findFirst()
                                 .orElse(""))
-                        .tags(question.getTags().stream()
-                                .map(QuestionTag::getTag)
-                                .collect(Collectors.joining(", ")))
+                        .tags(String.join(", ", question.getTags()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -167,7 +156,8 @@ public class QuestionServiceImpl implements IQuestionService {
 
     @Override
     public List<QuestionResponse> generateTest(TestRequest request) {
-        List<Question> matchedQuestions = new ArrayList<>();
+        // Fetch questions based on part and topic
+        List<Question> questions = new ArrayList<>();
 
         // Validate request
         for (Integer part : request.getPart()) {
@@ -175,26 +165,26 @@ public class QuestionServiceImpl implements IQuestionService {
                 throw new IllegalArgumentException("Part must be between 1 and 7");
             }
             EPart partName = getPartName(part);
-            // Fetch questions based on part and topic
-            List<Question> questions;
-            // If topics are specified, fetch questions that match both part and topics
-            List<QuestionTag> tags = new ArrayList<>();
-            for (String tag : request.getTopic()) {
-                tags.addAll(questionTagService.findByTag(tag));
-            }
+
             // If no topics are specified, fetch all questions for the part
-            if (request.getTopic().size() == 0 || tags.isEmpty()) {
+            if (request.getTopic().size() == 0) {
                 questions = questionRepository.findDistinctByPart_NameAndStatus(partName, EQuestionStatus.APPROVED);
             } else {
-                questions = questionRepository.findDistinctByPart_NameAndTagsAndStatus(partName, tags, EQuestionStatus.APPROVED);
+                questions = questionRepository.findDistinctByPart_NameAndTagsContainingAndStatus(partName, request.getTopic(), EQuestionStatus.APPROVED);
+                if (questions.size() < request.getQuestion_count()) {
+                    List<Question> temp = questionRepository.findDistinctByPart_NameAndStatus(
+                            partName,
+                            EQuestionStatus.APPROVED,
+                            Limit.of(request.getQuestion_count() - questions.size())
+                    );
+                    questions.addAll(temp);
+                }
             }
-            // Add the fetched questions to the matched list
-            matchedQuestions.addAll(questions);
         }
 
         // Shuffle and limit
-        Collections.shuffle(matchedQuestions);
-        List<Question> selectedQuestions = matchedQuestions.stream()
+        Collections.shuffle(questions);
+        List<Question> selectedQuestions = questions.stream()
                 .limit(request.getQuestion_count())
                 .toList();
 
@@ -282,10 +272,6 @@ public class QuestionServiceImpl implements IQuestionService {
                 .map(opt -> new QuestionResponse.OptionResponse(opt.getKey(), opt.getValue()))
                 .collect(Collectors.toList());
 
-        List<String> tags = question.getTags().stream()
-                .map(QuestionTag::getTag)
-                .collect(Collectors.toList());
-
         List<String> passageImageUrls = question.getPassageImageUrls().stream()
                 .map(QuestionImage::getImage)
                 .toList();
@@ -301,7 +287,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .passageImageUrls(passageImageUrls)
                 .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
                 .options(options)
-                .tags(tags)
+                .tags(question.getTags())
                 .build();
     }
 }
