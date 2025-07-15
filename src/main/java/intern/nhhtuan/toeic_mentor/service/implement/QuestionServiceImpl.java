@@ -170,7 +170,7 @@ public class QuestionServiceImpl implements IQuestionService {
             if (request.getTopic().size() == 0) {
                 questions = questionRepository.findDistinctByPart_NameAndStatus(partName, EQuestionStatus.APPROVED);
             } else {
-                questions = questionRepository.findDistinctByPart_NameAndTagsContainingAndStatus(partName, request.getTopic(), EQuestionStatus.APPROVED);
+                questions = questionRepository.findDistinctByPart_NameAndTagsAndStatus(partName, request.getTopic(), EQuestionStatus.APPROVED);
                 if (questions.size() < request.getQuestion_count()) {
                     List<Question> temp = questionRepository.findDistinctByPart_NameAndStatus(
                             partName,

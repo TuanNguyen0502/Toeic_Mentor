@@ -13,7 +13,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     List<Question> findDistinctByPart_NameAndStatus(EPart partName, EQuestionStatus status, Limit limit);
 
-    List<Question> findDistinctByPart_NameAndTagsContainingAndStatus(EPart part_name, List<String> tags, EQuestionStatus status);
+    List<Question> findDistinctByPart_NameAndTagsAndStatus(EPart part_name, List<String> tags, EQuestionStatus status);
 
     int countByPart_Id(Long partId);
 
