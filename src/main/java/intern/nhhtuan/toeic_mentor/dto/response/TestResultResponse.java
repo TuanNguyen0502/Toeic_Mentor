@@ -13,11 +13,14 @@ public class TestResultResponse {
     private int correctPercent;
     private List<AnswerResponse> answerResponses;
     private String recommendations;
+    private String performance;
+    private List<String> referenceUrls;
 
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class AnswerResponse {
         private Long id;
         private String questionText;
@@ -26,15 +29,16 @@ public class TestResultResponse {
         private Integer part;
         private List<OptionResponse> options;
         private List<String> tags;
+        private int timeSpent; // Time spent on the question in seconds
         @JsonProperty("isCorrect")
         private boolean isCorrect;
-        private String answerExplanation;
-
+        private List<String> answerExplanation;
     }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class OptionResponse {
         private String key;
         private String value;

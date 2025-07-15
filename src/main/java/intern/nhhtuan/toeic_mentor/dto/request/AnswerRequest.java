@@ -20,6 +20,8 @@ public class AnswerRequest {
     private Integer part;
     private List<OptionResponse> options;
     private List<String> tags;
+    private int timeSpent; // Time spent on the question in seconds
+    private Integer difficulty; // Difficulty level of the question
 
     @Data
     @AllArgsConstructor
