@@ -1,0 +1,254 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<head th:insert="~{admin/fragments/head::head}"></head>
+
+<body>
+
+<!-- #wrapper -->
+<div id="wrapper">
+    <!-- #page -->
+    <div id="page" class="">
+        <!-- layout-wrap -->
+        <div class="layout-wrap">
+            <!-- preload -->
+            <div id="preload" class="preload-container">
+                <div class="preloading">
+                    <span></span>
+                </div>
+            </div>
+            <!-- /preload -->
+            <!-- section-menu-left -->
+            <div th:insert="~{admin/fragments/menu-left::section-menu-left}"></div>
+            <!-- /section-menu-left -->
+            <!-- section-content-right -->
+            <div class="section-content-right">
+                <!-- header-dashboard -->
+                <div th:insert="~{admin/fragments/header_dashboard::header-dashboard}"></div>
+                <!-- /header-dashboard -->
+                <!-- main-content -->
+                <div class="main-content">
+                    <!-- main-content-wrap -->
+                    <div class="main-content-inner">
+                        <!-- main-content-wrap -->
+                        <div class="main-content-wrap">
+                            <div class="flex items-center flex-wrap justify-between gap20 mb-27">
+                                <h3>Feedback List</h3>
+                                <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+                                    <li>
+                                        <a th:href="@{/admin}">
+                                            <div class="text-tiny">Dashboard</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/feedbacks}">
+                                            <div class="text-tiny">Feedback</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <div class="text-tiny">Feedback List</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- Filter Form -->
+                            <div class="card mb-4 shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0"><i class="bi bi-funnel"></i> Filter Feedbacks</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form method="get" th:action="@{/admin/feedbacks}" id="filterForm">
+                                        <div class="row g-2 align-items-end">
+                                            <!-- User Email -->
+                                            <div class="col-md-3">
+                                                <label for="userEmail" class="form-label fw-semibold">User Email</label>
+                                                <input type="text" name="userEmail" id="userEmail" class="form-control rounded-pill"
+                                                       th:value="${param.userEmail}" placeholder="Enter email to search...">
+                                            </div>
+                                            <!-- Feedback Type -->
+                                            <div class="col-md-2">
+                                                <label for="feedback" class="form-label fw-semibold">Feedback</label>
+                                                <select name="feedback" id="feedback" class="form-select rounded-pill">
+                                                    <option value="">All Feedbacks</option>
+                                                    <option value="LIKE" th:selected="${param.feedback == 'LIKE'}">Like</option>
+                                                    <option value="DISLIKE" th:selected="${param.feedback == 'DISLIKE'}">Dislike</option>
+                                                </select>
+                                            </div>
+                                            <!-- Date Range - Start -->
+                                            <div class="col-md-2">
+                                                <label for="createdAtStart" class="form-label fw-semibold">From Date</label>
+                                                <input type="datetime-local" name="createdAtStart" id="createdAtStart"
+                                                       class="form-control rounded-pill" th:value="${param.createdAtStart}">
+                                            </div>
+                                            <!-- Date Range - End -->
+                                            <div class="col-md-2">
+                                                <label for="createdAtEnd" class="form-label fw-semibold">To Date</label>
+                                                <input type="datetime-local" name="createdAtEnd" id="createdAtEnd"
+                                                       class="form-control rounded-pill" th:value="${param.createdAtEnd}">
+                                            </div>
+                                            <!-- Sort -->
+                                            <div class="col-md-2">
+                                                <label for="sortBy" class="form-label fw-semibold">Sort By</label>
+                                                <select name="sortBy" id="sortBy" class="form-select rounded-pill">
+                                                    <option value="createdAt" th:selected="${param.sortBy == null || param.sortBy == 'createdAt'}">Creation Date</option>
+                                                    <option value="userEmail" th:selected="${param.sortBy == 'userEmail'}">User Email</option>
+                                                </select>
+                                                <select name="direction" id="direction" class="form-select rounded-pill mt-2">
+                                                    <option value="DESC" th:selected="${param.direction == null || param.direction == 'DESC'}">Descending</option>
+                                                    <option value="ASC" th:selected="${param.direction == 'ASC'}">Ascending</option>
+                                                </select>
+                                            </div>
+                                            <!-- Buttons -->
+                                            <div class="col-md-1 d-flex gap-2 align-items-end">
+                                                <button type="submit" class="btn btn-primary rounded-pill flex-fill">
+                                                    <i class="bi bi-search"></i> Filter
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary rounded-pill" onclick="clearFilters()">
+                                                    <i class="bi bi-x-circle"></i> Clear
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- Feedback Table -->
+                            <div class="table-responsive shadow rounded">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-primary">
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">User Email</th>
+                                        <th scope="col">Conversation</th>
+                                        <th scope="col">Feedback</th>
+                                        <th scope="col">Created At</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="feedback : ${feedbacks.content}" class="table-row align-middle">
+                                        <td th:text="${feedback.id}">1</td>
+                                        <td th:text="${feedback.userEmail}">user@example.com</td>
+                                        <td th:text="${feedback.conversationName}">Conversation</td>
+                                        <td>
+                                            <span th:class="${feedback.feedbackTypes.contains('LIKE') ? 'badge bg-success' : 'badge bg-danger'}"
+                                                  th:text="${feedback.feedbackTypes}">LIKE/DISLIKE</span>
+                                        </td>
+                                        <td th:text="${feedback.createdAt}">2024-07-17</td>
+                                    </tr>
+                                    <tr th:if="${feedbacks.isEmpty()}">
+                                        <td colspan="5">
+                                            <div class="alert alert-info text-center mb-0">No feedbacks found.</div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Pagination -->
+                            <nav class="mt-4 d-flex justify-content-center" th:if="${feedbacks.totalPages > 1}">
+                                <ul class="pagination">
+                                    <li class="page-item" th:classappend="${feedbacks.first} ? 'disabled'">
+                                        <a class="page-link" th:href="@{/admin/feedbacks(page=${feedbacks.number - 1}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" tabindex="-1">&laquo; Prev</a>
+                                    </li>
+                                    <li class="page-item" th:each="i : ${#numbers.sequence(0, feedbacks.totalPages - 1)}"
+                                        th:classappend="${i == feedbacks.number} ? 'active'"
+                                        th:if="${i >= feedbacks.number - 2 && i <= feedbacks.number + 2}">
+                                        <a class="page-link" th:href="@{/admin/feedbacks(page=${i}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" th:text="${i + 1}">1</a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${feedbacks.last} ? 'disabled'">
+                                        <a class="page-link" th:href="@{/admin/feedbacks(page=${feedbacks.number + 1}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}">Next &raquo;</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <!-- /main-content-wrap -->
+                        <!-- bottom-page -->
+                        <div th:insert="~{admin/fragments/bottom_page::bottom-page}"></div>
+                        <!-- /bottom-page -->
+                    </div>
+                    <!-- /main-content -->
+                </div>
+                <!-- /section-content-right -->
+            </div>
+            <!-- /layout-wrap -->
+        </div>
+        <!-- /#page -->
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Javascript -->
+    <div th:insert="~{admin/fragments/script::script}"></div>
+</div>
+
+<script>
+function clearFilters() {
+    // Clear all form inputs
+    document.getElementById('userEmail').value = '';
+    document.getElementById('feedback').value = '';
+    document.getElementById('createdAtStart').value = '';
+    document.getElementById('createdAtEnd').value = '';
+    document.getElementById('sortBy').value = 'createdAt';
+    document.getElementById('direction').value = 'DESC';
+}
+
+// Handle form submission to prevent sending empty strings
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const userEmail = document.getElementById('userEmail');
+        const feedback = document.getElementById('feedback');
+        const createdAtStart = document.getElementById('createdAtStart');
+        const createdAtEnd = document.getElementById('createdAtEnd');
+
+        // Create a new FormData object
+        const formData = new FormData(filterForm);
+
+        // Remove empty string values to prevent them from being sent
+        if (userEmail.value === '') {
+            formData.delete('userEmail');
+        }
+
+        if (feedback.value === '') {
+            formData.delete('feedback');
+        }
+
+        if (createdAtStart.value === '') {
+            formData.delete('createdAtStart');
+        }
+
+        if (createdAtEnd.value === '') {
+            formData.delete('createdAtEnd');
+        }
+
+        // Convert FormData to URL parameters
+        const params = new URLSearchParams();
+        formData.forEach((value, key) => {
+            params.append(key, value);
+        });
+
+        // Redirect to the URL with cleaned parameters
+        window.location.href = filterForm.action + '?' + params.toString();
+    });
+
+    const feedbackSelect = document.getElementById('feedback');
+    const sortBySelect = document.getElementById('sortBy');
+    const directionSelect = document.getElementById('direction');
+
+    // Auto-submit for select elements
+    [feedbackSelect, sortBySelect, directionSelect].forEach(select => {
+        if (select) {
+            select.addEventListener('change', function() {
+                filterForm.dispatchEvent(new Event('submit'));
+            });
+        }
+    });
+});
+</script>
+</body>
+</html>

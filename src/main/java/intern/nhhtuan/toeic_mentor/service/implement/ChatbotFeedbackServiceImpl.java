@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.ChatbotFeedbackRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackResponse;
 import intern.nhhtuan.toeic_mentor.entity.ChatMemory;
 import intern.nhhtuan.toeic_mentor.entity.ChatbotFeedback;
 import intern.nhhtuan.toeic_mentor.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +46,7 @@ public class ChatbotFeedbackServiceImpl implements IChatbotFeedbackService {
     }
 
     @Override
-    public Page<ChatbotFeedback> getFeedbacks(
+    public Page<ChatbotFeedbackResponse> getFeedbacks(
             EChatbotFeedback feedback,
             LocalDateTime createdAtStart,
             LocalDateTime createdAtEnd,
@@ -72,6 +74,13 @@ public class ChatbotFeedbackServiceImpl implements IChatbotFeedbackService {
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        return chatbotFeedbackRepository.findAll(spec, pageable);
+        return chatbotFeedbackRepository.findAll(spec, pageable)
+                .map(feedbackEntity -> new ChatbotFeedbackResponse(
+                        feedbackEntity.getId(),
+                        feedbackEntity.getFeedback().name(),
+                        feedbackEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")),
+                        feedbackEntity.getUser().getEmail(),
+                        feedbackEntity.getChatMemory().getConversationId().split("_")[1].replaceAll("_", " ")
+                ));
     }
 }
