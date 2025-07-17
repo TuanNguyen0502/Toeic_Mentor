@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.ChatbotFeedbackRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackResponse;
 import intern.nhhtuan.toeic_mentor.entity.ChatMemory;
 import intern.nhhtuan.toeic_mentor.entity.ChatbotFeedback;
@@ -77,10 +78,30 @@ public class ChatbotFeedbackServiceImpl implements IChatbotFeedbackService {
         return chatbotFeedbackRepository.findAll(spec, pageable)
                 .map(feedbackEntity -> new ChatbotFeedbackResponse(
                         feedbackEntity.getId(),
-                        feedbackEntity.getFeedback().name(),
-                        feedbackEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")),
                         feedbackEntity.getUser().getEmail(),
-                        feedbackEntity.getChatMemory().getConversationId().split("_")[1].replaceAll("_", " ")
+                        feedbackEntity.getChatMemory().getConversationId().split("_")[1].replaceAll("_", " "),
+                        feedbackEntity.getFeedback().name(),
+                        feedbackEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))
                 ));
+    }
+
+    @Override
+    public ChatbotFeedbackDetailResponse getChatbotFeedbackById(Long id) {
+        ChatbotFeedback feedback = chatbotFeedbackRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Chatbot feedback not found with ID: " + id));
+
+        ChatMemory chatMemory = feedback.getChatMemory();
+        String conversationName = chatMemory.getConversationId().split("_")[1].replaceAll("_", " ");
+
+        return new ChatbotFeedbackDetailResponse(
+                feedback.getId(),
+                feedback.getUser().getEmail(),
+                chatMemory.getId(),
+                conversationName,
+                chatMemory.getContent(),
+                chatMemory.getTimestamp().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")),
+                feedback.getFeedback().name(),
+                feedback.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))
+        );
     }
 }

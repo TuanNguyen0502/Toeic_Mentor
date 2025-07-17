@@ -62,7 +62,7 @@
                                     <h6 class="mb-0"><i class="bi bi-funnel"></i> Filter Feedbacks</h6>
                                 </div>
                                 <div class="card-body">
-                                    <form method="get" th:action="@{/admin/feedbacks}" id="filterForm">
+                                    <form method="get" th:action="@{/admin/feedbacks/chatbot-feedbacks}" id="filterForm">
                                         <div class="row g-2 align-items-end">
                                             <!-- User Email -->
                                             <div class="col-md-3">
@@ -129,7 +129,8 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr th:each="feedback : ${feedbacks.content}" class="table-row align-middle">
+                                    <tr th:each="feedback : ${feedbacks.content}" class="table-row align-middle clickable-row"
+                                        th:data-href="@{/admin/feedbacks/chatbot-feedbacks/{id}(id=${feedback.id})}">
                                         <td th:text="${feedback.id}">1</td>
                                         <td th:text="${feedback.userEmail}">user@example.com</td>
                                         <td th:text="${feedback.conversationName}">Conversation</td>
@@ -151,15 +152,15 @@
                             <nav class="mt-4 d-flex justify-content-center" th:if="${feedbacks.totalPages > 1}">
                                 <ul class="pagination">
                                     <li class="page-item" th:classappend="${feedbacks.first} ? 'disabled'">
-                                        <a class="page-link" th:href="@{/admin/feedbacks(page=${feedbacks.number - 1}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" tabindex="-1">&laquo; Prev</a>
+                                        <a class="page-link" th:href="@{/admin/feedbacks/chatbot-feedbacks(page=${feedbacks.number - 1}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" tabindex="-1">&laquo; Prev</a>
                                     </li>
                                     <li class="page-item" th:each="i : ${#numbers.sequence(0, feedbacks.totalPages - 1)}"
                                         th:classappend="${i == feedbacks.number} ? 'active'"
                                         th:if="${i >= feedbacks.number - 2 && i <= feedbacks.number + 2}">
-                                        <a class="page-link" th:href="@{/admin/feedbacks(page=${i}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" th:text="${i + 1}">1</a>
+                                        <a class="page-link" th:href="@{/admin/feedbacks/chatbot-feedbacks(page=${i}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" th:text="${i + 1}">1</a>
                                     </li>
                                     <li class="page-item" th:classappend="${feedbacks.last} ? 'disabled'">
-                                        <a class="page-link" th:href="@{/admin/feedbacks(page=${feedbacks.number + 1}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}">Next &raquo;</a>
+                                        <a class="page-link" th:href="@{/admin/feedbacks/chatbot-feedbacks(page=${feedbacks.number + 1}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}">Next &raquo;</a>
                                     </li>
                                 </ul>
                             </nav>
@@ -247,6 +248,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 filterForm.dispatchEvent(new Event('submit'));
             });
         }
+    });
+
+    // Make table rows clickable
+    const clickableRows = document.querySelectorAll('.clickable-row');
+    clickableRows.forEach(row => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function() {
+            window.location.href = this.getAttribute('data-href');
+        });
     });
 });
 </script>

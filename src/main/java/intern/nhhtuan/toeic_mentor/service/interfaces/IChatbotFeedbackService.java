@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import intern.nhhtuan.toeic_mentor.dto.request.ChatbotFeedbackRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackResponse;
 import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotFeedback;
 import org.springframework.data.domain.Page;
@@ -20,4 +21,6 @@ public interface IChatbotFeedbackService {
             String sortBy,
             String direction
     );
+
+    ChatbotFeedbackDetailResponse getChatbotFeedbackById(Long id);
 }
