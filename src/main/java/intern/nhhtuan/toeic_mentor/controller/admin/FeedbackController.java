@@ -38,6 +38,8 @@ public class FeedbackController {
                 feedback, createdAtStart, createdAtEnd, userEmail, page, size, sortBy, direction
         );
         model.addAttribute("feedbacks", feedbacks);
+        model.addAttribute("numberLikeFeedbacks", chatbotFeedbackService.countLikeFeedback());
+        model.addAttribute("numberDislikeFeedbacks", chatbotFeedbackService.countDislikeFeedback());
         return "admin/feedback/chatbot-feedback-list";
     }
 

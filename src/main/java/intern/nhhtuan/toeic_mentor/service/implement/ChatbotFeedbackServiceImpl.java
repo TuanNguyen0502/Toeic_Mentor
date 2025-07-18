@@ -104,4 +104,14 @@ public class ChatbotFeedbackServiceImpl implements IChatbotFeedbackService {
                 feedback.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))
         );
     }
+
+    @Override
+    public int countLikeFeedback() {
+        return chatbotFeedbackRepository.countByFeedbackIs(EChatbotFeedback.LIKE);
+    }
+
+    @Override
+    public int countDislikeFeedback() {
+        return chatbotFeedbackRepository.countByFeedbackIs(EChatbotFeedback.DISLIKE);
+    }
 }

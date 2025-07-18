@@ -23,4 +23,8 @@ public interface IChatbotFeedbackService {
     );
 
     ChatbotFeedbackDetailResponse getChatbotFeedbackById(Long id);
+
+    int countLikeFeedback();
+
+    int countDislikeFeedback();
 }
