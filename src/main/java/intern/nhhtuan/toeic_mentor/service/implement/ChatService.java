@@ -43,8 +43,6 @@ public class ChatService implements IChatService {
     private Resource defineQuestionPartPromptResource;
     @Value("classpath:/prompts/identify-toeic-test.txt")
     private Resource identifyToeicTestPromptResource;
-    @Value("classpath:/prompts/test-analysis-prompt.txt")
-    private Resource testAnalysisPromptResource;
 
     public ChatService(ChatClient.Builder builder,
                        JdbcChatMemoryRepository jdbcChatMemoryRepository,
@@ -322,7 +320,7 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public String generateConversationId(String message, String email) {
+    public Flux<String> generateConversationId(String message, String email) {
         String prompt = String.format("""
                     You are an assistant that generates a concise and meaningful title for a conversation based on the user’s initial question.
                 
@@ -341,7 +339,7 @@ public class ChatService implements IChatService {
         return ChatClient.create(chatModel).prompt()
                 .user(user -> user
                         .text(prompt))
-                .call()
+                .stream()
                 .content();
     }
 

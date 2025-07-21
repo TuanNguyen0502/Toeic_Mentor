@@ -18,35 +18,32 @@ public class ChatRestController {
 
     @PostMapping("/stream")
     public Flux<String> chatWithStream(@RequestParam String message,
-                                       @RequestParam(required = false) String conversationId,
+                                       @RequestParam String conversationId,
                                        @RequestParam(value = "image", required = false) MultipartFile image) {
-        if (conversationId == null) {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
-            conversationId = chatService.generateConversationId(message, email);
-        }
-
-        // Ensure conversationId does not contain any newline characters
-        conversationId = conversationId.replaceAll("[\r\n]+", "");
-
-        final String finalConversationId = conversationId;
         Flux<String> response;
-
         if (image == null || image.isEmpty()) {
-            response = chatService.getChatResponse(message, finalConversationId);
+            response = chatService.getChatResponse(message, conversationId);
         } else {
             try (InputStream inputStream = image.getInputStream()) {
-                response = chatService.getChatResponse(message, finalConversationId, inputStream, image.getContentType());
+                response = chatService.getChatResponse(message, conversationId, inputStream, image.getContentType());
             } catch (Exception e) {
                 response = Flux.error(new RuntimeException("Error processing image input stream", e));
             }
         }
+        return response;
+    }
 
-        // Send conversationId as first message
-        return Flux.concat(
-                Flux.just("ConversationId: " + finalConversationId + "\n"),
-                response
-        );
+    @PostMapping("/conversation-id")
+    public Flux<String> generateConversationId(@RequestParam("message") String message) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Determine the email of the authenticated user or use "anonymous" if not authenticated
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+        Flux<String> conversationId = chatService.generateConversationId(message, email);
+        // Ensure conversationId does not contain any newline characters
+        conversationId = conversationId.map(id -> id
+                .replace("\n", "")
+                .replace("\r", ""));
+        return conversationId;
     }
 
     @GetMapping("/conversation-ids")

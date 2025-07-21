@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/", "/register", "/forgot-password", "/login", "/loginProcess",
                                 "/user/asset/**", "/stream", "/submit-test", "/conversation-ids", "/conversation",
-                                "/conversation", "/conversation-name")
+                                "/conversation", "/conversation-name", "/conversation-id")
                         .permitAll()
                         .requestMatchers("/admin/asset/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Allow access to admin routes for ADMIN role
