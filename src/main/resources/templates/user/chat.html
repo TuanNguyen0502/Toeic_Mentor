@@ -284,7 +284,7 @@
                                     const newName = prompt('Enter new conversation name:');
                                     if (!newName) return;
                                     try {
-                                        const res = await fetch(`/conversation-name?conversationId=${encodeURIComponent(id)}&newName=${encodeURIComponent(newName)}`, { method: 'PUT' });
+                                        const res = await fetch(`/conversation-title?conversationId=${encodeURIComponent(id)}&newName=${encodeURIComponent(newName)}`, { method: 'PUT' });
                                         const newConversationId = await res.text();
                                         if (res.ok && newConversationId && !newConversationId.startsWith('Failed')) {
                                             span.innerText = newName;

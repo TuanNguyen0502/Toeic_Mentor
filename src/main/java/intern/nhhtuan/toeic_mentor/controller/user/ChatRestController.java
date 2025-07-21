@@ -61,7 +61,7 @@ public class ChatRestController {
         chatService.deleteByConversationId(conversationId);
     }
 
-    @PutMapping("/conversation-name")
+    @PutMapping("/conversation-title")
     public String updateConversationName(@RequestParam String conversationId, @RequestParam String newName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // Determine the email of the authenticated user or use "anonymous" if not authenticated
