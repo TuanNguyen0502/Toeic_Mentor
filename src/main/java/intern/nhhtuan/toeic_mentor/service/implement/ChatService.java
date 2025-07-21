@@ -50,6 +50,7 @@ public class ChatService implements IChatService {
                        ChatMemoryRepository chatMemoryRepository) {
         this.jdbcChatMemoryRepository = jdbcChatMemoryRepository;
         ChatMemory chatMemory = MessageWindowChatMemory.builder()
+                .maxMessages(100) // Set the maximum number of messages to keep in memory
                 .chatMemoryRepository(jdbcChatMemoryRepository)
                 .build();
         this.chatClient = builder
