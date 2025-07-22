@@ -4,7 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
+import intern.nhhtuan.toeic_mentor.entity.Answer;
+import intern.nhhtuan.toeic_mentor.entity.Question;
+import intern.nhhtuan.toeic_mentor.entity.QuestionOption;
+import intern.nhhtuan.toeic_mentor.repository.AnswerRepository;
 import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
@@ -21,14 +26,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatService implements IChatService {
@@ -36,6 +48,7 @@ public class ChatService implements IChatService {
     private final ChatModel chatModel;
     private final JdbcChatMemoryRepository jdbcChatMemoryRepository;
     private final ChatMemoryRepository chatMemoryRepository;
+    private final AnswerRepository answerRepository;
 
     @Value("classpath:/prompts/system-message.txt")
     private Resource systemMessageResource;
@@ -46,10 +59,31 @@ public class ChatService implements IChatService {
     @Value("classpath:/prompts/test-analysis-prompt.txt")
     private Resource testAnalysisPromptResource;
 
+    private static final String INITIAL_PROMPT_TEMPLATE = """
+    You are an English tutor helping a student understand a TOEIC question.
+
+    Passage:
+    %s
+
+    Question %d: %s
+
+    Options:
+    %s
+
+    Student selected answer: %s
+    Correct answer: %s
+
+    Explanation: %s
+
+    Student message: %s
+    """;
+
+
     public ChatService(ChatClient.Builder builder,
                        JdbcChatMemoryRepository jdbcChatMemoryRepository,
                        ChatModel chatModel,
-                       ChatMemoryRepository chatMemoryRepository) {
+                       ChatMemoryRepository chatMemoryRepository,
+                       AnswerRepository answerRepository) {
         this.jdbcChatMemoryRepository = jdbcChatMemoryRepository;
         ChatMemory chatMemory = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(jdbcChatMemoryRepository)
@@ -59,6 +93,7 @@ public class ChatService implements IChatService {
                 .build();
         this.chatModel = chatModel;
         this.chatMemoryRepository = chatMemoryRepository;
+        this.answerRepository = answerRepository;
     }
 
     @Override
@@ -70,6 +105,71 @@ public class ChatService implements IChatService {
                 .stream()
                 .content();
     }
+
+    @Override
+    public Flux<AnswerExplanationResponse> getChatResponse(String message, String conversationId, Long answerId) {
+        boolean isNewConversation = (conversationId == null || conversationId.isBlank());
+
+        if (isNewConversation) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = (authentication != null && authentication.isAuthenticated())
+                    ? authentication.getName()
+                    : "anonymous";
+
+            String timestamp = LocalDateTime.now(ZoneOffset.UTC)
+                    .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
+            conversationId = email + "_" + timestamp;
+        }
+
+        String finalConversationId = conversationId;
+
+        return isNewConversation
+                ? buildInitialPrompt(answerId, message)
+                .flatMapMany(prompt -> chatClient.prompt(new Prompt(List.of(
+                                new SystemMessage(systemMessageResource),
+                                new UserMessage(prompt))))
+                        .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, finalConversationId))
+                        .stream()
+                        .content()
+                        .map(content -> new AnswerExplanationResponse(finalConversationId, content))
+                )
+                : chatClient.prompt(new Prompt(List.of(new UserMessage(message))))
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, finalConversationId))
+                .stream()
+                .content()
+                .map(content -> new AnswerExplanationResponse(finalConversationId, content));
+    }
+
+    private Mono<String> buildInitialPrompt(Long answerId, String message) {
+        return Mono.fromCallable(() -> {
+            Answer answer = answerRepository.findById(answerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Answer not found with id: " + answerId));
+
+            Question question = answer.getQuestion();
+            List<QuestionOption> options = question.getOptions();
+
+            String optionsText = options.stream()
+                    .map(option -> option.getKey() + ". " + option.getValue())
+                    .collect(Collectors.joining("\n"));
+
+            String passage = question.getPassage() != null ? question.getPassage() : "(No passage)";
+            String explanation = question.getAnswerExplanation() != null ? question.getAnswerExplanation() : "(No explanation)";
+
+            return String.format(
+                    INITIAL_PROMPT_TEMPLATE,
+                    passage,
+                    question.getQuestionNumber(),
+                    question.getQuestionText(),
+                    optionsText,
+                    answer.getAnswer(),
+                    question.getCorrectAnswer(),
+                    explanation,
+                    message
+            );
+        });
+    }
+
 
     @Override
     public Flux<String> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
@@ -234,7 +334,7 @@ public class ChatService implements IChatService {
                 
                 2. Transform AnswerRequests into AnswerResponses:
                 - For each AnswerRequest, create a corresponding AnswerResponse object:
-                    - Copy all fields from the original AnswerRequest.
+                    - Copy all fields from the original AnswerRequest except answerExplanation
                     - Add:
                         - isCorrect: as determined above.
                         - answerExplanation: convert to a List of Strings containing explanations for all options A–D:

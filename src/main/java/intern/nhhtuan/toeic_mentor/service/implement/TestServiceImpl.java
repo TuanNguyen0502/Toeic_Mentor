@@ -176,6 +176,7 @@ public class TestServiceImpl implements ITestService {
             answers.add(answer); // Lưu Answer vào danh sách
             // Lưu các Answer
             answerService.save(answer);
+            answerResponse.setAnswerId(answer.getId());
 
             // Lưu Part nếu chưa có
             Part part = partService.findByName(answerResponse.getPart());
