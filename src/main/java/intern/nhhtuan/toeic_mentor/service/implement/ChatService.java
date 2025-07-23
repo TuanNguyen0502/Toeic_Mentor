@@ -5,18 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
+import intern.nhhtuan.toeic_mentor.entity.RatableMessage;
 import intern.nhhtuan.toeic_mentor.repository.RatingEnabledChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
-import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
@@ -31,10 +28,10 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class ChatService implements IChatService {
     private final ChatClient chatClient;
     private final ChatModel chatModel;
-    private final JdbcChatMemoryRepository jdbcChatMemoryRepository;
     private final RatingEnabledChatMemoryRepository ratingEnabledChatMemoryRepository;
 
     @Value("classpath:/prompts/system-message.txt")
@@ -44,24 +41,8 @@ public class ChatService implements IChatService {
     @Value("classpath:/prompts/identify-toeic-test.txt")
     private Resource identifyToeicTestPromptResource;
 
-    public ChatService(ChatClient chatClient,
-                       JdbcChatMemoryRepository jdbcChatMemoryRepository,
-                       ChatModel chatModel,
-                       RatingEnabledChatMemoryRepository ratingEnabledChatMemoryRepository) {
-        this.jdbcChatMemoryRepository = jdbcChatMemoryRepository;
-        ChatMemory chatMemory = MessageWindowChatMemory.builder()
-                .maxMessages(100) // Set the maximum number of messages to keep in memory
-                .chatMemoryRepository(jdbcChatMemoryRepository)
-                .build();
-        this.chatClient = chatClient;
-        this.chatModel = chatModel;
-        this.ratingEnabledChatMemoryRepository = ratingEnabledChatMemoryRepository;
-    }
-
     @Override
     public Flux<String> getChatResponse(String message, String conversationId) {
-        var systemMessage = new SystemMessage(systemMessageResource);
-        var userMessage = new UserMessage(message);
         return chatClient.prompt()
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .user(message)
@@ -164,10 +145,7 @@ public class ChatService implements IChatService {
 
     @Override
     public List<String> getChatHistory(String conversationId) {
-        ChatMemory chatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(jdbcChatMemoryRepository)
-                .build();
-        return chatMemory.get(conversationId).stream().map(Message::getText).toList();
+        return ratingEnabledChatMemoryRepository.getChatHistory(conversationId);
     }
 
     @Override
@@ -342,20 +320,24 @@ public class ChatService implements IChatService {
 
     @Override
     public boolean renameConversation(String oldConversationId, String newConversationId) {
-//        // Check if the new conversation ID already exists
-//        if (ratingEnabledChatMemoryRepository.existsChatMemoryByConversationId(newConversationId)) {
-//            return false; // New conversation ID already exists, cannot rename
-//        }
-//
-//        // Rename the conversation by updating the conversation ID in the repository
-//        List<intern.nhhtuan.toeic_mentor.entity.ChatMemory> chatMemories = chatMemoryRepository.findAllByConversationId(oldConversationId);
-//        if (chatMemories.isEmpty()) {
-//            return false; // No conversation found with the old ID
-//        }
-//        for (intern.nhhtuan.toeic_mentor.entity.ChatMemory chatMemory : chatMemories) {
-//            chatMemory.setConversationId(newConversationId);
-//        }
-//        chatMemoryRepository.saveAll(chatMemories); // Save the updated chat memories
-        return true; // Successfully renamed
+        // Check if the new conversation ID already exists
+        if (ratingEnabledChatMemoryRepository.existsByConversationId(newConversationId)) {
+            return false; // New conversation ID already exists, cannot rename
+        }
+
+        // Rename the conversation by updating the conversation ID in the repository
+        return ratingEnabledChatMemoryRepository.renameConversationId(oldConversationId, newConversationId);
+    }
+
+    private String getLatestAssistantMessageId(String conversationId) {
+        List<Message> allMessages = ratingEnabledChatMemoryRepository.findByConversationId(conversationId);
+        for (int i = allMessages.size() - 1; i >= 0; i--) {
+            Message message = allMessages.get(i);
+            if (message instanceof RatableMessage ratableMessage &&
+                    message.getMessageType() == MessageType.ASSISTANT) {
+                return ratableMessage.getMessageId();
+            }
+        }
+        return null;
     }
 }

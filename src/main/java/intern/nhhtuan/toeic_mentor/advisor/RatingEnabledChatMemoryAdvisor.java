@@ -6,10 +6,8 @@ import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.*;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.messages.MessageType;
+import org.springframework.ai.chat.messages.*;
+import org.springframework.ai.chat.prompt.Prompt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -75,6 +73,33 @@ public class RatingEnabledChatMemoryAdvisor implements CallAdvisor, StreamAdviso
 
         // Store user message
         storeUserMessage(chatClientRequest, conversationId);
+        List<Message> transformedMessages = modifiedRequest.prompt().getInstructions().stream()
+                .map(msg -> {
+                    if (MessageType.ASSISTANT.equals(msg.getMessageType())) {
+                        return new AssistantMessage(msg.getText(), msg.getMetadata());
+                    }
+
+                    if (MessageType.USER.equals(msg.getMessageType())) {
+                        return UserMessage.builder()
+                                .text(msg.getText())
+                                .metadata(msg.getMetadata())
+                                .build();
+                    }
+
+                    if (MessageType.SYSTEM.equals(msg.getMessageType())) {
+                        return SystemMessage.builder()
+                                .text(msg.getText())
+                                .metadata(msg.getMetadata())
+                                .build();
+                    }
+
+                    return msg;
+                }).toList();
+
+        modifiedRequest = ChatClientRequest.builder()
+                .prompt(Prompt.builder().messages(transformedMessages).build())
+                .context(modifiedRequest.context())
+                .build();
 
         // Execute streaming call and collect final response
         return streamAdvisorChain.nextStream(modifiedRequest)

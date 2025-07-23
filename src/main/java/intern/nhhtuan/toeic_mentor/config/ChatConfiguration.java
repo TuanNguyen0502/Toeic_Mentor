@@ -20,7 +20,7 @@ public class ChatConfiguration {
     @Bean
     public RatingEnabledChatMemoryAdvisor ratingChatMemoryAdvisor(RatingEnabledChatMemoryRepository repository) {
         return RatingEnabledChatMemoryAdvisor.builder(repository)
-                .chatMemoryRetrieveSize(20)
+                .chatMemoryRetrieveSize(100)
                 .defaultConversationId("default")
                 .build();
     }

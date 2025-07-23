@@ -25,22 +25,48 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         this.objectMapper = new ObjectMapper();
     }
 
+    public boolean renameConversationId(String oldConversationId, String newConversationId) {
+        int updatedRows = jdbcTemplate.update("""
+                UPDATE spring_ai_chat_memory_enhanced 
+                SET conversation_id = ? 
+                WHERE conversation_id = ?
+                """, newConversationId, oldConversationId);
+        return updatedRows > 0;
+    }
+
+    public boolean existsByConversationId(String conversationId) {
+        Integer count = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM spring_ai_chat_memory_enhanced 
+                WHERE conversation_id = ?
+                """, Integer.class, conversationId);
+        return count != null && count > 0;
+    }
+
+    public List<String> getChatHistory(String conversationId) {
+        return jdbcTemplate.queryForList("""
+                SELECT content 
+                FROM spring_ai_chat_memory_enhanced 
+                WHERE conversation_id = ? 
+                ORDER BY created_at ASC
+                """, String.class, conversationId);
+    }
+
     @Override
     public List<String> findConversationIds() {
         return jdbcTemplate.queryForList("""
-            SELECT DISTINCT conversation_id 
-            FROM spring_ai_chat_memory_enhanced 
-            ORDER BY conversation_id
-            """, String.class);
+                SELECT DISTINCT conversation_id 
+                FROM spring_ai_chat_memory_enhanced 
+                ORDER BY conversation_id
+                """, String.class);
     }
 
     @Override
     public List<Message> findByConversationId(String conversationId) {
         return jdbcTemplate.query("""
-            SELECT * FROM spring_ai_chat_memory_enhanced 
-            WHERE conversation_id = ? 
-            ORDER BY created_at ASC
-            """,
+                        SELECT * FROM spring_ai_chat_memory_enhanced 
+                        WHERE conversation_id = ? 
+                        ORDER BY created_at ASC
+                        """,
                 new RatableMessageRowMapper(),
                 conversationId
         );
@@ -67,10 +93,10 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         }
 
         int updatedRows = jdbcTemplate.update("""
-            UPDATE spring_ai_chat_memory_enhanced 
-            SET rating = ?, feedback = ?, rated_at = CURRENT_TIMESTAMP 
-            WHERE id = ?
-            """,
+                        UPDATE spring_ai_chat_memory_enhanced 
+                        SET rating = ?, feedback = ?, rated_at = CURRENT_TIMESTAMP 
+                        WHERE id = ?
+                        """,
                 rating, feedback, messageId
         );
 
@@ -81,10 +107,10 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
 
     public List<Message> getMessagesByRating(String conversationId, String rating) {
         return jdbcTemplate.query("""
-            SELECT * FROM spring_ai_chat_memory_enhanced 
-            WHERE conversation_id = ? AND rating = ? 
-            ORDER BY created_at DESC
-            """,
+                        SELECT * FROM spring_ai_chat_memory_enhanced 
+                        WHERE conversation_id = ? AND rating = ? 
+                        ORDER BY created_at DESC
+                        """,
                 new RatableMessageRowMapper(),
                 conversationId,
                 rating
@@ -93,11 +119,11 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
 
     public Map<String, Integer> getRatingStats(String conversationId) {
         List<Map<String, Object>> results = jdbcTemplate.queryForList("""
-            SELECT rating, COUNT(*) as count 
-            FROM spring_ai_chat_memory_enhanced 
-            WHERE conversation_id = ? AND rating IS NOT NULL 
-            GROUP BY rating
-            """,
+                        SELECT rating, COUNT(*) as count 
+                        FROM spring_ai_chat_memory_enhanced 
+                        WHERE conversation_id = ? AND rating IS NOT NULL 
+                        GROUP BY rating
+                        """,
                 conversationId
         );
 
@@ -110,9 +136,9 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
 
     public RatableMessage getMessageById(String messageId) {
         List<Message> messages = jdbcTemplate.query("""
-            SELECT * FROM spring_ai_chat_memory_enhanced 
-            WHERE id = ?
-            """,
+                        SELECT * FROM spring_ai_chat_memory_enhanced 
+                        WHERE id = ?
+                        """,
                 new RatableMessageRowMapper(),
                 messageId
         );
@@ -122,11 +148,11 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
 
     public List<Message> getRecentMessages(String conversationId, int limit) {
         return jdbcTemplate.query("""
-            SELECT * FROM spring_ai_chat_memory_enhanced 
-            WHERE conversation_id = ? 
-            ORDER BY created_at DESC 
-            LIMIT ?
-            """,
+                        SELECT * FROM spring_ai_chat_memory_enhanced 
+                        WHERE conversation_id = ? 
+                        ORDER BY created_at DESC 
+                        LIMIT ?
+                        """,
                 new RatableMessageRowMapper(),
                 conversationId,
                 limit
@@ -151,15 +177,15 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         }
 
         Integer count = jdbcTemplate.queryForObject("""
-            SELECT COUNT(*) FROM spring_ai_chat_memory_enhanced WHERE id = ?
-            """, Integer.class, messageId);
+                SELECT COUNT(*) FROM spring_ai_chat_memory_enhanced WHERE id = ?
+                """, Integer.class, messageId);
 
         if (count != null && count > 0) {
             jdbcTemplate.update("""
-                UPDATE spring_ai_chat_memory_enhanced 
-                SET content = ?, metadata = ?, rating = ?, feedback = ?, rated_at = ?
-                WHERE id = ?
-                """,
+                            UPDATE spring_ai_chat_memory_enhanced 
+                            SET content = ?, metadata = ?, rating = ?, feedback = ?, rated_at = ?
+                            WHERE id = ?
+                            """,
                     message.getText(),
                     serializeMetadata(message.getMetadata()),
                     rating,
@@ -169,10 +195,10 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
             );
         } else {
             jdbcTemplate.update("""
-                INSERT INTO spring_ai_chat_memory_enhanced 
-                (id, conversation_id, message_type, content, metadata, rating, feedback, rated_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
+                            INSERT INTO spring_ai_chat_memory_enhanced 
+                            (id, conversation_id, message_type, content, metadata, rating, feedback, rated_at) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
                     messageId,
                     conversationId,
                     message.getMessageType().name(),
