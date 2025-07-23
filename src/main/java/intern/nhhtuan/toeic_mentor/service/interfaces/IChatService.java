@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import reactor.core.publisher.Flux;
 
@@ -12,6 +13,8 @@ public interface IChatService {
     Flux<String> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType);
 
     Flux<String> getChatResponse(String message, String conversationId);
+
+    Flux<AnswerExplanationResponse> getChatResponse(String message, String conversationId, Long answerId);
 
     List<QuestionDTO> createTest(InputStream imageInputStream, String contentType, List<String> imageUrls, String part7PreviousContent);
 
