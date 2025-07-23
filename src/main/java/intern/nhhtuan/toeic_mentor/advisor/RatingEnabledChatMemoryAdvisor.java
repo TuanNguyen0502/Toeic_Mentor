@@ -6,10 +6,12 @@ import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.*;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.messages.MessageType;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -79,8 +81,8 @@ public class RatingEnabledChatMemoryAdvisor implements CallAdvisor, StreamAdviso
                 .collectList()
                 .doOnNext(responses -> {
                     if (!responses.isEmpty()) {
-                        ChatClientResponse finalResponse = responses.get(responses.size() - 1);
-                        storeAssistantResponse(finalResponse, conversationId);
+                        ChatClientResponse finalResponse = responses.getFirst();
+                        storeAssistantResponse(responses, conversationId);
                     }
                 })
                 .flatMapMany(Flux::fromIterable);
@@ -98,25 +100,42 @@ public class RatingEnabledChatMemoryAdvisor implements CallAdvisor, StreamAdviso
         // Add history to existing messages
         List<Message> updatedMessages = new ArrayList<>();
         updatedMessages.addAll(memoryMessages);
-        updatedMessages.addAll(request.messages());
+        updatedMessages.addAll(request.prompt().getInstructions());
 
-        return ChatClientRequest.from(request)
-                .messages(updatedMessages)
+        return request.mutate()
+                .prompt(request.prompt().mutate().messages(updatedMessages).build())
                 .build();
     }
 
     private void storeUserMessage(ChatClientRequest request, String conversationId) {
-        if (request.userText() != null && !request.userText().isEmpty()) {
-            UserMessage userMessage = new UserMessage(request.userText());
+        if (request.prompt().getUserMessage().getText() != null && !request.prompt().getUserMessage().getText().isEmpty()) {
+            UserMessage userMessage = new UserMessage(request.prompt().getUserMessage().getText());
             String messageId = UUID.randomUUID().toString();
             RatableMessage ratableUserMessage = new RatableMessage(userMessage, messageId, conversationId);
             repository.saveAll(conversationId, List.of(ratableUserMessage));
         }
     }
 
+    private void storeAssistantResponse(List<ChatClientResponse> responses, String conversationId) {
+        StringBuilder message = new StringBuilder();
+        for (ChatClientResponse response : responses) {
+            if (response.chatResponse() != null && response.chatResponse().getResult() != null &&
+                    response.chatResponse().getResult().getOutput() != null) {
+                message.append(response.chatResponse().getResult().getOutput().getText());
+            }
+        }
+//        if (response.chatResponse().getResult() != null && response.chatResponse().getResult().getOutput() != null) {
+        Message assistantMessage = new AssistantMessage(message.toString(), responses.getFirst().chatResponse().getResult().getOutput().getMetadata());
+//            Message message = new AssistantMessage()
+        String messageId = UUID.randomUUID().toString();
+        RatableMessage ratableAssistantMessage = new RatableMessage(assistantMessage, messageId, conversationId);
+        repository.saveAll(conversationId, List.of(ratableAssistantMessage));
+//        }
+    }
+
     private void storeAssistantResponse(ChatClientResponse response, String conversationId) {
-        if (response.getResult() != null && response.getResult().getOutput() != null) {
-            Message assistantMessage = (Message) response.getResult().getOutput();
+        if (response.chatResponse().getResult() != null && response.chatResponse().getResult().getOutput() != null) {
+            Message assistantMessage = (Message) response.chatResponse().getResult().getOutput();
             String messageId = UUID.randomUUID().toString();
             RatableMessage ratableAssistantMessage = new RatableMessage(assistantMessage, messageId, conversationId);
             repository.saveAll(conversationId, List.of(ratableAssistantMessage));
@@ -132,7 +151,7 @@ public class RatingEnabledChatMemoryAdvisor implements CallAdvisor, StreamAdviso
 
     private String getConversationId(ChatClientRequest request) {
         // Check request parameters for conversation ID
-        Object conversationId = request.advisorParams().get(ChatMemory.CONVERSATION_ID);
+        Object conversationId = request.context().get(ChatMemory.CONVERSATION_ID);
         if (conversationId instanceof String) {
             return (String) conversationId;
         }

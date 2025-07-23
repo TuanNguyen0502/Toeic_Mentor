@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
-import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
+import intern.nhhtuan.toeic_mentor.repository.RatingEnabledChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -35,7 +35,7 @@ public class ChatService implements IChatService {
     private final ChatClient chatClient;
     private final ChatModel chatModel;
     private final JdbcChatMemoryRepository jdbcChatMemoryRepository;
-    private final ChatMemoryRepository chatMemoryRepository;
+    private final RatingEnabledChatMemoryRepository ratingEnabledChatMemoryRepository;
 
     @Value("classpath:/prompts/system-message.txt")
     private Resource systemMessageResource;
@@ -44,28 +44,28 @@ public class ChatService implements IChatService {
     @Value("classpath:/prompts/identify-toeic-test.txt")
     private Resource identifyToeicTestPromptResource;
 
-    public ChatService(ChatClient.Builder builder,
+    public ChatService(ChatClient chatClient,
                        JdbcChatMemoryRepository jdbcChatMemoryRepository,
                        ChatModel chatModel,
-                       ChatMemoryRepository chatMemoryRepository) {
+                       RatingEnabledChatMemoryRepository ratingEnabledChatMemoryRepository) {
         this.jdbcChatMemoryRepository = jdbcChatMemoryRepository;
         ChatMemory chatMemory = MessageWindowChatMemory.builder()
                 .maxMessages(100) // Set the maximum number of messages to keep in memory
                 .chatMemoryRepository(jdbcChatMemoryRepository)
                 .build();
-        this.chatClient = builder
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .build();
+        this.chatClient = chatClient;
         this.chatModel = chatModel;
-        this.chatMemoryRepository = chatMemoryRepository;
+        this.ratingEnabledChatMemoryRepository = ratingEnabledChatMemoryRepository;
     }
 
     @Override
     public Flux<String> getChatResponse(String message, String conversationId) {
         var systemMessage = new SystemMessage(systemMessageResource);
         var userMessage = new UserMessage(message);
-        return chatClient.prompt(new Prompt(List.of(systemMessage, userMessage)))
+        return chatClient.prompt()
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .user(message)
+                .system(systemMessageResource)
                 .stream()
                 .content();
     }
@@ -172,11 +172,7 @@ public class ChatService implements IChatService {
 
     @Override
     public List<String> getConversationIdsByEmail(String email) {
-        List<String> conversationIds = chatMemoryRepository.findAll()
-                .stream()
-                .map(intern.nhhtuan.toeic_mentor.entity.ChatMemory::getConversationId)
-                .distinct()
-                .toList();
+        List<String> conversationIds = ratingEnabledChatMemoryRepository.findConversationIds();
         return conversationIds.stream()
                 .filter(id -> id.contains(email)) // Filter conversation IDs that contain the user's email
                 .toList();
@@ -317,7 +313,7 @@ public class ChatService implements IChatService {
     @Override
     @Transactional
     public void deleteByConversationId(String conversationId) {
-        chatMemoryRepository.deleteByConversationId(conversationId);
+        ratingEnabledChatMemoryRepository.deleteByConversationId(conversationId);
     }
 
     @Override
@@ -346,20 +342,20 @@ public class ChatService implements IChatService {
 
     @Override
     public boolean renameConversation(String oldConversationId, String newConversationId) {
-        // Check if the new conversation ID already exists
-        if (chatMemoryRepository.existsChatMemoryByConversationId(newConversationId)) {
-            return false; // New conversation ID already exists, cannot rename
-        }
-
-        // Rename the conversation by updating the conversation ID in the repository
-        List<intern.nhhtuan.toeic_mentor.entity.ChatMemory> chatMemories = chatMemoryRepository.findAllByConversationId(oldConversationId);
-        if (chatMemories.isEmpty()) {
-            return false; // No conversation found with the old ID
-        }
-        for (intern.nhhtuan.toeic_mentor.entity.ChatMemory chatMemory : chatMemories) {
-            chatMemory.setConversationId(newConversationId);
-        }
-        chatMemoryRepository.saveAll(chatMemories); // Save the updated chat memories
+//        // Check if the new conversation ID already exists
+//        if (ratingEnabledChatMemoryRepository.existsChatMemoryByConversationId(newConversationId)) {
+//            return false; // New conversation ID already exists, cannot rename
+//        }
+//
+//        // Rename the conversation by updating the conversation ID in the repository
+//        List<intern.nhhtuan.toeic_mentor.entity.ChatMemory> chatMemories = chatMemoryRepository.findAllByConversationId(oldConversationId);
+//        if (chatMemories.isEmpty()) {
+//            return false; // No conversation found with the old ID
+//        }
+//        for (intern.nhhtuan.toeic_mentor.entity.ChatMemory chatMemory : chatMemories) {
+//            chatMemory.setConversationId(newConversationId);
+//        }
+//        chatMemoryRepository.saveAll(chatMemories); // Save the updated chat memories
         return true; // Successfully renamed
     }
 }
