@@ -1,7 +1,7 @@
 USE
 `toeic-mentor`;
 
-CREATE TABLE chatbot_rating
+CREATE TABLE chatbot_ratings
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id    BIGINT       NOT NULL,

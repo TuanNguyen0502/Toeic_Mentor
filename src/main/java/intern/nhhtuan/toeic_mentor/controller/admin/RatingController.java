@@ -1,9 +1,9 @@
 package intern.nhhtuan.toeic_mentor.controller.admin;
 
-import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackDetailResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackResponse;
-import intern.nhhtuan.toeic_mentor.entity.enums.EChatMemoryRating;
-import intern.nhhtuan.toeic_mentor.service.interfaces.IChatbotFeedbackService;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotRatingDetailResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotRatingResponse;
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotRating;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IChatbotRatingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,16 +16,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 
-@Controller(value = "adminFeedbackController")
-@RequestMapping("/admin/feedbacks")
+@Controller(value = "adminRatingController")
+@RequestMapping("/admin/ratings")
 @RequiredArgsConstructor
-public class FeedbackController {
-    private final IChatbotFeedbackService chatbotFeedbackService;
+public class RatingController {
+    private final IChatbotRatingService chatbotRatingService;
 
-    @GetMapping("/chatbot-feedbacks")
+    @GetMapping("/chatbot-ratings")
     public String getChatbotFeedbacks(
             Model model,
-            @RequestParam(required = false) EChatMemoryRating feedback,
+            @RequestParam(required = false) EChatbotRating rating,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAtStart,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAtEnd,
             @RequestParam(required = false) String userEmail,
@@ -34,23 +34,23 @@ public class FeedbackController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String direction
     ) {
-        Page<ChatbotFeedbackResponse> feedbacks = chatbotFeedbackService.getFeedbacks(
-                feedback, createdAtStart, createdAtEnd, userEmail, page, size, sortBy, direction
+        Page<ChatbotRatingResponse> ratings = chatbotRatingService.getChatbotRatings(
+                rating, createdAtStart, createdAtEnd, userEmail, page, size, sortBy, direction
         );
-        model.addAttribute("feedbacks", feedbacks);
-        model.addAttribute("numberLikeFeedbacks", chatbotFeedbackService.countLikeFeedback());
-        model.addAttribute("numberDislikeFeedbacks", chatbotFeedbackService.countDislikeFeedback());
-        return "admin/feedback/chatbot-feedback-list";
+        model.addAttribute("ratings", ratings);
+        model.addAttribute("numberLikeRatings", chatbotRatingService.countLikeFeedback());
+        model.addAttribute("numberDislikeRatings", chatbotRatingService.countDislikeFeedback());
+        return "admin/rating/chatbot-rating-list";
     }
 
-    @GetMapping("/chatbot-feedbacks/{id}")
+    @GetMapping("/chatbot-ratings/{id}")
     public String getChatbotFeedbackDetail(@PathVariable Long id, Model model) {
-        ChatbotFeedbackDetailResponse feedback = chatbotFeedbackService.getChatbotFeedbackById(id);
+        ChatbotRatingDetailResponse feedback = chatbotRatingService.getChatbotFeedbackById(id);
         if (feedback == null) {
-            return "redirect:/admin/feedbacks/chatbot-feedbacks";
+            return "redirect:/admin/ratings/chatbot-ratings";
         }
         model.addAttribute("feedback", feedback);
-        return "admin/feedback/chatbot-feedback-detail";
+        return "admin/rating/chatbot-rating-detail";
     }
 
 }

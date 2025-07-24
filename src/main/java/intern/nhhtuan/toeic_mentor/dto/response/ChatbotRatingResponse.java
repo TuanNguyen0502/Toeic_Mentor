@@ -5,10 +5,10 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ChatbotFeedbackResponse {
+public class ChatbotRatingResponse {
     private Long id;
     private String userEmail;
     private String conversationName;
-    private String feedbackTypes;
-    private String createdAt;
+    private String rating;
+    private String ratedAt;
 }

@@ -1,17 +1,19 @@
 package intern.nhhtuan.toeic_mentor.dto.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ChatbotFeedbackDetailResponse {
+@Builder
+public class ChatbotRatingDetailResponse {
     private Long id;
     private String userEmail;
-    private Long chatbotResponseId;
-    private String conversationName;
-    private String chatbotResponse;
+    private String messageId;
+    private String content;
+    private String conversationTitle;
     private String chatbotResponseCreatedAt;
-    private String feedbackTypes;
-    private String createdAt;
+    private String rating;
+    private String ratedAt;
 }
