@@ -438,30 +438,77 @@
     async function processStream(reader, contentElement) {
         const decoder = new TextDecoder("utf-8");
         let fullResponse = "";
+        let buffer = "";
 
         try {
+            document.getElementById('chat-messages-container').scrollTop = document.getElementById('chat-messages-container').scrollHeight;
+
             while (true) {
                 const {done, value} = await reader.read();
                 if (done) break;
 
                 const chunk = decoder.decode(value, {stream: true});
+                buffer += chunk;
 
-                // Try to parse each chunk as JSON for ChatbotResponse
+                // Process complete JSON objects line by line
+                let newlineIndex;
+                while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+                    const jsonLine = buffer.slice(0, newlineIndex).trim();
+                    buffer = buffer.slice(newlineIndex + 1);
+
+                    if (jsonLine) {
+                        try {
+                            const responseObj = JSON.parse(jsonLine);
+
+                            if (responseObj) {
+                                // Update conversationId if present
+                                if (responseObj.conversationId) {
+                                    window.conversationId = responseObj.conversationId;
+                                }
+
+                                // Update messageId if present
+                                if (responseObj.messageId) {
+                                    const messageElement = contentElement.closest('.bot-message');
+                                    if (messageElement) {
+                                        messageElement.setAttribute('data-message-id', responseObj.messageId);
+
+                                        // Also update any rating buttons
+                                        const ratingButtons = messageElement.querySelectorAll('.rate-btn');
+                                        ratingButtons.forEach(btn => {
+                                            btn.setAttribute('data-message-id', responseObj.messageId);
+                                        });
+                                    }
+                                }
+
+                                // Process content if present
+                                if (responseObj.content) {
+                                    fullResponse += responseObj.content;
+                                    contentElement.innerHTML = fullResponse;
+
+                                    // Scroll to bottom as content is added
+                                    const chatMessagesContainer = document.getElementById('chat-messages-container');
+                                    if (chatMessagesContainer) {
+                                        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.warn("Failed to parse line as JSON:", e, jsonLine);
+                        }
+                    }
+                }
+            }
+
+            // Process any remaining data in the buffer
+            if (buffer.trim()) {
                 try {
-                    const responseObj = JSON.parse(chunk);
-                    // Extract content from ChatbotResponse
+                    const responseObj = JSON.parse(buffer.trim());
                     if (responseObj && responseObj.content) {
                         fullResponse += responseObj.content;
-                        // Add just the content to the UI
-                        contentElement.innerHTML += responseObj.content;
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        contentElement.innerHTML = fullResponse;
                     }
                 } catch (e) {
-                    // Fallback: If parsing fails, treat as a raw string (for compatibility)
-                    console.warn("Failed to parse chunk as JSON, treating as raw text:", e);
-                    fullResponse += chunk;
-                    contentElement.innerHTML += chunk;
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    console.warn("Failed to parse remaining buffer as JSON:", e);
                 }
             }
 

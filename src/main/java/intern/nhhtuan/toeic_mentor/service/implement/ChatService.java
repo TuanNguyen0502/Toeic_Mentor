@@ -79,36 +79,36 @@ public class ChatService implements IChatService {
 
     @Override
     public Flux<ChatbotResponse> getChatResponse(String message, String conversationId) {
-        String content = chatClient.prompt()
+        Flux<String> content = chatClient.prompt()
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .user(message)
                 .system(systemMessageResource)
-                .call()
+                .stream()
                 .content();
 
         String messageId = getLatestAssistantMessageId(conversationId);
 
-        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
+//        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
 
-        return Flux.just(chatbotResponse);
+        return content.map(contentText -> new ChatbotResponse(contentText, messageId, conversationId, MessageType.ASSISTANT.name()));
     }
 
     @Override
     public Flux<ChatbotResponse> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
-        String content = ChatClient.create(chatModel).prompt()
+        Flux<String> content = ChatClient.create(chatModel).prompt()
                 .system(systemMessageResource)
                 .user(user -> user
                         .text(message)
                         .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
-                .call()
+                .stream()
                 .content();
 
         String messageId = getLatestAssistantMessageId(conversationId);
 
-        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
+//        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
 
-        return Flux.just(chatbotResponse);
+        return content.map(contentText -> new ChatbotResponse(contentText, messageId, conversationId, MessageType.ASSISTANT.name()));
     }
 
     @Override
