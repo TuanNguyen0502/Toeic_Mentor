@@ -3,6 +3,7 @@ package intern.nhhtuan.toeic_mentor.service.interfaces;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import reactor.core.publisher.Flux;
 
@@ -10,9 +11,9 @@ import java.io.InputStream;
 import java.util.List;
 
 public interface IChatService {
-    Flux<String> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType);
+    Flux<ChatbotResponse> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType);
 
-    Flux<String> getChatResponse(String message, String conversationId);
+    Flux<ChatbotResponse> getChatResponse(String message, String conversationId);
 
     Flux<AnswerExplanationResponse> getChatResponse(String message, String conversationId, Long answerId);
 
@@ -22,7 +23,7 @@ public interface IChatService {
 
     String identifyToeicTest(InputStream imageInputStream, String contentType);
 
-    List<String> getChatHistory(String conversationId);
+    List<ChatbotResponse> getChatHistory(String conversationId);
 
     List<String> getConversationIdsByEmail(String email);
 

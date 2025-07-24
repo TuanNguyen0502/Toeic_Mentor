@@ -1110,6 +1110,7 @@
         // AI Chat modal close button
         document.getElementById('closeAiChatModal').addEventListener('click', function() {
             document.getElementById('aiChatModal').classList.add('hidden');
+            currentChatConversationId = null; // Reset conversationId khi đóng modal
         });
         
         // AI Chat send button
@@ -1126,6 +1127,7 @@
         document.getElementById('aiChatModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.add('hidden');
+                currentChatConversationId = null; // Reset conversationId khi click ra ngoài modal
             }
         });
     });

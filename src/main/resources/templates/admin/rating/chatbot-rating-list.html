@@ -33,7 +33,7 @@
                         <!-- main-content-wrap -->
                         <div class="main-content-wrap">
                             <div class="flex items-center flex-wrap justify-between gap20 mb-27">
-                                <h3>Feedback List</h3>
+                                <h3>Chatbot Rating List</h3>
                                 <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
                                     <li>
                                         <a th:href="@{/admin}">
@@ -44,25 +44,25 @@
                                         <i class="icon-chevron-right"></i>
                                     </li>
                                     <li>
-                                        <a th:href="@{/admin/feedbacks}">
-                                            <div class="text-tiny">Feedback</div>
+                                        <a th:href="@{/admin/ratings}">
+                                            <div class="text-tiny">Rating</div>
                                         </a>
                                     </li>
                                     <li>
                                         <i class="icon-chevron-right"></i>
                                     </li>
                                     <li>
-                                        <div class="text-tiny">Feedback List</div>
+                                        <div class="text-tiny">Chatbot Rating List</div>
                                     </li>
                                 </ul>
                             </div>
                             <!-- Filter Form -->
                             <div class="card mb-4 shadow-sm">
                                 <div class="card-header bg-primary text-white">
-                                    <h6 class="mb-0"><i class="bi bi-funnel"></i> Filter Feedbacks</h6>
+                                    <h6 class="mb-0"><i class="bi bi-funnel"></i> Filter Ratings</h6>
                                 </div>
                                 <div class="card-body">
-                                    <form method="get" th:action="@{/admin/feedbacks/chatbot-feedbacks}" id="filterForm">
+                                    <form method="get" th:action="@{/admin/ratings/chatbot-ratings}" id="filterForm">
                                         <div class="row g-2 align-items-end">
                                             <!-- User Email -->
                                             <div class="col-md-3">
@@ -70,13 +70,13 @@
                                                 <input type="text" name="userEmail" id="userEmail" class="form-control rounded-pill"
                                                        th:value="${param.userEmail}" placeholder="Enter email to search...">
                                             </div>
-                                            <!-- Feedback Type -->
+                                            <!-- rating Type -->
                                             <div class="col-md-2">
-                                                <label for="feedback" class="form-label fw-semibold">Feedback</label>
-                                                <select name="feedback" id="feedback" class="form-select rounded-pill">
-                                                    <option value="">All Feedbacks</option>
-                                                    <option value="LIKE" th:selected="${param.feedback == 'LIKE'}">Like</option>
-                                                    <option value="DISLIKE" th:selected="${param.feedback == 'DISLIKE'}">Dislike</option>
+                                                <label for="rating" class="form-label fw-semibold">Rate</label>
+                                                <select name="rating" id="rating" class="form-select rounded-pill">
+                                                    <option value="">All Rates</option>
+                                                    <option value="LIKE" th:selected="${param.rating == 'LIKE'}">Like</option>
+                                                    <option value="DISLIKE" th:selected="${param.rating == 'DISLIKE'}">Dislike</option>
                                                 </select>
                                             </div>
                                             <!-- Date Range - Start -->
@@ -117,7 +117,7 @@
                                 </div>
                             </div>
 
-                            <!-- Feedback Statistics -->
+                            <!-- rating Statistics -->
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <div class="card shadow-sm border-success h-100">
@@ -127,7 +127,7 @@
                                             </div>
                                             <div>
                                                 <h5 class="card-title">Likes</h5>
-                                                <h2 class="mb-0" th:text="${numberLikeFeedbacks}">0</h2>
+                                                <h2 class="mb-0" th:text="${numberLikeRatings}">0</h2>
                                             </div>
                                         </div>
                                     </div>
@@ -140,14 +140,14 @@
                                             </div>
                                             <div>
                                                 <h5 class="card-title">Dislikes</h5>
-                                                <h2 class="mb-0" th:text="${numberDislikeFeedbacks}">0</h2>
+                                                <h2 class="mb-0" th:text="${numberDislikeRatings}">0</h2>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Feedback Table -->
+                            <!-- rating Table -->
                             <div class="table-responsive shadow rounded">
                                 <table class="table table-hover align-middle mb-0">
                                     <thead class="table-primary">
@@ -155,43 +155,43 @@
                                         <th scope="col">ID</th>
                                         <th scope="col">User Email</th>
                                         <th scope="col">Conversation</th>
-                                        <th scope="col">Feedback</th>
+                                        <th scope="col">rating</th>
                                         <th scope="col">Created At</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr th:each="feedback : ${feedbacks.content}" class="table-row align-middle clickable-row"
-                                        th:data-href="@{/admin/feedbacks/chatbot-feedbacks/{id}(id=${feedback.id})}">
-                                        <td th:text="${feedback.id}">1</td>
-                                        <td th:text="${feedback.userEmail}">user@example.com</td>
-                                        <td th:text="${feedback.conversationName}">Conversation</td>
+                                    <tr th:each="rating : ${ratings.content}" class="table-row align-middle clickable-row"
+                                        th:data-href="@{/admin/ratings/chatbot-ratings/{id}(id=${rating.id})}">
+                                        <td th:text="${rating.id}">1</td>
+                                        <td th:text="${rating.userEmail}">user@example.com</td>
+                                        <td th:text="${rating.conversationName}">Conversation</td>
                                         <td>
-                                            <span th:class="${feedback.feedbackTypes.contains('LIKE') ? 'badge bg-success' : 'badge bg-danger'}"
-                                                  th:text="${feedback.feedbackTypes}">LIKE/DISLIKE</span>
+                                            <span th:class="${rating.rating.contains('LIKE') ? 'badge bg-success' : 'badge bg-danger'}"
+                                                  th:text="${rating.rating}">LIKE/DISLIKE</span>
                                         </td>
-                                        <td th:text="${feedback.createdAt}">2024-07-17</td>
+                                        <td th:text="${rating.ratedAt}">2024-07-17</td>
                                     </tr>
-                                    <tr th:if="${feedbacks.isEmpty()}">
+                                    <tr th:if="${ratings.isEmpty()}">
                                         <td colspan="5">
-                                            <div class="alert alert-info text-center mb-0">No feedbacks found.</div>
+                                            <div class="alert alert-info text-center mb-0">No ratings found.</div>
                                         </td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <!-- Pagination -->
-                            <nav class="mt-4 d-flex justify-content-center" th:if="${feedbacks.totalPages > 1}">
+                            <nav class="mt-4 d-flex justify-content-center" th:if="${ratings.totalPages > 1}">
                                 <ul class="pagination">
-                                    <li class="page-item" th:classappend="${feedbacks.first} ? 'disabled'">
-                                        <a class="page-link" th:href="@{/admin/feedbacks/chatbot-feedbacks(page=${feedbacks.number - 1}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" tabindex="-1">&laquo; Prev</a>
+                                    <li class="page-item" th:classappend="${ratings.first} ? 'disabled'">
+                                        <a class="page-link" th:href="@{/admin/ratings/chatbot-ratings(page=${ratings.number - 1}, size=${ratings.size}, rating=${param.rating}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" tabindex="-1">&laquo; Prev</a>
                                     </li>
-                                    <li class="page-item" th:each="i : ${#numbers.sequence(0, feedbacks.totalPages - 1)}"
-                                        th:classappend="${i == feedbacks.number} ? 'active'"
-                                        th:if="${i >= feedbacks.number - 2 && i <= feedbacks.number + 2}">
-                                        <a class="page-link" th:href="@{/admin/feedbacks/chatbot-feedbacks(page=${i}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" th:text="${i + 1}">1</a>
+                                    <li class="page-item" th:each="i : ${#numbers.sequence(0, ratings.totalPages - 1)}"
+                                        th:classappend="${i == ratings.number} ? 'active'"
+                                        th:if="${i >= ratings.number - 2 && i <= ratings.number + 2}">
+                                        <a class="page-link" th:href="@{/admin/ratings/chatbot-ratings(page=${i}, size=${ratings.size}, rating=${param.rating}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}" th:text="${i + 1}">1</a>
                                     </li>
-                                    <li class="page-item" th:classappend="${feedbacks.last} ? 'disabled'">
-                                        <a class="page-link" th:href="@{/admin/feedbacks/chatbot-feedbacks(page=${feedbacks.number + 1}, size=${feedbacks.size}, feedback=${param.feedback}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}">Next &raquo;</a>
+                                    <li class="page-item" th:classappend="${ratings.last} ? 'disabled'">
+                                        <a class="page-link" th:href="@{/admin/ratings/chatbot-ratings(page=${ratings.number + 1}, size=${ratings.size}, rating=${param.rating}, userEmail=${param.userEmail}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, sortBy=${param.sortBy}, direction=${param.direction})}">Next &raquo;</a>
                                     </li>
                                 </ul>
                             </nav>
@@ -219,7 +219,7 @@
 function clearFilters() {
     // Clear all form inputs
     document.getElementById('userEmail').value = '';
-    document.getElementById('feedback').value = '';
+    document.getElementById('rating').value = '';
     document.getElementById('createdAtStart').value = '';
     document.getElementById('createdAtEnd').value = '';
     document.getElementById('sortBy').value = 'createdAt';
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
 
         const userEmail = document.getElementById('userEmail');
-        const feedback = document.getElementById('feedback');
+        const rating = document.getElementById('rating');
         const createdAtStart = document.getElementById('createdAtStart');
         const createdAtEnd = document.getElementById('createdAtEnd');
 
@@ -246,8 +246,8 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.delete('userEmail');
         }
 
-        if (feedback.value === '') {
-            formData.delete('feedback');
+        if (rating.value === '') {
+            formData.delete('rating');
         }
 
         if (createdAtStart.value === '') {
@@ -268,12 +268,12 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = filterForm.action + '?' + params.toString();
     });
 
-    const feedbackSelect = document.getElementById('feedback');
+    const ratingselect = document.getElementById('rating');
     const sortBySelect = document.getElementById('sortBy');
     const directionSelect = document.getElementById('direction');
 
     // Auto-submit for select elements
-    [feedbackSelect, sortBySelect, directionSelect].forEach(select => {
+    [ratingselect, sortBySelect, directionSelect].forEach(select => {
         if (select) {
             select.addEventListener('change', function() {
                 filterForm.dispatchEvent(new Event('submit'));

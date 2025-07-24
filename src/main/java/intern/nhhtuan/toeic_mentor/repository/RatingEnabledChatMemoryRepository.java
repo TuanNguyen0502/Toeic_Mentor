@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotResponse;
 import intern.nhhtuan.toeic_mentor.entity.RatableMessage;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.*;
@@ -11,9 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
@@ -25,6 +24,20 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         this.objectMapper = new ObjectMapper();
     }
 
+    public String getCreatedAtByMessageId(String messageId) {
+        return jdbcTemplate.queryForObject("""
+                SELECT created_at FROM spring_ai_chat_memory_enhanced 
+                WHERE id = ?
+                """, String.class, messageId);
+    }
+
+    public String getConversationIdByMessageId(String messageId) {
+        return jdbcTemplate.queryForObject("""
+                SELECT conversation_id FROM spring_ai_chat_memory_enhanced 
+                WHERE id = ?
+                """, String.class, messageId);
+    }
+
     public boolean renameConversationId(String oldConversationId, String newConversationId) {
         int updatedRows = jdbcTemplate.update("""
                 UPDATE spring_ai_chat_memory_enhanced 
@@ -32,6 +45,14 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
                 WHERE conversation_id = ?
                 """, newConversationId, oldConversationId);
         return updatedRows > 0;
+    }
+
+    public boolean existsByMessageId(String messageId) {
+        Integer count = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM spring_ai_chat_memory_enhanced 
+                WHERE id = ?
+                """, Integer.class, messageId);
+        return count != null && count > 0;
     }
 
     public boolean existsByConversationId(String conversationId) {
@@ -42,13 +63,23 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         return count != null && count > 0;
     }
 
-    public List<String> getChatHistory(String conversationId) {
-        return jdbcTemplate.queryForList("""
-                SELECT content 
-                FROM spring_ai_chat_memory_enhanced 
-                WHERE conversation_id = ? 
-                ORDER BY created_at ASC
-                """, String.class, conversationId);
+    public List<ChatbotResponse> getChatHistory(String conversationId) {
+        return jdbcTemplate.query("""
+                        SELECT id, content, conversation_id, message_type 
+                        FROM spring_ai_chat_memory_enhanced 
+                        WHERE conversation_id = ? 
+                        ORDER BY created_at ASC
+                        """,
+                (rs, rowNum) -> {
+                    ChatbotResponse response = new ChatbotResponse();
+                    response.setMessageId(rs.getString("id"));
+                    response.setContent(rs.getString("content"));
+                    response.setConversationId(rs.getString("conversation_id"));
+                    response.setMessageType(rs.getString("message_type"));
+                    return response;
+                },
+                conversationId
+        );
     }
 
     @Override
@@ -87,53 +118,6 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         );
     }
 
-    public void rateMessage(String messageId, String rating, String feedback) {
-        if (!Arrays.asList("like", "dislike").contains(rating)) {
-            throw new IllegalArgumentException("Rating must be 'like' or 'dislike'");
-        }
-
-        int updatedRows = jdbcTemplate.update("""
-                        UPDATE spring_ai_chat_memory_enhanced 
-                        SET rating = ?, feedback = ?, rated_at = CURRENT_TIMESTAMP 
-                        WHERE id = ?
-                        """,
-                rating, feedback, messageId
-        );
-
-        if (updatedRows == 0) {
-            throw new IllegalArgumentException("Message with ID " + messageId + " not found");
-        }
-    }
-
-    public List<Message> getMessagesByRating(String conversationId, String rating) {
-        return jdbcTemplate.query("""
-                        SELECT * FROM spring_ai_chat_memory_enhanced 
-                        WHERE conversation_id = ? AND rating = ? 
-                        ORDER BY created_at DESC
-                        """,
-                new RatableMessageRowMapper(),
-                conversationId,
-                rating
-        );
-    }
-
-    public Map<String, Integer> getRatingStats(String conversationId) {
-        List<Map<String, Object>> results = jdbcTemplate.queryForList("""
-                        SELECT rating, COUNT(*) as count 
-                        FROM spring_ai_chat_memory_enhanced 
-                        WHERE conversation_id = ? AND rating IS NOT NULL 
-                        GROUP BY rating
-                        """,
-                conversationId
-        );
-
-        return results.stream()
-                .collect(Collectors.toMap(
-                        row -> (String) row.get("rating"),
-                        row -> ((Number) row.get("count")).intValue()
-                ));
-    }
-
     public RatableMessage getMessageById(String messageId) {
         List<Message> messages = jdbcTemplate.query("""
                         SELECT * FROM spring_ai_chat_memory_enhanced 
@@ -161,16 +145,9 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
 
     private void saveMessage(String conversationId, Message message) {
         String messageId;
-        String rating = null;
-        String feedback = null;
-        Timestamp ratedAt = null;
 
         if (message instanceof RatableMessage ratableMessage) {
             messageId = ratableMessage.getMessageId();
-            rating = ratableMessage.getRating();
-            feedback = ratableMessage.getFeedback();
-            ratedAt = ratableMessage.getRatedAt() != null ?
-                    Timestamp.valueOf(ratableMessage.getRatedAt()) : null;
             message = ratableMessage.getOriginalMessage();
         } else {
             messageId = UUID.randomUUID().toString();
@@ -183,30 +160,24 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         if (count != null && count > 0) {
             jdbcTemplate.update("""
                             UPDATE spring_ai_chat_memory_enhanced 
-                            SET content = ?, metadata = ?, rating = ?, feedback = ?, rated_at = ?
+                            SET content = ?, metadata = ? 
                             WHERE id = ?
                             """,
                     message.getText(),
                     serializeMetadata(message.getMetadata()),
-                    rating,
-                    feedback,
-                    ratedAt,
                     messageId
             );
         } else {
             jdbcTemplate.update("""
                             INSERT INTO spring_ai_chat_memory_enhanced 
-                            (id, conversation_id, message_type, content, metadata, rating, feedback, rated_at) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            (id, conversation_id, message_type, content, metadata) 
+                            VALUES (?, ?, ?, ?, ?)
                             """,
                     messageId,
                     conversationId,
                     message.getMessageType().name(),
                     message.getText(),
-                    serializeMetadata(message.getMetadata()),
-                    rating,
-                    feedback,
-                    ratedAt
+                    serializeMetadata(message.getMetadata())
             );
         }
     }
@@ -252,20 +223,7 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
                 case TOOL -> new ToolResponseMessage(new ArrayList<>(), deserializeMetadata(metadataJson));
             };
 
-            RatableMessage ratableMessage = new RatableMessage(originalMessage, messageId, conversationId);
-
-            String rating = rs.getString("rating");
-            String feedback = rs.getString("feedback");
-            Timestamp ratedAt = rs.getTimestamp("rated_at");
-
-            if (rating != null) {
-                ratableMessage.setRating(rating, feedback);
-                if (ratedAt != null) {
-                    ratableMessage.setRatedAt(ratedAt.toLocalDateTime());
-                }
-            }
-
-            return ratableMessage;
+            return new RatableMessage(originalMessage, messageId, conversationId);
         }
     }
 }

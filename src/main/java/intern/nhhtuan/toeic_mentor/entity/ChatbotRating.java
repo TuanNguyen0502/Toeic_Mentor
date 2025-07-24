@@ -1,6 +1,6 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
-import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotFeedback;
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotRating;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,30 +10,29 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "chatbot_feedbacks")
+@Table(name = "chatbot_ratings")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatbotFeedback {
+public class ChatbotRating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "feedback", nullable = false)
-    private EChatbotFeedback feedback;
+    @Column(name = "rating", nullable = false)
+    private EChatbotRating rating;
+
+    @Column(name = "message_id", nullable = false)
+    private String messageId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "chatbot_response_id")
-    private ChatMemory chatMemory;
 
     @PrePersist
     protected void onCreate() {

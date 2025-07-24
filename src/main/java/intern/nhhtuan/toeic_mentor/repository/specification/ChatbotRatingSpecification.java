@@ -1,18 +1,18 @@
 package intern.nhhtuan.toeic_mentor.repository.specification;
 
-import intern.nhhtuan.toeic_mentor.entity.ChatbotFeedback;
-import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotFeedback;
+import intern.nhhtuan.toeic_mentor.entity.ChatbotRating;
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotRating;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 
-public class ChatbotFeedbackSpecification {
-    public static Specification<ChatbotFeedback> hasFeedback(EChatbotFeedback feedback) {
+public class ChatbotRatingSpecification {
+    public static Specification<ChatbotRating> hasRating(EChatbotRating rating) {
         return (root, query, criteriaBuilder) ->
-                feedback == null ? null : criteriaBuilder.equal(root.get("feedback"), feedback);
+                rating == null ? null : criteriaBuilder.equal(root.get("rating"), rating);
     }
 
-    public static Specification<ChatbotFeedback> createdAtBetween(LocalDateTime start, LocalDateTime end) {
+    public static Specification<ChatbotRating> createdAtBetween(LocalDateTime start, LocalDateTime end) {
         return (root, query, criteriaBuilder) -> {
             if (start != null && end != null) {
                 return criteriaBuilder.between(root.get("createdAt"), start, end);
@@ -26,7 +26,7 @@ public class ChatbotFeedbackSpecification {
         };
     }
 
-    public static Specification<ChatbotFeedback> hasUser(Long userId) {
+    public static Specification<ChatbotRating> hasUser(Long userId) {
         return (root, query, criteriaBuilder) ->
                 userId == null ? null : criteriaBuilder.equal(root.get("user").get("id"), userId);
     }

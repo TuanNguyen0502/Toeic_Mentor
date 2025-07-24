@@ -55,6 +55,34 @@ public class RatingEnabledChatMemoryAdvisor implements CallAdvisor, StreamAdviso
         // Store user message
         storeUserMessage(chatClientRequest, conversationId);
 
+        List<Message> transformedMessages = modifiedRequest.prompt().getInstructions().stream()
+                .map(msg -> {
+                    if (MessageType.ASSISTANT.equals(msg.getMessageType())) {
+                        return new AssistantMessage(msg.getText(), msg.getMetadata());
+                    }
+
+                    if (MessageType.USER.equals(msg.getMessageType())) {
+                        return UserMessage.builder()
+                                .text(msg.getText())
+                                .metadata(msg.getMetadata())
+                                .build();
+                    }
+
+                    if (MessageType.SYSTEM.equals(msg.getMessageType())) {
+                        return SystemMessage.builder()
+                                .text(msg.getText())
+                                .metadata(msg.getMetadata())
+                                .build();
+                    }
+
+                    return msg;
+                }).toList();
+
+        modifiedRequest = ChatClientRequest.builder()
+                .prompt(Prompt.builder().messages(transformedMessages).build())
+                .context(modifiedRequest.context())
+                .build();
+
         // Execute the call
         ChatClientResponse response = callAdvisorChain.nextCall(modifiedRequest);
 
