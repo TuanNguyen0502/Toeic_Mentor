@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotResponse;
 import intern.nhhtuan.toeic_mentor.entity.RatableMessage;
 import intern.nhhtuan.toeic_mentor.entity.enums.EChatMemoryRating;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
@@ -43,13 +44,23 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         return count != null && count > 0;
     }
 
-    public List<String> getChatHistory(String conversationId) {
-        return jdbcTemplate.queryForList("""
-                SELECT content 
-                FROM spring_ai_chat_memory_enhanced 
-                WHERE conversation_id = ? 
-                ORDER BY created_at ASC
-                """, String.class, conversationId);
+    public List<ChatbotResponse> getChatHistory(String conversationId) {
+        return jdbcTemplate.query("""
+                        SELECT id, content, conversation_id, message_type 
+                        FROM spring_ai_chat_memory_enhanced 
+                        WHERE conversation_id = ? 
+                        ORDER BY created_at ASC
+                        """,
+                (rs, rowNum) -> {
+                    ChatbotResponse response = new ChatbotResponse();
+                    response.setMessageId(rs.getString("id"));
+                    response.setContent(rs.getString("content"));
+                    response.setConversationId(rs.getString("conversation_id"));
+                    response.setMessageType(rs.getString("message_type"));
+                    return response;
+                },
+                conversationId
+        );
     }
 
     @Override
@@ -191,7 +202,7 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
             jdbcTemplate.update("""
                             INSERT INTO spring_ai_chat_memory_enhanced 
                             (id, conversation_id, message_type, content, metadata, rating, rated_at) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
                             """,
                     messageId,
                     conversationId,

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
 import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.entity.Answer;
 import intern.nhhtuan.toeic_mentor.entity.Question;
@@ -58,32 +59,56 @@ public class ChatService implements IChatService {
     private Resource identifyToeicTestPromptResource;
 
     private static final String INITIAL_PROMPT_TEMPLATE = """
-    You are an English tutor helping a student understand a TOEIC question.
-
-    Passage:
-    %s
-
-    Question %d: %s
-
-    Options:
-    %s
-
-    Student selected answer: %s
-    Correct answer: %s
-
-    Explanation: %s
-
-    Student message: %s
-    """;
+            You are an English tutor helping a student understand a TOEIC question.
+            
+            Passage:
+            %s
+            
+            Question %d: %s
+            
+            Options:
+            %s
+            
+            Student selected answer: %s
+            Correct answer: %s
+            
+            Explanation: %s
+            
+            Student message: %s
+            """;
 
     @Override
-    public Flux<String> getChatResponse(String message, String conversationId) {
-        return chatClient.prompt()
+    public Flux<ChatbotResponse> getChatResponse(String message, String conversationId) {
+        String content = chatClient.prompt()
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .user(message)
                 .system(systemMessageResource)
-                .stream()
+                .call()
                 .content();
+
+        String messageId = getLatestAssistantMessageId(conversationId);
+
+        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
+
+        return Flux.just(chatbotResponse);
+    }
+
+    @Override
+    public Flux<ChatbotResponse> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
+        String content = ChatClient.create(chatModel).prompt()
+                .system(systemMessageResource)
+                .user(user -> user
+                        .text(message)
+                        .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+        String messageId = getLatestAssistantMessageId(conversationId);
+
+        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
+
+        return Flux.just(chatbotResponse);
     }
 
     @Override
@@ -148,18 +173,6 @@ public class ChatService implements IChatService {
                     message
             );
         });
-    }
-
-    @Override
-    public Flux<String> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
-        return ChatClient.create(chatModel).prompt()
-                .system(systemMessageResource)
-                .user(user -> user
-                        .text(message)
-                        .media(MimeTypeUtils.parseMimeType(contentType), new InputStreamResource(imageInputStream)))
-                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
-                .stream()
-                .content();
     }
 
     @Override
@@ -243,7 +256,7 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public List<String> getChatHistory(String conversationId) {
+    public List<ChatbotResponse> getChatHistory(String conversationId) {
         return ratingEnabledChatMemoryRepository.getChatHistory(conversationId);
     }
 

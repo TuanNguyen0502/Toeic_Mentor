@@ -1,7 +1,9 @@
 package intern.nhhtuan.toeic_mentor.controller.user;
 
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +18,11 @@ import java.util.List;
 public class ChatRestController {
     private final IChatService chatService;
 
-    @PostMapping("/stream")
-    public Flux<String> chatWithStream(@RequestParam String message,
-                                       @RequestParam String conversationId,
-                                       @RequestParam(value = "image", required = false) MultipartFile image) {
-        Flux<String> response;
+    @PostMapping(path = "/stream", produces = MediaType.APPLICATION_NDJSON_VALUE)
+    public Flux<ChatbotResponse> chatWithStream(@RequestParam String message,
+                                                @RequestParam String conversationId,
+                                                @RequestParam(value = "image", required = false) MultipartFile image) {
+        Flux<ChatbotResponse> response;
         if (image == null || image.isEmpty()) {
             response = chatService.getChatResponse(message, conversationId);
         } else {
@@ -51,8 +53,8 @@ public class ChatRestController {
         return chatService.getConversationIdsByEmail(email);
     }
 
-    @GetMapping("/conversation")
-    public List<String> getChatHistory(@RequestParam String conversationId) {
+    @GetMapping(path = "/conversation")
+    public List<ChatbotResponse> getChatHistory(@RequestParam String conversationId) {
         return chatService.getChatHistory(conversationId);
     }
 
