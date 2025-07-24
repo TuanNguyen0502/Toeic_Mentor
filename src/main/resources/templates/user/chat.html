@@ -477,10 +477,12 @@
         // If content is a ChatbotResponse object, extract its properties
         let messageContent = content;
         let messageSender = sender;
+        let messageId = null;
 
         if (typeof content === 'object') {
-            // Extract content from ChatbotResponse
+            // Extract properties from ChatbotResponse
             messageContent = content.content || '';
+            messageId = content.messageId || null;
 
             // Determine sender based on messageType if available
             if (content.messageType) {
@@ -490,6 +492,12 @@
 
         const messageElement = document.createElement('div');
         messageElement.className = `${messageSender.toLowerCase()}-message ${messageSender === 'User' ? 'bg-blue-100' : 'bg-gray-100'} p-3 rounded-lg`;
+
+        // Add a data-message-id attribute if messageId is available
+        if (messageId) {
+            messageElement.setAttribute('data-message-id', messageId);
+        }
+
         messageElement.innerHTML = `
             <div class="font-bold ${messageSender === 'User' ? 'text-blue-600' : 'text-green-600'}">${messageSender}:</div>
             <div class="message-content">${messageContent}</div>
