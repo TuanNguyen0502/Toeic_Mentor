@@ -96,49 +96,60 @@ public class RatingEnabledChatMemoryAdvisor implements CallAdvisor, StreamAdviso
     public Flux<ChatClientResponse> adviseStream(ChatClientRequest chatClientRequest, StreamAdvisorChain streamAdvisorChain) {
         String conversationId = getConversationId(chatClientRequest);
 
-        // Add conversation history to request
+        // Add conversation history to the request
         ChatClientRequest modifiedRequest = addConversationHistory(chatClientRequest, conversationId);
 
-        // Store user message
+        // Store the user's input message in memory
         storeUserMessage(chatClientRequest, conversationId);
+
+        // Transform raw messages into appropriate types (Assistant, User, System)
         List<Message> transformedMessages = modifiedRequest.prompt().getInstructions().stream()
                 .map(msg -> {
                     if (MessageType.ASSISTANT.equals(msg.getMessageType())) {
                         return new AssistantMessage(msg.getText(), msg.getMetadata());
+                    } else if (MessageType.USER.equals(msg.getMessageType())) {
+                        return UserMessage.builder().text(msg.getText()).metadata(msg.getMetadata()).build();
+                    } else if (MessageType.SYSTEM.equals(msg.getMessageType())) {
+                        return SystemMessage.builder().text(msg.getText()).metadata(msg.getMetadata()).build();
+                    } else {
+                        return msg;
                     }
-
-                    if (MessageType.USER.equals(msg.getMessageType())) {
-                        return UserMessage.builder()
-                                .text(msg.getText())
-                                .metadata(msg.getMetadata())
-                                .build();
-                    }
-
-                    if (MessageType.SYSTEM.equals(msg.getMessageType())) {
-                        return SystemMessage.builder()
-                                .text(msg.getText())
-                                .metadata(msg.getMetadata())
-                                .build();
-                    }
-
-                    return msg;
                 }).toList();
 
+        // Build a new ChatClientRequest with the transformed messages
         modifiedRequest = ChatClientRequest.builder()
                 .prompt(Prompt.builder().messages(transformedMessages).build())
                 .context(modifiedRequest.context())
                 .build();
 
-        // Execute streaming call and collect final response
+        // ✨ Stream handling: accumulate assistant response content as it streams in
+        StringBuilder assistantContent = new StringBuilder();
+        Map<String, Object> metadataHolder = new HashMap<>();
+
         return streamAdvisorChain.nextStream(modifiedRequest)
-                .collectList()
-                .doOnNext(responses -> {
-                    if (!responses.isEmpty()) {
-                        ChatClientResponse finalResponse = responses.getFirst();
-                        storeAssistantResponse(responses, conversationId);
+                .doOnNext(response -> {
+                    // Append each streamed chunk to the assistant content buffer
+                    if (response.chatResponse() != null &&
+                            response.chatResponse().getResult() != null &&
+                            response.chatResponse().getResult().getOutput() != null) {
+
+                        String chunk = response.chatResponse().getResult().getOutput().getText();
+                        assistantContent.append(chunk);
+
+                        // Save the latest metadata from the current chunk
+                        metadataHolder.clear();
+                        metadataHolder.putAll(response.chatResponse().getResult().getOutput().getMetadata());
                     }
                 })
-                .flatMapMany(Flux::fromIterable);
+                .doOnComplete(() -> {
+                    // After the full stream completes, save the full assistant message to the repository
+                    if (!assistantContent.isEmpty()) {
+                        Message assistantMessage = new AssistantMessage(assistantContent.toString(), metadataHolder);
+                        String messageId = UUID.randomUUID().toString();
+                        RatableMessage ratableAssistantMessage = new RatableMessage(assistantMessage, messageId, conversationId);
+                        repository.saveAll(conversationId, List.of(ratableAssistantMessage));
+                    }
+                });
     }
 
     private ChatClientRequest addConversationHistory(ChatClientRequest request, String conversationId) {
