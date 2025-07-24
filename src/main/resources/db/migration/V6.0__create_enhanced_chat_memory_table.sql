@@ -1,3 +1,6 @@
+USE
+`toeic-mentor`;
+
 CREATE TABLE spring_ai_chat_memory_enhanced
 (
     id              VARCHAR(255) PRIMARY KEY,
@@ -6,8 +9,7 @@ CREATE TABLE spring_ai_chat_memory_enhanced
     content         TEXT         NOT NULL,
     metadata        TEXT,
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    rating          VARCHAR(20),
-    feedback        TEXT,
+    rating          ENUM('LIKE', 'DISLIKE'),
     rated_at        TIMESTAMP
 );
 

@@ -4,10 +4,8 @@ import intern.nhhtuan.toeic_mentor.dto.request.ChatbotFeedbackRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackResponse;
 import intern.nhhtuan.toeic_mentor.entity.ChatMemory;
-import intern.nhhtuan.toeic_mentor.entity.ChatbotFeedback;
 import intern.nhhtuan.toeic_mentor.entity.User;
-import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotFeedback;
-import intern.nhhtuan.toeic_mentor.repository.ChatbotFeedbackRepository;
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatMemoryRating;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.repository.specification.ChatbotFeedbackSpecification;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatbotFeedbackService;
@@ -47,7 +45,7 @@ public class ChatbotFeedbackServiceImpl implements IChatbotFeedbackService {
 
     @Override
     public Page<ChatbotFeedbackResponse> getFeedbacks(
-            EChatbotFeedback feedback,
+            EChatMemoryRating feedback,
             LocalDateTime createdAtStart,
             LocalDateTime createdAtEnd,
             String userEmail,
@@ -106,11 +104,11 @@ public class ChatbotFeedbackServiceImpl implements IChatbotFeedbackService {
 
     @Override
     public int countLikeFeedback() {
-        return chatbotFeedbackRepository.countByFeedbackIs(EChatbotFeedback.LIKE);
+        return chatbotFeedbackRepository.countByFeedbackIs(EChatMemoryRating.LIKE);
     }
 
     @Override
     public int countDislikeFeedback() {
-        return chatbotFeedbackRepository.countByFeedbackIs(EChatbotFeedback.DISLIKE);
+        return chatbotFeedbackRepository.countByFeedbackIs(EChatMemoryRating.DISLIKE);
     }
 }

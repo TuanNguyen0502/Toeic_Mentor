@@ -2,7 +2,7 @@ package intern.nhhtuan.toeic_mentor.controller.admin;
 
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackResponse;
-import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotFeedback;
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatMemoryRating;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatbotFeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,7 +25,7 @@ public class FeedbackController {
     @GetMapping("/chatbot-feedbacks")
     public String getChatbotFeedbacks(
             Model model,
-            @RequestParam(required = false) EChatbotFeedback feedback,
+            @RequestParam(required = false) EChatMemoryRating feedback,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAtStart,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAtEnd,
             @RequestParam(required = false) String userEmail,

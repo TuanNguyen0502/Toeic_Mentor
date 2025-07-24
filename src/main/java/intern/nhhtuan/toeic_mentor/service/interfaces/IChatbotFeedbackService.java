@@ -3,7 +3,7 @@ package intern.nhhtuan.toeic_mentor.service.interfaces;
 import intern.nhhtuan.toeic_mentor.dto.request.ChatbotFeedbackRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotFeedbackResponse;
-import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotFeedback;
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatMemoryRating;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ public interface IChatbotFeedbackService {
     void saveFeedback(ChatbotFeedbackRequest feedback, String userEmail);
 
     Page<ChatbotFeedbackResponse> getFeedbacks(
-            EChatbotFeedback feedback,
+            EChatMemoryRating feedback,
             LocalDateTime createdAtStart,
             LocalDateTime createdAtEnd,
             String userEmail,

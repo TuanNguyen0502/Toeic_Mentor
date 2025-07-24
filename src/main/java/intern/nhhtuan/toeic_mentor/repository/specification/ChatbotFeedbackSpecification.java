@@ -1,13 +1,12 @@
 package intern.nhhtuan.toeic_mentor.repository.specification;
 
-import intern.nhhtuan.toeic_mentor.entity.ChatbotFeedback;
-import intern.nhhtuan.toeic_mentor.entity.enums.EChatbotFeedback;
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatMemoryRating;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 
 public class ChatbotFeedbackSpecification {
-    public static Specification<ChatbotFeedback> hasFeedback(EChatbotFeedback feedback) {
+    public static Specification<ChatbotFeedback> hasFeedback(EChatMemoryRating feedback) {
         return (root, query, criteriaBuilder) ->
                 feedback == null ? null : criteriaBuilder.equal(root.get("feedback"), feedback);
     }

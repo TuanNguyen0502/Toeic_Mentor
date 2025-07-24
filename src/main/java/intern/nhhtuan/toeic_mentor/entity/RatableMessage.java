@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.entity;
 
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatMemoryRating;
 import lombok.Data;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
@@ -12,8 +13,7 @@ public class RatableMessage implements Message {
     private final Message originalMessage;
     private String messageId;
     private String conversationId;
-    private String rating; // "like", "dislike", or null
-    private String feedback; // Optional text feedback
+    private EChatMemoryRating rating; // "like", "dislike", or null
     private LocalDateTime ratedAt;
 
     public RatableMessage(Message originalMessage, String messageId, String conversationId) {
@@ -34,7 +34,6 @@ public class RatableMessage implements Message {
         metadata.put("messageId", messageId);
         metadata.put("conversationId", conversationId);
         metadata.put("rating", rating);
-        metadata.put("feedback", feedback);
         metadata.put("ratedAt", ratedAt);
         return metadata;
     }
@@ -45,9 +44,8 @@ public class RatableMessage implements Message {
     }
 
     // Rating methods
-    public void setRating(String rating, String feedback) {
+    public void setRating(EChatMemoryRating rating) {
         this.rating = rating;
-        this.feedback = feedback;
         this.ratedAt = LocalDateTime.now();
     }
 }

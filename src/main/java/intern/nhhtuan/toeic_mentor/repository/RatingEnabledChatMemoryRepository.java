@@ -3,6 +3,7 @@ package intern.nhhtuan.toeic_mentor.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.entity.RatableMessage;
+import intern.nhhtuan.toeic_mentor.entity.enums.EChatMemoryRating;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -87,17 +88,13 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         );
     }
 
-    public void rateMessage(String messageId, String rating, String feedback) {
-        if (!Arrays.asList("like", "dislike").contains(rating)) {
-            throw new IllegalArgumentException("Rating must be 'like' or 'dislike'");
-        }
-
+    public void rateMessage(String messageId, EChatMemoryRating rating) {
         int updatedRows = jdbcTemplate.update("""
                         UPDATE spring_ai_chat_memory_enhanced 
-                        SET rating = ?, feedback = ?, rated_at = CURRENT_TIMESTAMP 
+                        SET rating = ?, rated_at = CURRENT_TIMESTAMP 
                         WHERE id = ?
                         """,
-                rating, feedback, messageId
+                rating.name(), messageId
         );
 
         if (updatedRows == 0) {
@@ -105,7 +102,7 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         }
     }
 
-    public List<Message> getMessagesByRating(String conversationId, String rating) {
+    public List<Message> getMessagesByRating(String conversationId, EChatMemoryRating rating) {
         return jdbcTemplate.query("""
                         SELECT * FROM spring_ai_chat_memory_enhanced 
                         WHERE conversation_id = ? AND rating = ? 
@@ -113,7 +110,7 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
                         """,
                 new RatableMessageRowMapper(),
                 conversationId,
-                rating
+                rating.name()
         );
     }
 
@@ -161,14 +158,12 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
 
     private void saveMessage(String conversationId, Message message) {
         String messageId;
-        String rating = null;
-        String feedback = null;
+        EChatMemoryRating rating = null;
         Timestamp ratedAt = null;
 
         if (message instanceof RatableMessage ratableMessage) {
             messageId = ratableMessage.getMessageId();
             rating = ratableMessage.getRating();
-            feedback = ratableMessage.getFeedback();
             ratedAt = ratableMessage.getRatedAt() != null ?
                     Timestamp.valueOf(ratableMessage.getRatedAt()) : null;
             message = ratableMessage.getOriginalMessage();
@@ -183,20 +178,19 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         if (count != null && count > 0) {
             jdbcTemplate.update("""
                             UPDATE spring_ai_chat_memory_enhanced 
-                            SET content = ?, metadata = ?, rating = ?, feedback = ?, rated_at = ?
+                            SET content = ?, metadata = ?, rating = ?, rated_at = ?
                             WHERE id = ?
                             """,
                     message.getText(),
                     serializeMetadata(message.getMetadata()),
                     rating,
-                    feedback,
                     ratedAt,
                     messageId
             );
         } else {
             jdbcTemplate.update("""
                             INSERT INTO spring_ai_chat_memory_enhanced 
-                            (id, conversation_id, message_type, content, metadata, rating, feedback, rated_at) 
+                            (id, conversation_id, message_type, content, metadata, rating, rated_at) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                             """,
                     messageId,
@@ -205,7 +199,6 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
                     message.getText(),
                     serializeMetadata(message.getMetadata()),
                     rating,
-                    feedback,
                     ratedAt
             );
         }
@@ -255,11 +248,10 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
             RatableMessage ratableMessage = new RatableMessage(originalMessage, messageId, conversationId);
 
             String rating = rs.getString("rating");
-            String feedback = rs.getString("feedback");
             Timestamp ratedAt = rs.getTimestamp("rated_at");
 
             if (rating != null) {
-                ratableMessage.setRating(rating, feedback);
+                ratableMessage.setRating(EChatMemoryRating.valueOf(rating));
                 if (ratedAt != null) {
                     ratableMessage.setRatedAt(ratedAt.toLocalDateTime());
                 }
