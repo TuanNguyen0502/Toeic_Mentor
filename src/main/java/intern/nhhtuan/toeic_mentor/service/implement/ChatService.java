@@ -10,7 +10,6 @@ import intern.nhhtuan.toeic_mentor.entity.Answer;
 import intern.nhhtuan.toeic_mentor.entity.Question;
 import intern.nhhtuan.toeic_mentor.entity.QuestionOption;
 import intern.nhhtuan.toeic_mentor.repository.AnswerRepository;
-import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.entity.RatableMessage;
 import intern.nhhtuan.toeic_mentor.repository.RatingEnabledChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
@@ -19,7 +18,10 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
@@ -45,8 +47,6 @@ import java.util.stream.Collectors;
 public class ChatService implements IChatService {
     private final ChatClient chatClient;
     private final ChatModel chatModel;
-    private final JdbcChatMemoryRepository jdbcChatMemoryRepository;
-    private final ChatMemoryRepository chatMemoryRepository;
     private final AnswerRepository answerRepository;
     private final RatingEnabledChatMemoryRepository ratingEnabledChatMemoryRepository;
 
@@ -56,8 +56,6 @@ public class ChatService implements IChatService {
     private Resource defineQuestionPartPromptResource;
     @Value("classpath:/prompts/identify-toeic-test.txt")
     private Resource identifyToeicTestPromptResource;
-    @Value("classpath:/prompts/test-analysis-prompt.txt")
-    private Resource testAnalysisPromptResource;
 
     private static final String INITIAL_PROMPT_TEMPLATE = """
     You are an English tutor helping a student understand a TOEIC question.
@@ -77,24 +75,6 @@ public class ChatService implements IChatService {
 
     Student message: %s
     """;
-
-
-    public ChatService(ChatClient.Builder builder,
-                       JdbcChatMemoryRepository jdbcChatMemoryRepository,
-                       ChatModel chatModel,
-                       ChatMemoryRepository chatMemoryRepository,
-                       AnswerRepository answerRepository) {
-        this.jdbcChatMemoryRepository = jdbcChatMemoryRepository;
-        ChatMemory chatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(jdbcChatMemoryRepository)
-                .build();
-        this.chatClient = builder
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .build();
-        this.chatModel = chatModel;
-        this.chatMemoryRepository = chatMemoryRepository;
-        this.answerRepository = answerRepository;
-    }
 
     @Override
     public Flux<String> getChatResponse(String message, String conversationId) {
@@ -169,7 +149,6 @@ public class ChatService implements IChatService {
             );
         });
     }
-
 
     @Override
     public Flux<String> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
@@ -278,13 +257,6 @@ public class ChatService implements IChatService {
 
     @Override
     public TestResultResponse analyzeTestResult(List<AnswerRequest> answerRequests) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String answerRequestsJson;
-        try {
-            answerRequestsJson = objectMapper.writeValueAsString(answerRequests);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
         String prompt = """
                 You are an expert TOEIC evaluator and personalized language coach.
                 Objective:
@@ -397,11 +369,19 @@ public class ChatService implements IChatService {
                 - Ensure all fields are populated as specified.
                 - Use only the options.key to determine correctness.
                 - Explanations must be clear and specific.""";
+        ObjectMapper objectMapper = new ObjectMapper();
+        String answerRequestsJson;
+        try {
+            answerRequestsJson = objectMapper.writeValueAsString(answerRequests);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         String fullPrompt = prompt + "\n\nInput JSON:\n" + answerRequestsJson;
         TestResultResponse testResultResponse = ChatClient.create(chatModel).prompt()
                 .user(fullPrompt)
                 .call()
                 .entity(TestResultResponse.class);
+        assert testResultResponse != null;
         for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
             answerResponse.setCorrect(Objects.equals(answerResponse.getUserAnswer(), answerResponse.getCorrectAnswer()));
         }
