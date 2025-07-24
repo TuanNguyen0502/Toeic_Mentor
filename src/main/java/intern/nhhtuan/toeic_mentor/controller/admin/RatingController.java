@@ -34,9 +34,15 @@ public class RatingController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String direction
     ) {
-        Page<ChatbotRatingResponse> ratings = chatbotRatingService.getChatbotRatings(
-                rating, createdAtStart, createdAtEnd, userEmail, page, size, sortBy, direction
-        );
+        Page<ChatbotRatingResponse> ratings;
+        try {
+            ratings = chatbotRatingService.getChatbotRatings(
+                    rating, createdAtStart, createdAtEnd, userEmail, page, size, sortBy, direction
+            );
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            ratings = Page.empty();
+        }
         model.addAttribute("ratings", ratings);
         model.addAttribute("numberLikeRatings", chatbotRatingService.countLikeRating());
         model.addAttribute("numberDislikeRatings", chatbotRatingService.countDislikeRating());
