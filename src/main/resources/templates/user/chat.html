@@ -284,7 +284,7 @@
                                     const newName = prompt('Enter new conversation name:');
                                     if (!newName) return;
                                     try {
-                                        const res = await fetch(`/conversation-name?conversationId=${encodeURIComponent(id)}&newName=${encodeURIComponent(newName)}`, { method: 'PUT' });
+                                        const res = await fetch(`/conversation-title?conversationId=${encodeURIComponent(id)}&newName=${encodeURIComponent(newName)}`, { method: 'PUT' });
                                         const newConversationId = await res.text();
                                         if (res.ok && newConversationId && !newConversationId.startsWith('Failed')) {
                                             span.innerText = newName;
@@ -368,21 +368,46 @@
         messageInput.value = '';
         if (imageInput) imageInput.value = '';
 
-        // Prepare FormData for sending message and image
-        const formData = new FormData();
-        formData.append('message', message);
-        if (window.conversationId) {
-            formData.append('conversationId', window.conversationId);
-        }
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
-
         try {
+            // Check if conversationId is null, if so, call generateConversationId first
+            if (!window.conversationId) {
+                const formData = new FormData();
+                formData.append('message', message);
+
+                const response = await fetch('/conversation-id', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Failed to generate conversation ID');
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let generatedId = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    generatedId += decoder.decode(value, { stream: true });
+                }
+
+                window.conversationId = generatedId.trim();
+                console.log("Generated new conversation ID:", window.conversationId);
+            }
+
+            // Now proceed with the stream endpoint call
+            const formData = new FormData();
+            formData.append('message', message);
+            formData.append('conversationId', window.conversationId);
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
             const response = await fetch('/stream', {
                 method: 'POST',
                 body: formData
             });
+
             if (!response.ok) throw new Error('Network response was not ok');
             const reader = response.body.getReader();
             let botMessageElement = addMessageToChat('Bot', '');
@@ -413,7 +438,6 @@
     async function processStream(reader, contentElement) {
         const decoder = new TextDecoder("utf-8");
         let fullResponse = "";
-        let isFirstChunk = true;
 
         try {
             while (true) {
@@ -423,20 +447,8 @@
                 const chunk = decoder.decode(value, {stream: true});
                 fullResponse += chunk;
 
-                if (isFirstChunk) {
-                    // Check for conversationId in the first chunk
-                    const match = chunk.match(/^ConversationId: (.*?)\n/);
-                    if (match) {
-                        window.conversationId = match[1];
-                        // Remove the conversationId line from the display
-                        contentElement.innerHTML += chunk.replace(/^ConversationId: .*?\n/, '');
-                    } else {
-                        contentElement.innerHTML += chunk;
-                    }
-                    isFirstChunk = false;
-                } else {
-                    contentElement.innerHTML += chunk;
-                }
+                // Simply add the chunk to the content element
+                contentElement.innerHTML += chunk;
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
 

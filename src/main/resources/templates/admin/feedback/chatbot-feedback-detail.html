@@ -1,0 +1,161 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<head th:insert="~{admin/fragments/head::head}"></head>
+
+<body>
+<style>
+    .feedback-detail-content * {
+        font-size: 1.8rem !important;
+    }
+    .feedback-label {
+        font-weight: 600;
+    }
+    .page-title {
+        font-size: 2.5rem !important;
+    }
+    .section-title {
+        font-size: 2.2rem !important;
+    }
+    .feedback-header {
+        font-size: 2.3rem !important;
+    }
+    .feedback-badge {
+        font-size: 2rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+    .btn-back {
+        font-size: 1.8rem !important;
+    }
+    .breadcrumb-text {
+        font-size: 1.5rem !important;
+    }
+</style>
+
+<!-- #wrapper -->
+<div id="wrapper">
+    <!-- #page -->
+    <div id="page" class="">
+        <!-- layout-wrap -->
+        <div class="layout-wrap">
+            <!-- preload -->
+            <div id="preload" class="preload-container">
+                <div class="preloading">
+                    <span></span>
+                </div>
+            </div>
+            <!-- /preload -->
+            <!-- section-menu-left -->
+            <div th:insert="~{admin/fragments/menu-left::section-menu-left}"></div>
+            <!-- /section-menu-left -->
+            <!-- section-content-right -->
+            <div class="section-content-right">
+                <!-- header-dashboard -->
+                <div th:insert="~{admin/fragments/header_dashboard::header-dashboard}"></div>
+                <!-- /header-dashboard -->
+                <!-- main-content -->
+                <div class="main-content">
+                    <!-- main-content-wrap -->
+                    <div class="main-content-inner">
+                        <!-- main-content-wrap -->
+                        <div class="main-content-wrap">
+                            <div class="flex items-center flex-wrap justify-between gap20 mb-27">
+                                <h3 class="page-title">Chatbot Feedback Detail</h3>
+                                <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+                                    <li>
+                                        <a th:href="@{/admin}">
+                                            <div class="breadcrumb-text">Dashboard</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right breadcrumb-text"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/feedbacks/chatbot-feedbacks}">
+                                            <div class="breadcrumb-text">Chatbot Feedbacks</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right breadcrumb-text"></i>
+                                    </li>
+                                    <li>
+                                        <div class="breadcrumb-text">Feedback Detail</div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Feedback Detail Card -->
+                            <div class="card shadow-sm mb-4 feedback-detail-content">
+                                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-4">
+                                    <h5 class="mb-0 feedback-header">Feedback #<span th:text="${feedback.id}">ID</span></h5>
+                                    <span th:class="${feedback.feedbackTypes.contains('LIKE') ? 'badge bg-success feedback-badge' : 'badge bg-danger feedback-badge'}"
+                                          th:text="${feedback.feedbackTypes}">LIKE/DISLIKE</span>
+                                </div>
+                                <div class="card-body p-5">
+                                    <div class="row mb-5">
+                                        <div class="col-md-6">
+                                            <h6 class="fw-bold section-title mb-4">User Information</h6>
+                                            <div class="mb-4">
+                                                <label class="feedback-label me-3">Email:</label>
+                                                <span class="feedback-value" th:text="${feedback.userEmail}">user@example.com</span>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="feedback-label me-3">Submitted On:</label>
+                                                <span class="feedback-value" th:text="${feedback.createdAt}">2023-07-17 10:30:45</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="fw-bold section-title mb-4">Conversation Details</h6>
+                                            <div class="mb-4">
+                                                <label class="feedback-label me-3">Conversation:</label>
+                                                <span class="feedback-value" th:text="${feedback.conversationName}">General Help</span>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="feedback-label me-3">Response ID:</label>
+                                                <span class="feedback-value" th:text="${feedback.chatbotResponseId}">12345</span>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="feedback-label me-3">Response Created At:</label>
+                                                <span class="feedback-value" th:text="${feedback.chatbotResponseCreatedAt}">2023-07-17 10:25:30</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h6 class="fw-bold section-title mb-4">Chatbot Response</h6>
+                                    <div class="card bg-light">
+                                        <div class="card-body p-4">
+                                            <p class="mb-0" th:utext="${#strings.replace(#strings.escapeXml(feedback.chatbotResponse), '&#10;', '<br/>')}">
+                                                Response content goes here...
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer p-4">
+                                    <div class="d-flex justify-content-between">
+                                        <a th:href="@{/admin/feedbacks/chatbot-feedbacks}" class="btn btn-secondary btn-lg px-5 py-3 btn-back">
+                                            <i class="bi bi-arrow-left"></i> Back to List
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /main-content-wrap -->
+                        <!-- bottom-page -->
+                        <div th:insert="~{admin/fragments/bottom_page::bottom-page}"></div>
+                        <!-- /bottom-page -->
+                    </div>
+                    <!-- /main-content -->
+                </div>
+                <!-- /section-content-right -->
+            </div>
+            <!-- /layout-wrap -->
+        </div>
+        <!-- /#page -->
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Javascript -->
+    <div th:insert="~{admin/fragments/script::script}"></div>
+</div>
+</body>
+</html>

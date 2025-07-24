@@ -30,7 +30,7 @@ public interface IChatService {
 
     void deleteByConversationId(String conversationId);
 
-    String generateConversationId(String message, String email);
+    Flux<String> generateConversationId(String message, String email);
 
     boolean renameConversation(String oldConversationId, String newConversationId);
 }
