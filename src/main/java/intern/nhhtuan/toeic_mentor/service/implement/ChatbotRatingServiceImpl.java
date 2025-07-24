@@ -18,7 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,7 +31,7 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
     private final RatingEnabledChatMemoryRepository ratingEnabledChatMemoryRepository;
 
     @Override
-    public void saveFeedback(ChatbotRatingRequest ratingRequest, String userEmail) {
+    public void saveRating(ChatbotRatingRequest ratingRequest, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
         if (!ratingEnabledChatMemoryRepository.existsByMessageId(ratingRequest.getMessageId())) {
@@ -83,16 +82,16 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
                             String[] conversationIds = ratingEnabledChatMemoryRepository
                                     .getConversationIdByMessageId(feedbackEntity.getMessageId())
                                     .split("_");
-                            String conversationId;
+                            String conversationTitle;
                             if (conversationIds.length < 2) {
-                                conversationId = conversationIds[0].replaceAll("_", " ");
+                                conversationTitle = conversationIds[0].replaceAll("_", " ");
                             } else {
-                                conversationId = conversationIds[1].replaceAll("_", " ");
+                                conversationTitle = conversationIds[1].replaceAll("_", " ");
                             }
                             return new ChatbotRatingResponse(
                                     feedbackEntity.getId(),
                                     feedbackEntity.getUser().getEmail(),
-                                    conversationId,
+                                    conversationTitle,
                                     feedbackEntity.getRating().name(),
                                     feedbackEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))
                             );
@@ -101,7 +100,7 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
     }
 
     @Override
-    public ChatbotRatingDetailResponse getChatbotFeedbackById(Long id) {
+    public ChatbotRatingDetailResponse getChatbotRatingById(Long id) {
         ChatbotRating rating = chatbotRatingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Chatbot rating not found with ID: " + id));
 
@@ -110,7 +109,13 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
             throw new IllegalArgumentException("Chat memory not found with message ID: " + rating.getMessageId());
         }
 
-        String conversationTitle = ratableMessage.getConversationId().split("_")[1].replaceAll("_", " ");
+        String[] conversationIds = ratableMessage.getConversationId().split("_");
+        String conversationTitle;
+        if (conversationIds.length < 2) {
+            conversationTitle = conversationIds[0].replaceAll("_", " ");
+        } else {
+            conversationTitle = conversationIds[1].replaceAll("_", " ");
+        }
 
         return ChatbotRatingDetailResponse.builder()
                 .id(rating.getId())
@@ -121,16 +126,17 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
                 .chatbotResponseCreatedAt(ratingEnabledChatMemoryRepository.getCreatedAtByMessageId(ratableMessage.getMessageId()))
                 .rating(rating.getRating().name())
                 .ratedAt(rating.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
+                .chatbotResponses(ratingEnabledChatMemoryRepository.getChatHistory(ratableMessage.getConversationId()))
                 .build();
     }
 
     @Override
-    public int countLikeFeedback() {
+    public int countLikeRating() {
         return chatbotRatingRepository.countByRating(EChatbotRating.LIKE);
     }
 
     @Override
-    public int countDislikeFeedback() {
+    public int countDislikeRating() {
         return chatbotRatingRepository.countByRating(EChatbotRating.DISLIKE);
     }
 }

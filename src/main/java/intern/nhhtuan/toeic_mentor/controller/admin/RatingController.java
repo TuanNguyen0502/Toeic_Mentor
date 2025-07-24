@@ -38,18 +38,18 @@ public class RatingController {
                 rating, createdAtStart, createdAtEnd, userEmail, page, size, sortBy, direction
         );
         model.addAttribute("ratings", ratings);
-        model.addAttribute("numberLikeRatings", chatbotRatingService.countLikeFeedback());
-        model.addAttribute("numberDislikeRatings", chatbotRatingService.countDislikeFeedback());
+        model.addAttribute("numberLikeRatings", chatbotRatingService.countLikeRating());
+        model.addAttribute("numberDislikeRatings", chatbotRatingService.countDislikeRating());
         return "admin/rating/chatbot-rating-list";
     }
 
     @GetMapping("/chatbot-ratings/{id}")
     public String getChatbotFeedbackDetail(@PathVariable Long id, Model model) {
-        ChatbotRatingDetailResponse feedback = chatbotRatingService.getChatbotFeedbackById(id);
-        if (feedback == null) {
+        ChatbotRatingDetailResponse rating = chatbotRatingService.getChatbotRatingById(id);
+        if (rating == null) {
             return "redirect:/admin/ratings/chatbot-ratings";
         }
-        model.addAttribute("feedback", feedback);
+        model.addAttribute("rating", rating);
         return "admin/rating/chatbot-rating-detail";
     }
 

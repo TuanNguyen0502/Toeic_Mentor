@@ -22,7 +22,7 @@ public class RatingController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication != null ? authentication.getName() : "anonymous";
         try {
-            chatbotRatingService.saveFeedback(chatbotRatingRequest, userEmail);
+            chatbotRatingService.saveRating(chatbotRatingRequest, userEmail);
             return ResponseEntity.ok("Message rated successfully");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Failed to rate message: " + e.getMessage());

@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import java.time.LocalDateTime;
 
 public interface IChatbotRatingService {
-    void saveFeedback(ChatbotRatingRequest ratingRequest, String userEmail);
+    void saveRating(ChatbotRatingRequest ratingRequest, String userEmail);
 
     Page<ChatbotRatingResponse> getChatbotRatings(
             EChatbotRating rating,
@@ -22,9 +22,9 @@ public interface IChatbotRatingService {
             String direction
     );
 
-    ChatbotRatingDetailResponse getChatbotFeedbackById(Long id);
+    ChatbotRatingDetailResponse getChatbotRatingById(Long id);
 
-    int countLikeFeedback();
+    int countLikeRating();
 
-    int countDislikeFeedback();
+    int countDislikeRating();
 }
