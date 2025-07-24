@@ -23,6 +23,7 @@ public class TestResultResponse {
     @Builder
     public static class AnswerResponse {
         private Long id;
+        private Long answerId;
         private String questionText;
         private String correctAnswer;
         private String userAnswer;
