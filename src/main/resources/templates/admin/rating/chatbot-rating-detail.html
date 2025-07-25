@@ -1,0 +1,194 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<head th:insert="~{admin/fragments/head::head}"></head>
+
+<body>
+<style>
+    .rating-detail-content * {
+        font-size: 1.8rem !important;
+    }
+    .rating-label {
+        font-weight: 600;
+    }
+    .page-title {
+        font-size: 2.5rem !important;
+    }
+    .section-title {
+        font-size: 2.2rem !important;
+    }
+    .rating-header {
+        font-size: 2.3rem !important;
+    }
+    .rating-badge {
+        font-size: 2rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+    .btn-back {
+        font-size: 1.8rem !important;
+    }
+    .breadcrumb-text {
+        font-size: 1.5rem !important;
+    }
+</style>
+
+<!-- #wrapper -->
+<div id="wrapper">
+    <!-- #page -->
+    <div id="page" class="">
+        <!-- layout-wrap -->
+        <div class="layout-wrap">
+            <!-- preload -->
+            <div id="preload" class="preload-container">
+                <div class="preloading">
+                    <span></span>
+                </div>
+            </div>
+            <!-- /preload -->
+            <!-- section-menu-left -->
+            <div th:insert="~{admin/fragments/menu-left::section-menu-left}"></div>
+            <!-- /section-menu-left -->
+            <!-- section-content-right -->
+            <div class="section-content-right">
+                <!-- header-dashboard -->
+                <div th:insert="~{admin/fragments/header_dashboard::header-dashboard}"></div>
+                <!-- /header-dashboard -->
+                <!-- main-content -->
+                <div class="main-content">
+                    <!-- main-content-wrap -->
+                    <div class="main-content-inner">
+                        <!-- main-content-wrap -->
+                        <div class="main-content-wrap">
+                            <div class="flex items-center flex-wrap justify-between gap20 mb-27">
+                                <h3 class="page-title">Chatbot rating Detail</h3>
+                                <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+                                    <li>
+                                        <a th:href="@{/admin}">
+                                            <div class="breadcrumb-text">Dashboard</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right breadcrumb-text"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/ratings/chatbot-ratings}">
+                                            <div class="breadcrumb-text">Chatbot ratings</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right breadcrumb-text"></i>
+                                    </li>
+                                    <li>
+                                        <div class="breadcrumb-text">Rating Detail</div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- rating Detail Card -->
+                            <div class="card shadow-sm mb-4 rating-detail-content">
+                                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-4">
+                                    <h5 class="mb-0 rating-header">rating #<span th:text="${rating.id}">ID</span></h5>
+                                    <span th:class="${rating.rating.contains('LIKE') ? 'badge bg-success rating-badge' : 'badge bg-danger rating-badge'}"
+                                          th:text="${rating.rating}">LIKE/DISLIKE</span>
+                                </div>
+                                <div class="card-body p-5">
+                                    <div class="row mb-5">
+                                        <div class="col-md-6">
+                                            <h6 class="fw-bold section-title mb-4">User Information</h6>
+                                            <div class="mb-4">
+                                                <label class="rating-label me-3">Email:</label>
+                                                <span class="rating-value" th:text="${rating.userEmail}">user@example.com</span>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="rating-label me-3">Rated On:</label>
+                                                <span class="rating-value" th:text="${rating.ratedAt}">2023-07-17 10:30:45</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="fw-bold section-title mb-4">Conversation Details</h6>
+                                            <div class="mb-4">
+                                                <label class="rating-label me-3">Conversation:</label>
+                                                <span class="rating-value" th:text="${rating.conversationTitle}">General Help</span>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="rating-label me-3">Response ID:</label>
+                                                <span class="rating-value" th:text="${rating.messageId}">12345</span>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="rating-label me-3">Response Created At:</label>
+                                                <span class="rating-value" th:text="${rating.chatbotResponseCreatedAt}">2023-07-17 10:25:30</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h6 class="fw-bold section-title mb-4">Chatbot Response</h6>
+                                    <div class="card bg-light">
+                                        <div class="card-body p-4">
+                                            <p class="mb-0" th:utext="${#strings.replace(#strings.escapeXml(rating.content), '&#10;', '<br/>')}">
+                                                Response content goes here...
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Conversation Thread Section -->
+                                    <h6 class="fw-bold section-title mt-5 mb-4">Conversation Thread</h6>
+                                    <div class="card mb-4">
+                                        <div class="card-body p-0">
+                                            <!-- Messages container -->
+                                            <div class="chat-messages p-4">
+                                                <!-- Loop through each message in the conversation -->
+                                                <div th:each="message : ${rating.chatbotResponses}"
+                                                     th:class="${message.messageType == 'USER' ? 'message user-message mb-4' : 'message bot-message mb-4'}"
+                                                     th:classappend="${message.messageId == rating.messageId ? 'highlighted-message' : ''}">
+
+                                                    <!-- Message header with type and ID -->
+                                                    <div class="message-header d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="message-sender fw-bold" th:text="${message.messageType == 'USER' ? 'User' : 'Bot'}">User/Bot</span>
+                                                        <span class="message-id text-muted small" th:if="${message.messageId != null}">
+                                                            ID: <span th:text="${message.messageId}">message-id</span>
+                                                            <span th:if="${message.messageId == rating.messageId}"
+                                                                  class="badge bg-warning ms-2">Rated Message</span>
+                                                        </span>
+                                                    </div>
+
+                                                    <!-- Message content -->
+                                                    <div class="message-content p-3"
+                                                         th:classappend="${message.messageType == 'USER' ? 'bg-primary-subtle rounded-3' : 'bg-light rounded-3'}">
+                                                        <p class="mb-0" th:utext="${#strings.replace(#strings.escapeXml(message.content), '&#10;', '<br/>')}">
+                                                            Message content
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer p-4">
+                                    <div class="d-flex justify-content-between">
+                                        <a th:href="@{/admin/ratings/chatbot-ratings}" class="btn btn-secondary btn-lg px-5 py-3 btn-back">
+                                            <i class="bi bi-arrow-left"></i> Back to List
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /main-content-wrap -->
+                        <!-- bottom-page -->
+                        <div th:insert="~{admin/fragments/bottom_page::bottom-page}"></div>
+                        <!-- /bottom-page -->
+                    </div>
+                    <!-- /main-content -->
+                </div>
+                <!-- /section-content-right -->
+            </div>
+            <!-- /layout-wrap -->
+        </div>
+        <!-- /#page -->
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Javascript -->
+    <div th:insert="~{admin/fragments/script::script}"></div>
+</div>
+</body>
+</html>

@@ -1,10 +1,13 @@
 package intern.nhhtuan.toeic_mentor.controller.user;
 
+import intern.nhhtuan.toeic_mentor.dto.request.AnswerExplanationRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IPdfService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ITestService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
@@ -27,6 +31,12 @@ public class TestController {
     private final IChatService chatService;
     private final ITestService testService;
     private final IPdfService pdfService;
+
+    @PostMapping(value = "/chat", produces = MediaType.APPLICATION_NDJSON_VALUE)
+    public Flux<AnswerExplanationResponse> chatWithQuestion(@Valid @RequestBody AnswerExplanationRequest answerExplanationRequest) {
+        log.info(answerExplanationRequest.toString());
+        return chatService.getChatResponse(answerExplanationRequest.getMessage(), answerExplanationRequest.getConversationId() , answerExplanationRequest.getAnswerId());
+    }
 
     @PostMapping("/results")
     public TestResultResponse submitTest(@RequestBody List<AnswerRequest> answerRequests) {

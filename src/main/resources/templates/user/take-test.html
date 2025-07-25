@@ -362,6 +362,37 @@
     </div>
 </div>
 
+<!-- AI Chat Modal -->
+<div id="aiChatModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl h-[90vh] flex flex-col relative"> <!-- tăng max-w và h -->
+        <button id="closeAiChatModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl">&times;</button>
+        <div class="flex items-center mb-4">
+            <i class="fas fa-robot text-blue-500 mr-2"></i>
+            <h2 class="text-lg font-bold">Chat with AI Assistant</h2>
+        </div>
+        <div id="aiChatQuestionInfo" class="mb-4 p-3 bg-gray-50 border rounded text-sm text-gray-700"></div>
+        <!-- Chat Messages Container -->
+        <div id="aiChatMessages" class="flex-1 overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50"></div>
+        
+        <!-- Chat Input -->
+        <div class="flex gap-2">
+            <input type="text" id="aiChatInput" placeholder="Type your question here..." 
+                   class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="aiChatSendBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div id="aiChatLoading" class="hidden text-center py-2">
+            <div class="inline-flex items-center">
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                <span class="text-sm text-gray-600">AI is thinking...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Scripts -->
 
 <script th:inline="javascript">
@@ -569,6 +600,9 @@
                     document.getElementById('reportModal').classList.remove('hidden');
                 });
             }
+
+
+
 
             // Initially hide the question
             questionElement.style.display = 'none';
@@ -799,9 +833,14 @@
                         <h3 class='text-xl font-semibold mr-4'>Question ${idx + 1}</h3>
                         <span class='badge bg-primary'>Part ${q.part}</span>
                     </div>
-                    <button class='ml-auto bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded report-question-btn' data-question-id='${q.id}' data-question-text='${q.questionText}'>
+                    <div class='flex items-center gap-2'>
+                        <button class='bg-blue-100 hover:bg-blue-200 text-blue-600 px-3 py-1 rounded chat-ai-result-btn' data-answer-id='${q.answerId}' data-question-id='${q.id}' data-question-text='${q.questionText}' data-question-index='${idx}'>
+                            <i class="fas fa-robot mr-1"></i> Chat AI
+                        </button>
+                        <button class='bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded report-question-btn' data-question-id='${q.id}' data-question-text='${q.questionText}'>
                         <i class="fa fa-flag mr-1"></i> Report Question
                     </button>
+                    </div>
                 </div>`;
 
                     // Simple view elements (always visible)
@@ -911,7 +950,9 @@
                 // Attach event listeners for report buttons
                 document.querySelectorAll('.report-question-btn').forEach(btn => {
                     btn.addEventListener('click', function () {
-                        document.getElementById('reportQuestionId').value = this.getAttribute('data-question-id');
+                        const questionId = this.getAttribute('data-question-id');
+                        console.log('[Report] questionId:', questionId);
+                        document.getElementById('reportQuestionId').value = questionId;
                         document.getElementById('reportCategory').value = '';
                         document.getElementById('reportDescription').value = '';
                         document.getElementById('reportFormMsg').textContent = '';
@@ -920,6 +961,19 @@
                         document.getElementById('reportModal').classList.remove('hidden');
                     });
                 });
+
+                // Attach event listeners for AI chat buttons in results
+                setTimeout(() => {
+                    document.querySelectorAll('.chat-ai-result-btn').forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            const answerId = this.getAttribute('data-answer-id');
+                            const questionText = this.getAttribute('data-question-text');
+                            const questionIndex = this.getAttribute('data-question-index');
+                            console.log('[ChatAI] answerId:', answerId, '| questionIndex:', questionIndex, '| questionText:', questionText);
+                            openAiChat(parseInt(questionIndex), answerId);
+                        });
+                    });
+                }, 100); // Small delay to ensure buttons are rendered
 
                 // Attach event listener for download PDF button
                 const downloadPdfBtn = document.getElementById('downloadPdfBtn');
@@ -1041,8 +1095,238 @@
                 document.getElementById('reportFormMsg').className = 'text-red-600 mb-2';
             });
         });
-    })();
-</script>
 
+        // AI Chat Modal logic
+        const aiChatModal = document.getElementById('aiChatModal');
+        const closeAiChatBtn = document.getElementById('closeAiChatModal');
+        closeAiChatBtn.addEventListener('click', () => aiChatModal.classList.add('hidden'));
+        window.addEventListener('click', (e) => {
+            if (e.target === aiChatModal) aiChatModal.classList.add('hidden');
+        });
+    })();
+
+    // AI Chat event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // AI Chat modal close button
+        document.getElementById('closeAiChatModal').addEventListener('click', function() {
+            document.getElementById('aiChatModal').classList.add('hidden');
+            currentChatConversationId = null; // Reset conversationId khi đóng modal
+        });
+        
+        // AI Chat send button
+        document.getElementById('aiChatSendBtn').addEventListener('click', sendAiChatMessage);
+        
+        // AI Chat input enter key
+        document.getElementById('aiChatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendAiChatMessage();
+            }
+        });
+        
+        // Close AI Chat modal when clicking outside
+        document.getElementById('aiChatModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                currentChatConversationId = null; // Reset conversationId khi click ra ngoài modal
+            }
+        });
+    });
+
+    // AI Chat functionality
+    let currentChatQuestionIndex = -1;
+    let currentChatQuestionId = null;
+    let currentChatConversationId = null;
+
+    function openAiChat(questionIndex, answerId) {
+        console.log('openAiChat called with:', { questionIndex, answerId }); // Debug log
+        
+        currentChatQuestionIndex = questionIndex;
+        currentChatQuestionId = answerId;
+        
+        // Lấy thông tin câu hỏi
+        const question = questions[questionIndex];
+        const questionText = question.questionText;
+        const options = question.options || [];
+        const part = question.part;
+
+        // Render thông tin câu hỏi lên modal
+        const infoDiv = document.getElementById('aiChatQuestionInfo');
+        if (infoDiv) {
+            let html = `<div><b>Question ${questionIndex + 1} (Part ${part}):</b></div>`;
+            html += `<div class='mb-2'>${questionText}</div>`;
+            if (options.length > 0) {
+                html += '<ul class="ml-4">';
+                options.forEach(opt => {
+                    html += `<li><b>${opt.key}.</b> ${opt.value}</li>`;
+                });
+                html += '</ul>';
+            }
+            infoDiv.innerHTML = html;
+        }
+        
+        // Update modal content
+        const questionTextElement = document.getElementById('aiChatQuestionText');
+        if (questionTextElement) {
+            questionTextElement.textContent = questionText.substring(0, 100) + (questionText.length > 100 ? '...' : '');
+        }
+        
+        // Clear previous messages
+        const messagesContainer = document.getElementById('aiChatMessages');
+        if (messagesContainer) {
+            messagesContainer.innerHTML = '';
+        }
+        
+        // Clear input
+        const inputElement = document.getElementById('aiChatInput');
+        if (inputElement) {
+            inputElement.value = '';
+        }
+        
+        // Show modal
+        const modalElement = document.getElementById('aiChatModal');
+        if (modalElement) {
+            modalElement.classList.remove('hidden');
+            
+            // Focus on input
+            setTimeout(() => {
+                if (inputElement) {
+                    inputElement.focus();
+                }
+            }, 100);
+        } else {
+            console.error('AI chat modal not found!'); // Debug log
+        }
+    }
+
+    function addChatMessage(message, isUser = false) {
+        const messagesContainer = document.getElementById('aiChatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `mb-3 ${isUser ? 'text-right' : 'text-left'}`;
+        const messageBubble = document.createElement('div');
+        messageBubble.className = `inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+            isUser 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-white border border-gray-200'
+        }`;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = message;
+        messageBubble.appendChild(contentDiv);
+        messageDiv.appendChild(messageBubble);
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        return messageDiv;
+    }
+
+    async function sendAiChatMessage() {
+        const input = document.getElementById('aiChatInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        addChatMessage(message, true);
+        input.value = '';
+        document.getElementById('aiChatLoading').classList.add('hidden');
+
+        const chatData = {
+            message: message,
+            conversationId: currentChatConversationId,
+            answerId: currentChatQuestionId
+        };
+
+        let hasBotMessage = false;
+        let botMessageDiv = null;
+        let contentElement = null;
+        let fullText = '';
+
+        try {
+            const response = await fetch('/tests/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(chatData)
+            });
+
+            if (!response.ok) throw new Error('Failed to get AI response');
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let buffer = '';
+
+            // Tạo bubble bot rỗng trước
+            botMessageDiv = addChatMessage('', false);
+            contentElement = botMessageDiv.querySelector('.message-content') || botMessageDiv.querySelector('div') || botMessageDiv;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk;
+
+                let newlineIndex;
+                while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+                    const jsonLine = buffer.slice(0, newlineIndex).trim();
+                    buffer = buffer.slice(newlineIndex + 1);
+
+                    if (jsonLine) {
+                        try {
+                            const added = processAiResponse(jsonLine, contentElement, fullText);
+                            if (added) {
+                                fullText += added;
+                                if (window.marked) {
+                                    contentElement.innerHTML = marked.parse(fullText);
+                                } else {
+                                    contentElement.textContent = fullText;
+                                }
+                            }
+                            hasBotMessage = true;
+                        } catch (e) {
+                            console.warn('⚠️ Lỗi khi xử lý JSON hoặc DOM:', e, jsonLine);
+                        }
+                    }
+                }
+            }
+
+            if (buffer.trim()) {
+                try {
+                    const added = processAiResponse(buffer.trim(), contentElement, fullText);
+                    if (added) {
+                        fullText += added;
+                        if (window.marked) {
+                            contentElement.innerHTML = marked.parse(fullText);
+                        } else {
+                            contentElement.textContent = fullText;
+                        }
+                    }
+                    hasBotMessage = true;
+                } catch (e) {
+                    console.warn('⚠️ Lỗi ở buffer cuối cùng:', buffer);
+                }
+            }
+        } catch (error) {
+            console.error('AI Chat Error:', error);
+            if (!hasBotMessage) {
+                addChatMessage('Sorry, there was an error connecting to the AI. Please try again.', false);
+            }
+        }
+    }
+
+    function processAiResponse(jsonStr, contentElement, fullText) {
+        try {
+            const data = JSON.parse(jsonStr);
+            if (data.conversationId) {
+                currentChatConversationId = data.conversationId;
+            }
+            if (data.chatbotResponse) {
+                // Trả về phần text mới để gộp vào fullText
+                return data.chatbotResponse;
+            }
+            document.getElementById('aiChatMessages').scrollTop = document.getElementById('aiChatMessages').scrollHeight;
+        } catch (e) {}
+        return '';
+    }
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 </html>

@@ -4,15 +4,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.QuestionDTO;
+import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
-import intern.nhhtuan.toeic_mentor.repository.ChatMemoryRepository;
+import intern.nhhtuan.toeic_mentor.entity.Answer;
+import intern.nhhtuan.toeic_mentor.entity.Question;
+import intern.nhhtuan.toeic_mentor.entity.QuestionOption;
+import intern.nhhtuan.toeic_mentor.repository.AnswerRepository;
+import intern.nhhtuan.toeic_mentor.entity.RatableMessage;
+import intern.nhhtuan.toeic_mentor.repository.RatingEnabledChatMemoryRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
-import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
@@ -21,21 +27,29 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ChatService implements IChatService {
     private final ChatClient chatClient;
     private final ChatModel chatModel;
-    private final JdbcChatMemoryRepository jdbcChatMemoryRepository;
-    private final ChatMemoryRepository chatMemoryRepository;
+    private final AnswerRepository answerRepository;
+    private final RatingEnabledChatMemoryRepository ratingEnabledChatMemoryRepository;
 
     @Value("classpath:/prompts/system-message.txt")
     private Resource systemMessageResource;
@@ -43,37 +57,45 @@ public class ChatService implements IChatService {
     private Resource defineQuestionPartPromptResource;
     @Value("classpath:/prompts/identify-toeic-test.txt")
     private Resource identifyToeicTestPromptResource;
-    @Value("classpath:/prompts/test-analysis-prompt.txt")
-    private Resource testAnalysisPromptResource;
 
-    public ChatService(ChatClient.Builder builder,
-                       JdbcChatMemoryRepository jdbcChatMemoryRepository,
-                       ChatModel chatModel,
-                       ChatMemoryRepository chatMemoryRepository) {
-        this.jdbcChatMemoryRepository = jdbcChatMemoryRepository;
-        ChatMemory chatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(jdbcChatMemoryRepository)
-                .build();
-        this.chatClient = builder
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .build();
-        this.chatModel = chatModel;
-        this.chatMemoryRepository = chatMemoryRepository;
-    }
+    private static final String INITIAL_PROMPT_TEMPLATE = """
+            You are an English tutor helping a student understand a TOEIC question.
+            
+            Passage:
+            %s
+            
+            Question %d: %s
+            
+            Options:
+            %s
+            
+            Student selected answer: %s
+            Correct answer: %s
+            
+            Explanation: %s
+            
+            Student message: %s
+            """;
 
     @Override
-    public Flux<String> getChatResponse(String message, String conversationId) {
-        var systemMessage = new SystemMessage(systemMessageResource);
-        var userMessage = new UserMessage(message);
-        return chatClient.prompt(new Prompt(List.of(systemMessage, userMessage)))
+    public Flux<ChatbotResponse> getChatResponse(String message, String conversationId) {
+        Flux<String> content = chatClient.prompt()
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .user(message)
+                .system(systemMessageResource)
                 .stream()
                 .content();
+
+        String messageId = getLatestAssistantMessageId(conversationId);
+
+//        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
+
+        return content.map(contentText -> new ChatbotResponse(contentText, messageId, conversationId, MessageType.ASSISTANT.name()));
     }
 
     @Override
-    public Flux<String> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
-        return ChatClient.create(chatModel).prompt()
+    public Flux<ChatbotResponse> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
+        Flux<String> content = ChatClient.create(chatModel).prompt()
                 .system(systemMessageResource)
                 .user(user -> user
                         .text(message)
@@ -81,6 +103,76 @@ public class ChatService implements IChatService {
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content();
+
+        String messageId = getLatestAssistantMessageId(conversationId);
+
+//        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
+
+        return content.map(contentText -> new ChatbotResponse(contentText, messageId, conversationId, MessageType.ASSISTANT.name()));
+    }
+
+    @Override
+    public Flux<AnswerExplanationResponse> getChatResponse(String message, String conversationId, Long answerId) {
+        boolean isNewConversation = (conversationId == null || conversationId.isBlank());
+
+        if (isNewConversation) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = (authentication != null && authentication.isAuthenticated())
+                    ? authentication.getName()
+                    : "anonymous";
+
+            String timestamp = LocalDateTime.now(ZoneOffset.UTC)
+                    .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
+            conversationId = email + "_" + timestamp;
+        }
+
+        String finalConversationId = conversationId;
+
+        return isNewConversation
+                ? buildInitialPrompt(answerId, message)
+                .flatMapMany(prompt -> chatClient.prompt(new Prompt(List.of(
+                                new SystemMessage(systemMessageResource),
+                                new UserMessage(prompt))))
+                        .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, finalConversationId))
+                        .stream()
+                        .content()
+                        .map(content -> new AnswerExplanationResponse(finalConversationId, content))
+                )
+                : chatClient.prompt(new Prompt(List.of(new UserMessage(message))))
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, finalConversationId))
+                .stream()
+                .content()
+                .map(content -> new AnswerExplanationResponse(finalConversationId, content));
+    }
+
+    private Mono<String> buildInitialPrompt(Long answerId, String message) {
+        return Mono.fromCallable(() -> {
+            Answer answer = answerRepository.findById(answerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Answer not found with id: " + answerId));
+
+            Question question = answer.getQuestion();
+            List<QuestionOption> options = question.getOptions();
+
+            String optionsText = options.stream()
+                    .map(option -> option.getKey() + ". " + option.getValue())
+                    .collect(Collectors.joining("\n"));
+
+            String passage = question.getPassage() != null ? question.getPassage() : "(No passage)";
+            String explanation = question.getAnswerExplanation() != null ? question.getAnswerExplanation() : "(No explanation)";
+
+            return String.format(
+                    INITIAL_PROMPT_TEMPLATE,
+                    passage,
+                    question.getQuestionNumber(),
+                    question.getQuestionText(),
+                    optionsText,
+                    answer.getAnswer(),
+                    question.getCorrectAnswer(),
+                    explanation,
+                    message
+            );
+        });
     }
 
     @Override
@@ -164,20 +256,13 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public List<String> getChatHistory(String conversationId) {
-        ChatMemory chatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(jdbcChatMemoryRepository)
-                .build();
-        return chatMemory.get(conversationId).stream().map(Message::getText).toList();
+    public List<ChatbotResponse> getChatHistory(String conversationId) {
+        return ratingEnabledChatMemoryRepository.getChatHistory(conversationId);
     }
 
     @Override
     public List<String> getConversationIdsByEmail(String email) {
-        List<String> conversationIds = chatMemoryRepository.findAll()
-                .stream()
-                .map(intern.nhhtuan.toeic_mentor.entity.ChatMemory::getConversationId)
-                .distinct()
-                .toList();
+        List<String> conversationIds = ratingEnabledChatMemoryRepository.findConversationIds();
         return conversationIds.stream()
                 .filter(id -> id.contains(email)) // Filter conversation IDs that contain the user's email
                 .toList();
@@ -185,13 +270,6 @@ public class ChatService implements IChatService {
 
     @Override
     public TestResultResponse analyzeTestResult(List<AnswerRequest> answerRequests) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String answerRequestsJson;
-        try {
-            answerRequestsJson = objectMapper.writeValueAsString(answerRequests);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
         String prompt = """
                 You are an expert TOEIC evaluator and personalized language coach.
                 Objective:
@@ -234,7 +312,7 @@ public class ChatService implements IChatService {
                 
                 2. Transform AnswerRequests into AnswerResponses:
                 - For each AnswerRequest, create a corresponding AnswerResponse object:
-                    - Copy all fields from the original AnswerRequest.
+                    - Copy all fields from the original AnswerRequest except answerExplanation
                     - Add:
                         - isCorrect: as determined above.
                         - answerExplanation: convert to a List of Strings containing explanations for all options A–D:
@@ -304,11 +382,19 @@ public class ChatService implements IChatService {
                 - Ensure all fields are populated as specified.
                 - Use only the options.key to determine correctness.
                 - Explanations must be clear and specific.""";
+        ObjectMapper objectMapper = new ObjectMapper();
+        String answerRequestsJson;
+        try {
+            answerRequestsJson = objectMapper.writeValueAsString(answerRequests);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         String fullPrompt = prompt + "\n\nInput JSON:\n" + answerRequestsJson;
         TestResultResponse testResultResponse = ChatClient.create(chatModel).prompt()
                 .user(fullPrompt)
                 .call()
                 .entity(TestResultResponse.class);
+        assert testResultResponse != null;
         for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
             answerResponse.setCorrect(Objects.equals(answerResponse.getUserAnswer(), answerResponse.getCorrectAnswer()));
         }
@@ -318,11 +404,11 @@ public class ChatService implements IChatService {
     @Override
     @Transactional
     public void deleteByConversationId(String conversationId) {
-        chatMemoryRepository.deleteByConversationId(conversationId);
+        ratingEnabledChatMemoryRepository.deleteByConversationId(conversationId);
     }
 
     @Override
-    public String generateConversationId(String message, String email) {
+    public Flux<String> generateConversationId(String message, String email) {
         String prompt = String.format("""
                     You are an assistant that generates a concise and meaningful title for a conversation based on the user’s initial question.
                 
@@ -341,26 +427,30 @@ public class ChatService implements IChatService {
         return ChatClient.create(chatModel).prompt()
                 .user(user -> user
                         .text(prompt))
-                .call()
+                .stream()
                 .content();
     }
 
     @Override
     public boolean renameConversation(String oldConversationId, String newConversationId) {
         // Check if the new conversation ID already exists
-        if (chatMemoryRepository.existsChatMemoryByConversationId(newConversationId)) {
+        if (ratingEnabledChatMemoryRepository.existsByConversationId(newConversationId)) {
             return false; // New conversation ID already exists, cannot rename
         }
 
         // Rename the conversation by updating the conversation ID in the repository
-        List<intern.nhhtuan.toeic_mentor.entity.ChatMemory> chatMemories = chatMemoryRepository.findAllByConversationId(oldConversationId);
-        if (chatMemories.isEmpty()) {
-            return false; // No conversation found with the old ID
+        return ratingEnabledChatMemoryRepository.renameConversationId(oldConversationId, newConversationId);
+    }
+
+    private String getLatestAssistantMessageId(String conversationId) {
+        List<Message> allMessages = ratingEnabledChatMemoryRepository.findByConversationId(conversationId);
+        for (int i = allMessages.size() - 1; i >= 0; i--) {
+            Message message = allMessages.get(i);
+            if (message instanceof RatableMessage ratableMessage &&
+                    message.getMessageType() == MessageType.ASSISTANT) {
+                return ratableMessage.getMessageId();
+            }
         }
-        for (intern.nhhtuan.toeic_mentor.entity.ChatMemory chatMemory : chatMemories) {
-            chatMemory.setConversationId(newConversationId);
-        }
-        chatMemoryRepository.saveAll(chatMemories); // Save the updated chat memories
-        return true; // Successfully renamed
+        return null;
     }
 }

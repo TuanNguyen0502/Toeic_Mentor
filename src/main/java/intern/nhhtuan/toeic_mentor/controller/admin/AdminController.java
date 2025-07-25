@@ -2,7 +2,6 @@ package intern.nhhtuan.toeic_mentor.controller.admin;
 
 import intern.nhhtuan.toeic_mentor.dto.response.AdminDashboardResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.NotificationSettingResponse;
-import intern.nhhtuan.toeic_mentor.entity.enums.ENotificationTypeAction;
 import intern.nhhtuan.toeic_mentor.service.interfaces.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
