@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/statistics")
 @RequiredArgsConstructor
@@ -39,5 +41,18 @@ public class UserStatisticController {
             throw new RuntimeException("User email is not available");
         }
         return userStatisticService.calculateEstimatedScore(email);
+    }
+
+    @GetMapping("")
+    public List<UserStatisticResponse> getAllUserStatistics() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User is not authenticated");
+        }
+        String email = authentication.getName();
+        if (email == null || email.isEmpty()) {
+            throw new RuntimeException("User email is not available");
+        }
+        return userStatisticService.getAllUserStatistics(email);
     }
 }

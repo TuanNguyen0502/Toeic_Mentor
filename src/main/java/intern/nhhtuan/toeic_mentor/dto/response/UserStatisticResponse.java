@@ -12,4 +12,5 @@ public class UserStatisticResponse {
     private int totalAnswers;
     private int totalCorrectAnswers;
     private int accuracy;
+    private String createdAt;
 }

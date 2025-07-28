@@ -12,6 +12,8 @@ import intern.nhhtuan.toeic_mentor.service.interfaces.IUserStatisticService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -20,6 +22,32 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
     private final UserStatisticRepository userStatisticRepository;
     private final UserRepository userRepository;
     private final TestRepository testRepository;
+
+    @Override
+    public List<UserStatisticResponse> getAllUserStatistics(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // Fetch all statistics for the user
+        List<UserStatistic> userStatistics = userStatisticRepository.findAllByUser(user);
+        if (userStatistics.isEmpty()) {
+            // If no statistics found, return an empty list
+            return List.of();
+        }
+
+        // Map UserStatistic to UserStatisticResponse
+        return userStatistics.stream()
+                .map(statistic -> UserStatisticResponse.builder()
+                        .estimatedScore(statistic.getEstimatedScore())
+                        .minEstimatedScore(statistic.getEstimatedScore() - statistic.getScoreInterval())
+                        .maxEstimatedScore(statistic.getEstimatedScore() + statistic.getScoreInterval())
+                        .totalAnswers(statistic.getTotalAnswers())
+                        .totalCorrectAnswers(statistic.getCorrectAnswers())
+                        .accuracy(statistic.getAccuracy())
+                        .createdAt(statistic.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                        .build())
+                .toList();
+    }
 
     @Override
     public UserStatisticResponse getLatestUserStatistic(String email) {
@@ -37,6 +65,7 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
                     .totalAnswers(0)
                     .totalCorrectAnswers(0)
                     .accuracy(0)
+                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                     .build();
         }
 
@@ -47,6 +76,7 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
                 .totalAnswers(userStatistic.getTotalAnswers())
                 .totalCorrectAnswers(userStatistic.getCorrectAnswers())
                 .accuracy(userStatistic.getAccuracy())
+                .createdAt(userStatistic.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                 .build();
     }
 
@@ -118,6 +148,7 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
                 .totalAnswers(totalAnswers)
                 .totalCorrectAnswers(totalCorrectAnswers)
                 .accuracy((int) (accuracy * 100)) // Convert to percentage
+                .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                 .build();
     }
 }
