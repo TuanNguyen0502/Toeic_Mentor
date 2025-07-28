@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,4 +19,8 @@ public interface ITestService {
     void saveTest(String email, TestResultResponse testResultResponse);
 
     TestResultResponse getTestResult(Long testId, String email);
+
+    List<RecentTestResponse> getRecentTests(String email, int number);
+
+
 }
