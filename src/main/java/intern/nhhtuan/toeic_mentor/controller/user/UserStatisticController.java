@@ -5,9 +5,7 @@ import intern.nhhtuan.toeic_mentor.service.interfaces.IUserStatisticService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -54,5 +52,14 @@ public class UserStatisticController {
             throw new RuntimeException("User email is not available");
         }
         return userStatisticService.getAllUserStatistics(email);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteUserStatisticById(@PathVariable Long id) {
+        if (userStatisticService.deleteUserStatisticById(id)) {
+            return "User statistic with ID " + id + " has been deleted successfully.";
+        } else {
+            return "User statistic with ID " + id + " does not exist.";
+        }
     }
 }

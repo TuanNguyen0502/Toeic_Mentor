@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class UserStatisticResponse {
+    private Long id;
     private int estimatedScore;
     private int minEstimatedScore;
     private int maxEstimatedScore;

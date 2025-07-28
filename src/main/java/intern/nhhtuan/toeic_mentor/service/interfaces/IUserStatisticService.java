@@ -10,4 +10,6 @@ public interface IUserStatisticService {
     UserStatisticResponse getLatestUserStatistic(String email);
 
     UserStatisticResponse calculateEstimatedScore(String email);
+
+    boolean deleteUserStatisticById(Long id);
 }

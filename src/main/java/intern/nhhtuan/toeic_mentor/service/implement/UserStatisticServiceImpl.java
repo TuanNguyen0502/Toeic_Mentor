@@ -38,6 +38,7 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
         // Map UserStatistic to UserStatisticResponse
         return userStatistics.stream()
                 .map(statistic -> UserStatisticResponse.builder()
+                        .id(statistic.getId())
                         .estimatedScore(statistic.getEstimatedScore())
                         .minEstimatedScore(statistic.getEstimatedScore() - statistic.getScoreInterval())
                         .maxEstimatedScore(statistic.getEstimatedScore() + statistic.getScoreInterval())
@@ -150,5 +151,15 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
                 .accuracy((int) (accuracy * 100)) // Convert to percentage
                 .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                 .build();
+    }
+
+    @Override
+    public boolean deleteUserStatisticById(Long id) {
+        if (userStatisticRepository.existsById(id)) {
+            userStatisticRepository.deleteById(id);
+            return true; // Deletion successful
+        } else {
+            return false; // Statistic not found
+        }
     }
 }
