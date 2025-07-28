@@ -35,6 +35,65 @@
         </div>
     </section>
     <!-- main-slider end -->
+
+    <!-- TOEIC Score Statistics Section start -->
+    <section class="estimated-score-section section-pt">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-capture">
+                        <div class="section-title">
+                            <h2 data-animate="animate__fadeInUp">Your TOEIC Progress</h2>
+                        </div>
+                    </div>
+                    <div class="score-card" data-animate="animate__fadeInUp">
+                        <div class="text-center mb-4">
+                            <button id="fetchEstimatedScoreBtn" class="btn btn-style1">
+                                View My Estimated TOEIC Score
+                            </button>
+                        </div>
+                        <div id="estimatedScoreResults" class="score-results" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-4 text-center">
+                                                    <h3 class="score-value" id="estimatedScore">-</h3>
+                                                    <p class="score-label">Estimated TOEIC Score</p>
+                                                    <p class="score-range">Range: <span id="scoreRange">-</span></p>
+                                                </div>
+                                                <div class="col-md-4 text-center border-start border-end">
+                                                    <div class="d-flex justify-content-around">
+                                                        <div>
+                                                            <h4 id="totalAnswers">-</h4>
+                                                            <p>Questions Answered</p>
+                                                        </div>
+                                                        <div>
+                                                            <h4 id="correctAnswers">-</h4>
+                                                            <p>Correct Answers</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    <div class="accuracy-circle">
+                                                        <h3><span id="accuracy">-</span>%</h3>
+                                                        <p>Accuracy</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- TOEIC Score Statistics Section end -->
+
     <!-- category-slider start -->
     <section class="slider-category section-pt">
         <div class="section-capture">
@@ -767,3 +826,4 @@
 </script>
 
 </html>
+

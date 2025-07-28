@@ -1,0 +1,65 @@
+package intern.nhhtuan.toeic_mentor.controller.user;
+
+import intern.nhhtuan.toeic_mentor.dto.response.UserStatisticResponse;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IUserStatisticService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/statistics")
+@RequiredArgsConstructor
+public class UserStatisticController {
+    private final IUserStatisticService userStatisticService;
+
+    @GetMapping("/latest")
+    public UserStatisticResponse getLatestUserStatistic() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User is not authenticated");
+        }
+        String email = authentication.getName();
+        if (email == null || email.isEmpty()) {
+            throw new RuntimeException("User email is not available");
+        }
+        return userStatisticService.getLatestUserStatistic(email);
+    }
+
+    @GetMapping("/estimated-score")
+    public UserStatisticResponse getEstimatedScore() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User is not authenticated");
+        }
+        String email = authentication.getName();
+        if (email == null || email.isEmpty()) {
+            throw new RuntimeException("User email is not available");
+        }
+        return userStatisticService.calculateEstimatedScore(email);
+    }
+
+    @GetMapping("")
+    public List<UserStatisticResponse> getAllUserStatistics() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User is not authenticated");
+        }
+        String email = authentication.getName();
+        if (email == null || email.isEmpty()) {
+            throw new RuntimeException("User email is not available");
+        }
+        return userStatisticService.getAllUserStatistics(email);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteUserStatisticById(@PathVariable Long id) {
+        if (userStatisticService.deleteUserStatisticById(id)) {
+            return "User statistic with ID " + id + " has been deleted successfully.";
+        } else {
+            return "User statistic with ID " + id + " does not exist.";
+        }
+    }
+}
