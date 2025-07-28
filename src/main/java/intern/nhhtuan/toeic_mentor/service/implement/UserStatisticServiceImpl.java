@@ -118,17 +118,22 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
         // Calculate accuracy as a percentage
         double accuracy = (double) totalCorrectAnswers / (float) totalAnswers;
         double standardError = Math.sqrt(accuracy * (1 - accuracy) / totalAnswers);
-        // Calculate the confidence interval for the estimated score
-        // Using a 95% confidence level, the z-score is approximately 1.96
-        double interval = 1.96 * (990 * standardError);
-        if (interval < 0) {
-            interval = 0; // Ensure interval is not negative
-        }
+
         // Calculate the estimated score and its range
         int estimatedScore = Math.round(990 * (float) accuracy);
         if (estimatedScore % 5 != 0) {
             estimatedScore = (estimatedScore / 5) * 5; // Round down to nearest multiple of 5
         }
+
+        // Calculate the confidence interval for the estimated score
+        // Using a 95% confidence level, the z-score is approximately 1.96
+        double interval = 1.96 * (990 * standardError);
+        if (interval < 0) {
+            interval = 0; // Ensure interval is not negative
+        } else if (interval > estimatedScore) {
+            interval = estimatedScore; // Cap the interval to the estimated score
+        }
+
         int min = (int) Math.max(0, estimatedScore - interval);
         int max = (int) Math.min(990, estimatedScore + interval);
 

@@ -115,16 +115,12 @@ document.addEventListener('DOMContentLoaded', function() {
         data.forEach(stat => {
             const row = document.createElement('tr');
 
-            // Format date
-            const createdDate = new Date(stat.createdAt);
-            const formattedDate = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
-
             // Get the ID from the statistic
             const statId = stat.id;
 
             // Create row content
             row.innerHTML = `
-                <td>${formattedDate}</td>
+                <td>${stat.createdAt}</td>
                 <td>${stat.estimatedScore}</td>
                 <td>${stat.minEstimatedScore} - ${stat.maxEstimatedScore}</td>
                 <td>${stat.totalAnswers}</td>
