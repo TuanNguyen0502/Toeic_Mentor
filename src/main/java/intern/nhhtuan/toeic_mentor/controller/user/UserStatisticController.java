@@ -15,6 +15,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserStatisticController {
     private final IUserStatisticService userStatisticService;
 
+    @GetMapping("/latest")
+    public UserStatisticResponse getLatestUserStatistic() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User is not authenticated");
+        }
+        String email = authentication.getName();
+        if (email == null || email.isEmpty()) {
+            throw new RuntimeException("User email is not available");
+        }
+        return userStatisticService.getLatestUserStatistic(email);
+    }
+
     @GetMapping("/estimated-score")
     public UserStatisticResponse getEstimatedScore() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

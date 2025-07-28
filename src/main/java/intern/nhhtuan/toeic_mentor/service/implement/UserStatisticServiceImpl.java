@@ -22,6 +22,35 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
     private final TestRepository testRepository;
 
     @Override
+    public UserStatisticResponse getLatestUserStatistic(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // Fetch the latest statistic for the user
+        UserStatistic userStatistic = userStatisticRepository.findTopByUserOrderByCreatedAtDesc(user);
+        if (userStatistic == null) {
+            // If no statistic found, return default response
+            return UserStatisticResponse.builder()
+                    .estimatedScore(0)
+                    .minEstimatedScore(0)
+                    .maxEstimatedScore(0)
+                    .totalAnswers(0)
+                    .totalCorrectAnswers(0)
+                    .accuracy(0)
+                    .build();
+        }
+
+        return UserStatisticResponse.builder()
+                .estimatedScore(userStatistic.getEstimatedScore())
+                .minEstimatedScore(userStatistic.getEstimatedScore() - userStatistic.getScoreInterval())
+                .maxEstimatedScore(userStatistic.getEstimatedScore() + userStatistic.getScoreInterval())
+                .totalAnswers(userStatistic.getTotalAnswers())
+                .totalCorrectAnswers(userStatistic.getCorrectAnswers())
+                .accuracy(userStatistic.getAccuracy())
+                .build();
+    }
+
+    @Override
     public UserStatisticResponse calculateEstimatedScore(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
@@ -77,6 +106,9 @@ public class UserStatisticServiceImpl implements IUserStatisticService {
         userStatistic.setUser(user);
         userStatistic.setEstimatedScore(estimatedScore);
         userStatistic.setScoreInterval((int) interval);
+        userStatistic.setAccuracy((int) (accuracy * 100)); // Convert to percentage
+        userStatistic.setTotalAnswers(totalAnswers);
+        userStatistic.setCorrectAnswers(totalCorrectAnswers);
         userStatisticRepository.save(userStatistic);
 
         return UserStatisticResponse.builder()

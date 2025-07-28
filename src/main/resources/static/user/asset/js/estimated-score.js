@@ -15,17 +15,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add click event listener to the button
     if (fetchButton) {
-        fetchButton.addEventListener('click', fetchEstimatedScore);
+        fetchButton.addEventListener('click', function() {
+            fetchEstimatedScore('/statistics/estimated-score');
+        });
     }
 
-    // Function to fetch the estimated score data from the API
-    function fetchEstimatedScore() {
+    // Automatically fetch the latest statistics when page loads
+    fetchEstimatedScore('/statistics/latest');
+
+    // Function to fetch the statistics data from the API
+    function fetchEstimatedScore(endpoint) {
         // Show loading state
-        fetchButton.disabled = true;
-        fetchButton.textContent = 'Loading...';
+        if (fetchButton) {
+            fetchButton.disabled = true;
+            fetchButton.textContent = 'Loading...';
+        }
 
         // Make API call to the statistics endpoint
-        fetch('/statistics/estimated-score', {
+        fetch(endpoint, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -52,13 +59,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error fetching statistics:', error);
-            alert('Failed to load your statistics. Please try again later.');
+            // Don't show alert on initial page load, only when button is explicitly clicked
+            if (endpoint.includes('estimated-score')) {
+                alert('Failed to load your statistics. Please try again later.');
+            }
         })
         .finally(() => {
             // Reset button state
-            fetchButton.disabled = false;
-            fetchButton.textContent = 'View My Estimated TOEIC Score';
+            if (fetchButton) {
+                fetchButton.disabled = false;
+                fetchButton.textContent = 'View My Estimated TOEIC Score';
+            }
         });
     }
 });
-
