@@ -25,6 +25,15 @@ public class UserStatistic {
     @Column(name = "score_interval")
     private Integer scoreInterval; // Interval for estimated score, e.g., 5 points
 
+    @Column(name = "accuracy")
+    private Integer accuracy; // Accuracy of the user's answers, calculated as (correctAnswers / total
+
+    @Column(name = "total_answers")
+    private Integer totalAnswers; // Total number of answers provided by the user
+
+    @Column(name = "correct_answers")
+    private Integer correctAnswers; // Total number of correct answers provided by the user
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // User associated with the statistic
