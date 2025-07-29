@@ -20,7 +20,7 @@ public class StreakHistory extends TrackingDate {
     @Column(name = "start_streak", nullable = false)
     private LocalDateTime startStreak;
 
-    @Column(name = "end_streak", nullable = false)
+    @Column(name = "end_streak")
     private LocalDateTime endStreak;
 
     @ManyToOne
