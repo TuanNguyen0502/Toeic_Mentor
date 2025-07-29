@@ -46,6 +46,19 @@
                             <h2 data-animate="animate__fadeInUp">Your TOEIC Progress</h2>
                         </div>
                     </div>
+                    <!-- Study Streak Display -->
+                    <div class="study-streak-card mb-4" data-animate="animate__fadeInUp">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h4 class="streak-title">Current Study Streak</h4>
+                                <div class="streak-count">
+                                    <span id="currentStreak">-</span> days
+                                </div>
+                                <p class="streak-message mt-2">Keep learning to maintain your streak!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Study Streak Display -->
                     <div class="score-card" data-animate="animate__fadeInUp">
                         <div class="text-center mb-4">
                             <button id="fetchEstimatedScoreBtn" class="btn btn-style1">
@@ -876,6 +889,51 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Fetch and display study streak -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch current streak data
+        fetchCurrentStreak();
+    });
+
+    function fetchCurrentStreak() {
+        fetch('/study-streaks/current-streak')
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // User is not authenticated
+                        document.getElementById('currentStreak').textContent = '-';
+                        return;
+                    }
+                    throw new Error('Failed to fetch streak data');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update the streak display with the fetched data
+                document.getElementById('currentStreak').textContent = data;
+
+                // Add appropriate message based on streak length
+                const streakMessage = document.querySelector('.streak-message');
+                if (data === 0) {
+                    streakMessage.textContent = "Start learning today to begin your streak!";
+                } else if (data === 1) {
+                    streakMessage.textContent = "You started your streak today. Keep going!";
+                } else if (data < 5) {
+                    streakMessage.textContent = "Great start! Keep learning to build your streak.";
+                } else if (data < 10) {
+                    streakMessage.textContent = "Impressive! Your dedication is showing.";
+                } else {
+                    streakMessage.textContent = "Amazing! You're on fire with your learning streak!";
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching streak data:', error);
+                document.getElementById('currentStreak').textContent = 'Error';
+            });
+    }
+</script>
 
 <!-- Recent Tests Chart JavaScript -->
 <script>
