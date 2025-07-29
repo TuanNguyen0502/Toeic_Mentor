@@ -9,6 +9,7 @@ import intern.nhhtuan.toeic_mentor.repository.StreakHistoryRepository;
 import intern.nhhtuan.toeic_mentor.repository.StudyStreakRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IStudyStreakService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -51,5 +52,33 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
                 .achievements(achievementMap)
                 .histories(historyMap)
                 .build();
+    }
+
+    @Async
+    @Override
+    public void updateCurrentStreak(String email) {
+        StudyStreak studyStreak = studyStreakRepository.findByUser_Email(email)
+                .orElseThrow(() -> new IllegalStateException("Study streak not found for user: " + email));
+
+        LocalDateTime now = LocalDateTime.now();
+        if (studyStreak.getLastStudyDate() == null || !studyStreak.getLastStudyDate().toLocalDate().equals(now.toLocalDate())) {
+            studyStreak.setLastStudyDate(now);
+            studyStreak.setCurrentStreak(studyStreak.getCurrentStreak() + 1);
+            if (studyStreak.getCurrentStreak() > studyStreak.getMaxStreak()) {
+                studyStreak.setMaxStreak(studyStreak.getCurrentStreak());
+            }
+            studyStreakRepository.save(studyStreak);
+        }
+
+        // Update streak history
+        StreakHistory streakHistory = streakHistoryRepository.findFirstByUser_EmailOrderByStartStreakDesc(email);
+        if (streakHistory == null || streakHistory.getEndStreak().toLocalDate().isBefore(now.toLocalDate())) {
+            // Create a new streak history entry if no current streak history exists or if the last entry is from a previous day
+            streakHistory = new StreakHistory();
+            streakHistory.setUser(studyStreak.getUser());
+            streakHistory.setStartStreak(now);
+            streakHistoryRepository.save(streakHistory);
+        }
+
     }
 }

@@ -29,7 +29,7 @@ public class TestServiceImpl implements ITestService {
     private final IUserService userService;
     private final IQuestionService questionService;
     private final IPartService partService;
-
+    private final IStudyStreakService studyStreakService;
 
     @Override
     public List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest) {
@@ -201,6 +201,9 @@ public class TestServiceImpl implements ITestService {
         
         // Set the testId in the response
         testResultResponse.setTestId(test.getId());
+
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(email);
     }
 
     @Override

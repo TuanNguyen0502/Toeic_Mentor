@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface StreakHistoryRepository extends JpaRepository<StreakHistory, Long> {
     List<StreakHistory> findByUser_Email(String userEmail);
+
+    StreakHistory findFirstByUser_EmailOrderByStartStreakDesc(String userEmail);
 }
