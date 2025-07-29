@@ -20,8 +20,9 @@ public class StreakAchievement extends TrackingDate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "milestone", nullable = false)
-    private Integer milestone;
+    @ManyToOne
+    @JoinColumn(name = "milestone_id", nullable = false)
+    private StreakMilestone streakMilestone;
 
     @Column(name = "achieved_at", nullable = false)
     private LocalDateTime achievedAt;

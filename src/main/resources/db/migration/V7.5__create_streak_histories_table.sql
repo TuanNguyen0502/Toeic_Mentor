@@ -11,3 +11,8 @@ CREATE TABLE streak_histories
     updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
+
+INSERT INTO streak_histories (user_id, start_streak)
+SELECT id, '2025-07-28 14:44:36'
+FROM users
+WHERE id NOT IN (SELECT user_id FROM streak_histories);

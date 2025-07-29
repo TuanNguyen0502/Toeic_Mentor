@@ -14,6 +14,6 @@ CREATE TABLE study_streaks
 );
 
 INSERT INTO study_streaks (user_id, current_streak, max_streak, last_study_date)
-SELECT id, 0, 0, NULL
+SELECT id, 2, 2, '2025-07-29 14:44:36'
 FROM users
 WHERE id NOT IN (SELECT user_id FROM study_streaks);
