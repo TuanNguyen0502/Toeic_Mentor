@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "study_streaks",
+        name = "streak_achievements",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "milestone"})}
 )
 @EqualsAndHashCode(callSuper = true)
