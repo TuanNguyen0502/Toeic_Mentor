@@ -5,6 +5,7 @@ import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestStatisticResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IPdfService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ITestService;
@@ -87,5 +88,12 @@ public class TestController {
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
         log.info("Fetching recent tests for user: {}", email);
         return testService.getRecentTests(email, number);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<TestStatisticResponse> getTestStatistics() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+        return ResponseEntity.ok(testService.calculateTestStatistic(email));
     }
 }
