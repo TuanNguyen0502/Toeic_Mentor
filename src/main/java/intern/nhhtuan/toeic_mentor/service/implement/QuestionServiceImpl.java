@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@EnableAsync
 public class QuestionServiceImpl implements IQuestionService {
     private final QuestionRepository questionRepository;
     private final IQuestionOptionService questionOptionService;
