@@ -4,9 +4,11 @@ import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestStatisticResponse;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.repository.TestRepository;
+import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,6 +32,7 @@ public class TestServiceImpl implements ITestService {
     private final IUserService userService;
     private final IQuestionService questionService;
     private final IPartService partService;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -198,7 +202,7 @@ public class TestServiceImpl implements ITestService {
             testPart.setPart(part);
             testPartService.save(testPart);
         }
-        
+
         // Set the testId in the response
         testResultResponse.setTestId(test.getId());
     }
@@ -209,20 +213,20 @@ public class TestServiceImpl implements ITestService {
         if (testOpt.isEmpty()) {
             throw new RuntimeException("Test not found with ID: " + testId);
         }
-        
+
         Test test = testOpt.get();
-        
+
         // Verify that the test belongs to the user
         if (!test.getUser().getEmail().equals(email)) {
             throw new RuntimeException("Access denied: Test does not belong to user: " + email);
         }
-        
+
         // Convert Test entity to TestResultResponse
         List<TestResultResponse.AnswerResponse> answerResponses = new ArrayList<>();
-        
+
         for (Answer answer : test.getAnswers()) {
             Question question = answer.getQuestion();
-            
+
             // Convert options to OptionResponse format
             List<TestResultResponse.OptionResponse> options = question.getOptions().stream()
                     .map(opt -> TestResultResponse.OptionResponse.builder()
@@ -230,7 +234,7 @@ public class TestServiceImpl implements ITestService {
                             .value(opt.getValue())
                             .build())
                     .collect(Collectors.toList());
-            
+
             TestResultResponse.AnswerResponse answerResponse = TestResultResponse.AnswerResponse.builder()
                     .id(question.getId())
                     .questionText(question.getQuestionText())
@@ -243,10 +247,10 @@ public class TestServiceImpl implements ITestService {
                     .isCorrect(answer.isCorrect())
                     .answerExplanation(answer.getAnswerExplanation())
                     .build();
-            
+
             answerResponses.add(answerResponse);
         }
-        
+
         return TestResultResponse.builder()
                 .testId(test.getId())
                 .score(test.getScore())
@@ -266,6 +270,62 @@ public class TestServiceImpl implements ITestService {
         List<Test> tests = testRepository.findRecentTestsByUserEmail(email, pageable);
 
         return tests.stream().map(this::mapToRecentTestResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    public TestStatisticResponse calculateTestStatistic(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        List<Test> tests = testRepository.findAllByUser(user);
+
+        if (tests.isEmpty()) {
+            return TestStatisticResponse.builder()
+                    .totalTests(0)
+                    .averageScore(0)
+                    .highestScore(0)
+                    .totalTimeSpent(0)
+                    .build();
+        }
+
+        int totalTests = tests.size();
+
+        // Calculate average score percentage
+        double totalScorePercentage = tests.stream()
+                .mapToDouble(test -> {
+                    if (test.getAnswers() == null || test.getAnswers().isEmpty()) {
+                        return 0.0;
+                    }
+                    return (test.getScore() * 100.0) / test.getAnswers().size();
+                })
+                .sum();
+        int averageScore = (int) Math.round(totalScorePercentage / totalTests);
+
+        // Calculate highest score percentage
+        int highestScore = tests.stream()
+                .mapToInt(test -> {
+                    if (test.getAnswers() == null || test.getAnswers().isEmpty()) {
+                        return 0;
+                    }
+                    return (int) ((test.getScore() * 100.0) / test.getAnswers().size());
+                })
+                .max()
+                .orElse(0);
+
+        // Calculate total time spent (in minutes)
+        int totalTimeSeconds = tests.stream()
+                .flatMap(t -> t.getAnswers().stream())
+                .mapToInt(answer -> answer.getTimeSpent() != null ? answer.getTimeSpent() : 0)
+                .sum();
+
+        int totalTimeMinutes = totalTimeSeconds / 60;
+
+        return TestStatisticResponse.builder()
+                .totalTests(totalTests)
+                .averageScore(averageScore)
+                .highestScore(highestScore)
+                .totalTimeSpent(totalTimeMinutes)
+                .build();
     }
 
     private RecentTestResponse mapToRecentTestResponse(Test test) {
