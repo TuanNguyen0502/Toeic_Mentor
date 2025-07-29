@@ -40,7 +40,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
 
         HashMap<Integer, String> achievementMap = new HashMap<>();
         for (StreakAchievement achievement : streakAchievements) {
-            achievementMap.put(achievement.getMilestone(), achievement.getAchievedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            achievementMap.put(achievement.getStreakMilestone().getDayTarget(), achievement.getAchievedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         }
         HashMap<LocalDateTime, LocalDateTime> historyMap = new HashMap<>();
         for (StreakHistory history : streakHistories) {
