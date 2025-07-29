@@ -10,7 +10,9 @@ import intern.nhhtuan.toeic_mentor.repository.StudyStreakRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IStudyStreakService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -79,6 +81,28 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
             streakHistory.setStartStreak(now);
             streakHistoryRepository.save(streakHistory);
         }
+    }
 
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
+    public void lostCurrentStreak() {
+        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+
+        // Reset current streak if the last study date is not yesterday
+        List<StudyStreak> outdatedStreaks = studyStreakRepository.findAllOutdatedStreaks(yesterday);
+        for (StudyStreak studyStreak : outdatedStreaks) {
+            studyStreak.setCurrentStreak(0);
+            studyStreakRepository.save(studyStreak);
+
+            // Reset streak history
+            StreakHistory streakHistory = streakHistoryRepository
+                    .findFirstByUser_EmailOrderByStartStreakDesc(studyStreak.getUser().getEmail());
+
+            if (streakHistory != null && streakHistory.getEndStreak() == null) {
+                // If the streak history exists and has no end date, set the end date to yesterday
+                streakHistory.setEndStreak(LocalDateTime.now().minusDays(1));
+                streakHistoryRepository.save(streakHistory);
+            }
+        }
     }
 }
