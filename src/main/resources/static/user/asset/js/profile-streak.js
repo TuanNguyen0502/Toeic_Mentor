@@ -94,8 +94,8 @@ function renderSimpleStudyCalendar(histories) {
             // Process start date
             const startDate = new Date(startTime);
 
-            // Process end date
-            const endDate = new Date(endTime);
+            // Process end date - if null, use current date
+            const endDate = endTime ? new Date(endTime) : new Date();
 
             // Add all days between start and end dates (inclusive)
             const currentDate = new Date(startDate);
@@ -103,7 +103,7 @@ function renderSimpleStudyCalendar(histories) {
             // Loop through each day in the study period
             while (currentDate <= endDate) {
                 const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
-                console.log(`Adding study day: ${dateKey} from period ${startTime} to ${endTime}`);
+                console.log(`Adding study day: ${dateKey} from period ${startTime} to ${endTime || 'present'}`);
                 studyDays.set(dateKey, true);
 
                 // Move to the next day
@@ -254,6 +254,12 @@ function renderSimpleStudyCalendar(histories) {
         }
         .calendar-day.today {
             border: 2px solid #0d6efd;
+        }
+        .calendar-day.has-study.today {
+            background-color: #cfe2ff;
+            border: 2px solid #0d6efd;
+            color: #0d6efd;
+            font-weight: bold;
         }
     `;
     document.head.appendChild(styleElement);
