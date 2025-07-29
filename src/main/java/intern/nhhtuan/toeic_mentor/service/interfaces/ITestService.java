@@ -5,6 +5,7 @@ import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestStatisticResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,8 @@ public interface ITestService {
     TestResultResponse getTestResult(Long testId, String email);
 
     List<RecentTestResponse> getRecentTests(String email, int number);
+
+    TestStatisticResponse calculateTestStatistic(String email);
 
 
 }
