@@ -1,5 +1,3 @@
-I'll help you create a README.md file for your Toeic_Mentor project. Let me get some information about your repository first to make the README more relevant.Let's look at the files in the repository to better understand the project:# TOEIC Mentor
-
 ## Project Overview
 TOEIC Mentor is an intelligent learning assistant designed to help users prepare for the TOEIC (Test of English for International Communication) exam. The application provides comprehensive TOEIC preparation tools including practice tests, personalized feedback, and AI-powered assistance.
 
