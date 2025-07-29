@@ -209,7 +209,6 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
     @Transactional
-    @Async
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
     public void calculateDifficulty() {
         try {
