@@ -94,6 +94,55 @@
     </section>
     <!-- TOEIC Score Statistics Section end -->
 
+    <!-- Recent Tests Chart Section start -->
+    <section class="recent-tests-chart-section section-pt">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-capture">
+                        <div class="section-title">
+                            <h2 data-animate="animate__fadeInUp">Recent Test Performance</h2>
+                        </div>
+                    </div>
+                    <div class="chart-container" data-animate="animate__fadeInUp">
+                        <div class="chart-controls mb-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <label for="testCountSelect" class="form-label">Number of Recent Tests:</label>
+                                    <select id="testCountSelect" class="form-select" style="max-width: 150px;">
+                                        <option value="5">5 Tests</option>
+                                        <option value="10" selected>10 Tests</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button id="refreshChartBtn" class="btn btn-style1">
+                                        <i class="feather-refresh-cw"></i> Refresh Chart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="recentTestsChart" width="400" height="200"></canvas>
+                        </div>
+                        <div id="chartLoading" class="text-center" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading chart data...</p>
+                        </div>
+                        <div id="chartNoData" class="text-center" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="feather-info"></i>
+                                <p class="mb-0">No recent test data available. Take some tests to see your performance chart!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Recent Tests Chart Section end -->
+
     <!-- category-slider start -->
     <section class="slider-category section-pt">
         <div class="section-capture">
@@ -823,6 +872,232 @@
             });
         });
     });
+</script>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Recent Tests Chart JavaScript -->
+<script>
+    let recentTestsChart = null;
+
+    // Initialize chart when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeChart();
+        
+        // Add event listeners
+        document.getElementById('testCountSelect').addEventListener('change', function() {
+            loadChartData();
+        });
+        
+        document.getElementById('refreshChartBtn').addEventListener('click', function() {
+            loadChartData();
+        });
+    });
+
+    function initializeChart() {
+        const ctx = document.getElementById('recentTestsChart').getContext('2d');
+        
+        recentTestsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Correct Answer Percentage',
+                    data: [],
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#007bff',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#007bff',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return 'Test #' + (context[0].dataIndex + 1);
+                            },
+                            label: function(context) {
+                                return 'Accuracy: ' + context.parsed.y + '%';
+                            },
+                            afterLabel: function(context) {
+                                const data = context.chart.data.datasets[0].data;
+                                const index = context.dataIndex;
+                                const testData = window.chartTestData ? window.chartTestData[index] : null;
+                                if (testData) {
+                                    return [
+                                        'Correct: ' + testData.score + '/' + testData.totalAnswers,
+                                        'Date: ' + formatDate(testData.createdAt)
+                                    ];
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20,
+                            font: {
+                                size: 12
+                            },
+                            color: '#666',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Accuracy (%)',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            color: '#333'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#666'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Recent Tests',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            color: '#333'
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+        
+        // Load initial data
+        loadChartData();
+    }
+
+    function loadChartData() {
+        const testCount = document.getElementById('testCountSelect').value;
+        const loadingDiv = document.getElementById('chartLoading');
+        const noDataDiv = document.getElementById('chartNoData');
+        const chartWrapper = document.querySelector('.chart-wrapper');
+        
+        // Show loading
+        loadingDiv.style.display = 'block';
+        noDataDiv.style.display = 'none';
+        chartWrapper.style.display = 'none';
+        
+        // Fetch data from API
+        fetch(`/tests/recent-tests?number=${testCount}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch test data');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide loading
+                loadingDiv.style.display = 'none';
+                
+                if (!data || data.length === 0) {
+                    noDataDiv.style.display = 'block';
+                    return;
+                }
+                
+                // Show chart
+                chartWrapper.style.display = 'block';
+                
+                // Store test data for tooltip
+                window.chartTestData = data;
+                
+                // Prepare chart data - calculate percentage
+                const labels = data.map((test, index) => `Test ${index + 1}`);
+                const percentages = data.map(test => {
+                    if (test.totalAnswers === 0) return 0;
+                    return Math.round((test.score / test.totalAnswers) * 100);
+                });
+                
+                // Update chart
+                recentTestsChart.data.labels = labels;
+                recentTestsChart.data.datasets[0].data = percentages;
+                recentTestsChart.update('active');
+            })
+            .catch(error => {
+                console.error('Error loading chart data:', error);
+                loadingDiv.style.display = 'none';
+                noDataDiv.style.display = 'block';
+                noDataDiv.querySelector('.alert').innerHTML = `
+                    <i class="feather-alert-triangle"></i>
+                    <p class="mb-0">Error loading chart data. Please try again later.</p>
+                `;
+            });
+    }
+
+    function formatDate(dateString) {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            return dateString;
+        }
+    }
 </script>
 
 </html>

@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.entity.*;
@@ -8,6 +9,8 @@ import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
 import intern.nhhtuan.toeic_mentor.repository.TestRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -252,6 +255,25 @@ public class TestServiceImpl implements ITestService {
                 .recommendations(test.getRecommendations())
                 .performance(test.getPerformance())
                 .referenceUrls(test.getReferenceUrls())
+                .build();
+    }
+
+    @Override
+    public List<RecentTestResponse> getRecentTests(String email, int number) {
+        Pageable pageable = PageRequest.of(0, number);
+
+        // todo check email is valid
+        List<Test> tests = testRepository.findRecentTestsByUserEmail(email, pageable);
+
+        return tests.stream().map(this::mapToRecentTestResponse).collect(Collectors.toList());
+    }
+
+    private RecentTestResponse mapToRecentTestResponse(Test test) {
+        return RecentTestResponse.builder()
+                .testId(test.getId())
+                .createdAt(test.getCreatedAt().toString())
+                .totalAnswers(test.getAnswers() != null ? test.getAnswers().size() : 0)
+                .score(test.getScore())
                 .build();
     }
 }
