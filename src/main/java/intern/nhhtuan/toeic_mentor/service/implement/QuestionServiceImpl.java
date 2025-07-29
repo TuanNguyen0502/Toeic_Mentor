@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@EnableAsync
 public class QuestionServiceImpl implements IQuestionService {
     private final QuestionRepository questionRepository;
     private final IQuestionOptionService questionOptionService;
@@ -210,7 +209,6 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
     @Transactional
-    @Async
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
     public void calculateDifficulty() {
         try {

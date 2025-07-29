@@ -3,10 +3,12 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.ProfileDTO;
 import intern.nhhtuan.toeic_mentor.dto.request.ForgotPasswordRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.RegisterRequest;
+import intern.nhhtuan.toeic_mentor.entity.StudyStreak;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
 import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.repository.RoleRepository;
+import intern.nhhtuan.toeic_mentor.repository.StudyStreakRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
 import intern.nhhtuan.toeic_mentor.util.ImageUtil;
@@ -16,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
@@ -26,6 +29,7 @@ public class UserServiceImpl implements IUserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ImageUtil imageUtil;
+    private final StudyStreakRepository streakRepository;
 
     @Override
     public User findByEmail(String email) {
@@ -71,6 +75,15 @@ public class UserServiceImpl implements IUserService {
 
         // Lưu vào database
         userRepository.save(user);
+
+        // Tạo StudyStreak cho người dùng mới
+        StudyStreak studyStreak = new StudyStreak();
+        studyStreak.setUser(user);
+        studyStreak.setCurrentStreak(1);
+        studyStreak.setMaxStreak(1);
+        studyStreak.setLastStudyDate(LocalDateTime.now());
+        streakRepository.save(studyStreak);
+
         return true;
     }
 

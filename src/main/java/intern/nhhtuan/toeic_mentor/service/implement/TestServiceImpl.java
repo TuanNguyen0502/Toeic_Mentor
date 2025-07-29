@@ -32,6 +32,7 @@ public class TestServiceImpl implements ITestService {
     private final IUserService userService;
     private final IQuestionService questionService;
     private final IPartService partService;
+    private final IStudyStreakService studyStreakService;
     private final UserRepository userRepository;
 
 
@@ -205,6 +206,9 @@ public class TestServiceImpl implements ITestService {
 
         // Set the testId in the response
         testResultResponse.setTestId(test.getId());
+
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(email);
     }
 
     @Override
