@@ -109,6 +109,14 @@ function renderSimpleStudyCalendar(histories) {
                 // Move to the next day
                 currentDate.setDate(currentDate.getDate() + 1);
             }
+
+            // If endTime is null, explicitly make sure today is added
+            if (endTime === null) {
+                const today = new Date();
+                const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+                console.log(`Explicitly adding today: ${todayKey} because endTime is null`);
+                studyDays.set(todayKey, true);
+            }
         });
     }
 
