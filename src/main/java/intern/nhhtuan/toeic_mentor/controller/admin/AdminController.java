@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -73,5 +74,12 @@ public class AdminController {
     @GetMapping("/streak-milestones/create")
     public String createStreakMilestone() {
         return "admin/streak-milestone/new-streak-milestone";
+    }
+
+    @GetMapping("/streak-milestones/{id}")
+    public String updateStreakMilestone(@PathVariable Long id, Model model) {
+        StreakMilestoneDTO streakMilestoneDTO = streakMilestoneService.getStreakMilestoneById(id);
+        model.addAttribute("streakMilestone", streakMilestoneDTO);
+        return "admin/streak-milestone/update-streak-milestone";
     }
 }

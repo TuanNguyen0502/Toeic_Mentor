@@ -5,10 +5,7 @@ import intern.nhhtuan.toeic_mentor.service.interfaces.IStreakMilestoneService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/streak-milestones")
@@ -23,6 +20,17 @@ public class StreakMilestoneController {
             return ResponseEntity.ok("Streak milestone created successfully");
         } else {
             return ResponseEntity.badRequest().body("Failed to create streak milestone");
+        }
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<?> updateStreakMilestone(@PathVariable Long id,
+                                                   @Valid @RequestBody StreakMilestoneDTO streakMilestoneDTO) {
+        boolean isUpdated = streakMilestoneService.updateStreakMilestone(id, streakMilestoneDTO);
+        if (isUpdated) {
+            return ResponseEntity.ok("Streak milestone updated successfully");
+        } else {
+            return ResponseEntity.badRequest().body("Failed to update streak milestone");
         }
     }
 }
