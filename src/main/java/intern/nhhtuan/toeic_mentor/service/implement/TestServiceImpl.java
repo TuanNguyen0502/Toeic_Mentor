@@ -177,7 +177,7 @@ public class TestServiceImpl implements ITestService {
             Answer answer = new Answer();
             answer.setAnswer(answerResponse.getUserAnswer());
             answer.setCorrect(answerResponse.isCorrect());
-            answer.setAnswerExplanation(answerResponse.getAnswerExplanation());
+            answer.setAnswerExplanation(answerResponse.getOptionExplanation());
             answer.setTimeSpent(answerResponse.getTimeSpent());
             answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
             answer.setTest(test);
@@ -249,7 +249,7 @@ public class TestServiceImpl implements ITestService {
                     .tags(question.getTags())
                     .timeSpent(answer.getTimeSpent())
                     .isCorrect(answer.isCorrect())
-                    .answerExplanation(answer.getAnswerExplanation())
+                    .optionExplanation(answer.getAnswerExplanation())
                     .build();
 
             answerResponses.add(answerResponse);

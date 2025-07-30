@@ -884,11 +884,11 @@
                     html += `</div>`;
 
                     // Explanation section
-                    if (q.answerExplanation && q.answerExplanation.length > 0) {
+                    if (q.optionExplanation && q.optionExplanation.length > 0) {
                         html += `<div class='mt-4 text-gray-700'>
                         <span class='font-medium'>Explanation:</span>
                         <ul class='list-disc ml-6 mt-1'>
-                            ${q.answerExplanation.map(exp => `<li>${exp}</li>`).join('')}
+                            ${q.optionExplanation.map(exp => `<li>${exp}</li>`).join('')}
                         </ul>
                     </div>`;
                     }
