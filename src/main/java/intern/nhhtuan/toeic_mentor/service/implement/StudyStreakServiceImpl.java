@@ -3,9 +3,11 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.response.StudyStreakDetailResponse;
 import intern.nhhtuan.toeic_mentor.entity.StreakAchievement;
 import intern.nhhtuan.toeic_mentor.entity.StreakHistory;
+import intern.nhhtuan.toeic_mentor.entity.StreakMilestone;
 import intern.nhhtuan.toeic_mentor.entity.StudyStreak;
 import intern.nhhtuan.toeic_mentor.repository.StreakAchievementRepository;
 import intern.nhhtuan.toeic_mentor.repository.StreakHistoryRepository;
+import intern.nhhtuan.toeic_mentor.repository.StreakMilestoneRepository;
 import intern.nhhtuan.toeic_mentor.repository.StudyStreakRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IStudyStreakService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
     private final StudyStreakRepository studyStreakRepository;
     private final StreakAchievementRepository streakAchievementRepository;
     private final StreakHistoryRepository streakHistoryRepository;
+    private final StreakMilestoneRepository streakMilestoneRepository;
 
     @Override
     public int getCurrentStreak(String email) {
@@ -89,6 +92,19 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
             streakHistory.setUser(studyStreak.getUser());
             streakHistory.setStartStreak(now);
             streakHistoryRepository.save(streakHistory);
+        }
+
+        // Check for streak achievements
+        StreakMilestone nextStreakMilestone = streakMilestoneRepository.findFirstByDayTargetGreaterThanEqual(studyStreak.getCurrentStreak());
+        if (nextStreakMilestone != null &&
+                !streakAchievementRepository.existsByUser_EmailAndStreakMilestone_DayTarget(email, nextStreakMilestone.getDayTarget()) &&
+                studyStreak.getCurrentStreak() >= nextStreakMilestone.getDayTarget()) {
+            // Create a new streak achievement if the current streak meets or exceeds the milestone
+            StreakAchievement streakAchievement = new StreakAchievement();
+            streakAchievement.setUser(studyStreak.getUser());
+            streakAchievement.setStreakMilestone(nextStreakMilestone);
+            streakAchievement.setAchievedAt(now);
+            streakAchievementRepository.save(streakAchievement);
         }
     }
 
