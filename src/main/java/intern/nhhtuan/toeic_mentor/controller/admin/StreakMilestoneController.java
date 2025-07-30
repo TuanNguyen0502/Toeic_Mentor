@@ -33,4 +33,14 @@ public class StreakMilestoneController {
             return ResponseEntity.badRequest().body("Failed to update streak milestone");
         }
     }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> deleteStreakMilestone(@PathVariable Long id) {
+        boolean isDeleted = streakMilestoneService.deleteStreakMilestone(id);
+        if (isDeleted) {
+            return ResponseEntity.ok("Streak milestone deleted successfully");
+        } else {
+            return ResponseEntity.badRequest().body("Failed to delete streak milestone");
+        }
+    }
 }

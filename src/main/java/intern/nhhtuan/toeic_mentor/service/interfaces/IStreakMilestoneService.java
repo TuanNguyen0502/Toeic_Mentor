@@ -11,5 +11,7 @@ public interface IStreakMilestoneService {
     boolean createStreakMilestone(StreakMilestoneDTO streakMilestoneDTO);
 
     boolean updateStreakMilestone(Long id, StreakMilestoneDTO streakMilestoneDTO);
+
+    boolean deleteStreakMilestone(Long id);
 }
 

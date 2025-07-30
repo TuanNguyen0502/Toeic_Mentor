@@ -84,4 +84,15 @@ public class StreakMilestoneServiceImpl implements IStreakMilestoneService {
         streakMilestoneRepository.save(existingMilestone);
         return true;
     }
+
+    @Override
+    public boolean deleteStreakMilestone(Long id) {
+        // Check if the streak milestone exists
+        StreakMilestone existingMilestone = streakMilestoneRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Streak milestone", "id", id));
+
+        // Delete the streak milestone
+        streakMilestoneRepository.delete(existingMilestone);
+        return true;
+    }
 }
