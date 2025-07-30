@@ -17,6 +17,23 @@ public class StreakMilestoneServiceImpl implements IStreakMilestoneService {
     private final StreakMilestoneRepository streakMilestoneRepository;
 
     @Override
+    public StreakMilestoneDTO getStreakMilestoneById(Long id) {
+        // Fetch the streak milestone by ID
+        StreakMilestone streakMilestone = streakMilestoneRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Streak milestone", "id", id));
+
+        // Convert entity to DTO
+        return StreakMilestoneDTO.builder()
+                .id(streakMilestone.getId())
+                .dayTarget(streakMilestone.getDayTarget())
+                .title(streakMilestone.getTitle())
+                .description(streakMilestone.getDescription())
+                .createdAt(streakMilestone.getCreatedAt().toString())
+                .updatedAt(streakMilestone.getUpdatedAt().toString())
+                .build();
+    }
+
+    @Override
     public Page<StreakMilestoneDTO> getStreakMilestones(int page, int size, String direction) {
         Sort sort = Sort.by(Sort.Direction.fromString(direction), "dayTarget");
         // Fetch paginated streak milestones from the repository
@@ -46,6 +63,25 @@ public class StreakMilestoneServiceImpl implements IStreakMilestoneService {
         streakMilestone.setTitle(streakMilestoneDTO.getTitle());
         streakMilestone.setDescription(streakMilestoneDTO.getDescription());
         streakMilestoneRepository.save(streakMilestone);
+        return true;
+    }
+
+    @Override
+    public boolean updateStreakMilestone(Long id, StreakMilestoneDTO streakMilestoneDTO) {
+        // Check if the streak milestone exists
+        StreakMilestone existingMilestone = streakMilestoneRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Streak milestone", "id", id));
+
+        // Check if the day target already exists
+        if (streakMilestoneRepository.existsByDayTarget(streakMilestoneDTO.getDayTarget())) {
+            throw new ResourceNotFoundException("Streak milestone", "day target", streakMilestoneDTO.getDayTarget());
+        }
+
+        // Update fields
+        existingMilestone.setDayTarget(streakMilestoneDTO.getDayTarget());
+        existingMilestone.setTitle(streakMilestoneDTO.getTitle());
+        existingMilestone.setDescription(streakMilestoneDTO.getDescription());
+        streakMilestoneRepository.save(existingMilestone);
         return true;
     }
 }
