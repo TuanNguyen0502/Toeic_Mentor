@@ -76,11 +76,66 @@ function renderSimpleStudyCalendar(histories) {
     const calendarEl = document.getElementById('studyCalendar');
     if (!calendarEl) return;
 
+    // Get lastStudyDate from the DOM that was previously set
+    const lastStudyDateEl = document.getElementById('lastStudyDate');
+    const lastStudyDateStr = lastStudyDateEl ? lastStudyDateEl.textContent : null;
+
+    console.log("Original lastStudyDate string:", lastStudyDateStr);
+
+    // Parse lastStudyDate - handle different date formats
+    let lastStudyDate = null;
+    if (lastStudyDateStr) {
+        try {
+            // Try to parse the date string directly
+            lastStudyDate = new Date(lastStudyDateStr);
+
+            // Check if the date is valid
+            if (isNaN(lastStudyDate.getTime())) {
+                console.log("Invalid date format, trying alternative parsing...");
+
+                // Try to parse common date formats
+                // Try dd/MM/yyyy or dd-MM-yyyy format
+                if (lastStudyDateStr.includes('/') || lastStudyDateStr.includes('-')) {
+                    const separator = lastStudyDateStr.includes('/') ? '/' : '-';
+                    const parts = lastStudyDateStr.split(separator);
+
+                    if (parts.length === 3) {
+                        // Assuming the format is dd/MM/yyyy or dd-MM-yyyy
+                        const day = parseInt(parts[0], 10);
+                        const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JavaScript
+                        const year = parseInt(parts[2], 10);
+
+                        lastStudyDate = new Date(year, month, day);
+                    }
+                }
+            }
+
+            console.log("Parsed lastStudyDate:", lastStudyDate);
+        } catch (error) {
+            console.error("Error parsing date:", error);
+            lastStudyDate = null;
+        }
+    }
+
+    // Check if lastStudyDate is today
+    const today = new Date();
+    console.log("Today's date:", today);
+
+    let isLastStudyDateToday = false;
+
+    if (lastStudyDate && !isNaN(lastStudyDate.getTime())) {
+        isLastStudyDateToday =
+            lastStudyDate.getFullYear() === today.getFullYear() &&
+            lastStudyDate.getMonth() === today.getMonth() &&
+            lastStudyDate.getDate() === today.getDate();
+    }
+
+    console.log("Is lastStudyDate today:", isLastStudyDateToday);
+
     // Clear previous content
     calendarEl.innerHTML = '';
 
     // Get current date to determine which month to display
-    const today = new Date();
     let currentMonth = today.getMonth();
     let currentYear = today.getFullYear();
 
@@ -110,11 +165,10 @@ function renderSimpleStudyCalendar(histories) {
                 currentDate.setDate(currentDate.getDate() + 1);
             }
 
-            // If endTime is null, explicitly make sure today is added
-            if (endTime === null) {
-                const today = new Date();
+            // If endTime is null and lastStudyDate is today, make sure today is added
+            if (endTime === null && isLastStudyDateToday) {
                 const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-                console.log(`Explicitly adding today: ${todayKey} because endTime is null`);
+                console.log(`Explicitly adding today: ${todayKey} because endTime is null and lastStudyDate is today`);
                 studyDays.set(todayKey, true);
             }
         });
@@ -212,9 +266,10 @@ function renderSimpleStudyCalendar(histories) {
                 console.log(`Highlighted day ${day} with key ${dateKey}`);
             }
 
-            // Highlight today
-            if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+            // Highlight today only if lastStudyDate is today
+            if (isLastStudyDateToday && year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
                 dayCell.classList.add('today');
+                console.log(`Highlighted today (${day}) because lastStudyDate is today`);
             }
 
             calendarGrid.appendChild(dayCell);
