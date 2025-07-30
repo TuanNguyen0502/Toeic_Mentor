@@ -41,9 +41,12 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
         List<StreakAchievement> streakAchievements = streakAchievementRepository.findByUser_Email(email);
         List<StreakHistory> streakHistories = streakHistoryRepository.findByUser_Email(email);
 
-        HashMap<Integer, String> achievementMap = new HashMap<>();
+        HashMap<String, String> achievementMap = new HashMap<>();
         for (StreakAchievement achievement : streakAchievements) {
-            achievementMap.put(achievement.getStreakMilestone().getDayTarget(), achievement.getAchievedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            achievementMap.put(
+                    achievement.getStreakMilestone().getTitle() + " (" + achievement.getStreakMilestone().getDayTarget() + " days)",
+                    achievement.getAchievedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            );
         }
         HashMap<LocalDateTime, LocalDateTime> historyMap = new HashMap<>();
         for (StreakHistory history : streakHistories) {
@@ -91,6 +94,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
             streakHistory = new StreakHistory();
             streakHistory.setUser(studyStreak.getUser());
             streakHistory.setStartStreak(now);
+            streakHistory.setEndStreak(now);
             streakHistoryRepository.save(streakHistory);
         }
 
