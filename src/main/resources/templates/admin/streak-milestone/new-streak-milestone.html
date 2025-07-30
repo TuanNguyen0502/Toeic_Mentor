@@ -1,0 +1,293 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<!-- Mirrored from themesflat.co/html/remos/add-attributes.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:48 GMT -->
+<head th:insert="~{admin/fragments/head::head}"></head>
+
+<body class="body">
+
+<!-- #wrapper -->
+<div id="wrapper">
+    <!-- #page -->
+    <div id="page" class="">
+        <!-- layout-wrap -->
+        <div class="layout-wrap">
+            <!-- preload -->
+            <div id="preload" class="preload-container">
+                <div class="preloading">
+                    <span></span>
+                </div>
+            </div>
+            <!-- /preload -->
+            <!-- section-menu-left -->
+            <div th:insert="~{admin/fragments/menu-left::section-menu-left}"></div>
+            <!-- /section-menu-left -->
+            <!-- section-content-right -->
+            <div class="section-content-right">
+                <!-- header-dashboard -->
+                <div th:insert="~{admin/fragments/header_dashboard::header-dashboard}"></div>
+                <!-- /header-dashboard -->
+                <!-- main-content -->
+                <div class="main-content">
+                    <!-- main-content-wrap -->
+                    <div class="main-content-inner">
+                        <!-- main-content-wrap -->
+                        <div class="main-content-wrap">
+                            <div class="flex items-center flex-wrap justify-between gap20 mb-27">
+                                <h3>New Streak Milestone</h3>
+                                <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+                                    <li>
+                                        <a th:href="@{/admin}">
+                                            <div class="text-tiny">Dashboard</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <a th:href="@{/admin/streak-milestones}">
+                                            <div class="text-tiny">Streak Milestone</div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-chevron-right"></i>
+                                    </li>
+                                    <li>
+                                        <div class="text-tiny">New Streak Milestone</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- new-streak-milestone -->
+                            <div class="wg-box">
+                                <!-- Global error message -->
+                                <div id="globalErrorMessage" class="block-warning" style="display: none;">
+                                    <i class="icon-alert-octagon"></i>
+                                    <div class="body-title-2" id="errorText"></div>
+                                </div>
+
+                                <!-- Success message -->
+                                <div id="successMessage" class="block-success" style="display: none;">
+                                    <i class="icon-check-circle"></i>
+                                    <div class="body-title-2">Streak milestone created successfully!</div>
+                                </div>
+
+                                <form id="streakMilestoneForm" class="form-new-product form-style-1">
+                                    <fieldset class="name">
+                                        <div class="body-title">Day Target <span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="number" placeholder="Number of days to achieve" name="dayTarget"
+                                               id="dayTarget" tabindex="0" aria-required="true" required="required" min="1">
+                                        <div class="block-warning" id="dayTargetError" style="display: none;">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" id="dayTargetErrorText">Day target must be a positive number</div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Title <span class="tf-color-1">*</span></div>
+                                        <input class="flex-grow" type="text" placeholder="Milestone title" name="title"
+                                               id="title" tabindex="0" aria-required="true" required="required" maxlength="255">
+                                        <div class="block-warning" id="titleError" style="display: none;">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" id="titleErrorText">Title is required</div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="name">
+                                        <div class="body-title">Description <span class="tf-color-1">*</span></div>
+                                        <textarea class="flex-grow" placeholder="Milestone description" name="description"
+                                                  id="description" tabindex="0" aria-required="true" required="required"
+                                                  rows="4" maxlength="1000"></textarea>
+                                        <div class="block-warning" id="descriptionError" style="display: none;">
+                                            <i class="icon-alert-octagon"></i>
+                                            <div class="body-title-2" id="descriptionErrorText">Description is required</div>
+                                        </div>
+                                    </fieldset>
+
+                                    <div class="bot">
+                                        <div></div>
+                                        <button class="tf-button w208" type="submit" id="submitButton">Save</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- /new-streak-milestone -->
+                        </div>
+                        <!-- /main-content-wrap -->
+                    </div>
+                    <!-- /main-content-wrap -->
+                    <!-- bottom-page -->
+                    <div th:insert="~{admin/fragments/bottom_page::bottom-page}"></div>
+                    <!-- /bottom-page -->
+                </div>
+                <!-- /main-content -->
+            </div>
+            <!-- /section-content-right -->
+        </div>
+        <!-- /layout-wrap -->
+    </div>
+    <!-- /#page -->
+</div>
+<!-- /#wrapper -->
+
+<!-- Javascript -->
+<div th:insert="~{admin/fragments/script::script}"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('streakMilestoneForm');
+        const dayTargetInput = document.getElementById('dayTarget');
+        const titleInput = document.getElementById('title');
+        const descriptionInput = document.getElementById('description');
+
+        const dayTargetError = document.getElementById('dayTargetError');
+        const titleError = document.getElementById('titleError');
+        const descriptionError = document.getElementById('descriptionError');
+
+        const globalErrorMessage = document.getElementById('globalErrorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const errorText = document.getElementById('errorText');
+
+        // Helper function to reset all error messages
+        function resetErrorMessages() {
+            dayTargetError.style.display = 'none';
+            titleError.style.display = 'none';
+            descriptionError.style.display = 'none';
+            globalErrorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        // Client-side validation
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            resetErrorMessages();
+
+            let isValid = true;
+
+            // Validate day target
+            if (!dayTargetInput.value || parseInt(dayTargetInput.value) <= 0) {
+                dayTargetError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate title
+            if (!titleInput.value.trim()) {
+                titleError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate description
+            if (!descriptionInput.value.trim()) {
+                descriptionError.style.display = 'block';
+                isValid = false;
+            }
+
+            if (isValid) {
+                // If client-side validation passes, submit via AJAX
+                submitForm();
+            }
+        });
+
+        // AJAX form submission
+        function submitForm() {
+            const formData = {
+                dayTarget: parseInt(dayTargetInput.value),
+                title: titleInput.value.trim(),
+                description: descriptionInput.value.trim()
+            };
+
+            fetch('/admin/streak-milestones', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(text => {
+                        successMessage.style.display = 'block';
+                        form.reset();
+
+                        // Redirect to streak-milestones list page after 2 seconds
+                        setTimeout(() => {
+                            window.location.href = '/admin/streak-milestones';
+                        }, 2000);
+                    });
+                } else {
+                    return response.json().then(errorData => {
+                        handleErrors(errorData, response.status);
+                        throw new Error('Form submission failed');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Handle validation errors from the server
+        function handleErrors(errorData, status) {
+            if (status === 400) {
+                // Handle MethodArgumentNotValidException errors
+                if (typeof errorData === 'object' && errorData !== null) {
+                    // Check if the response is a map of field errors
+                    if (errorData.dayTarget) {
+                        dayTargetError.style.display = 'block';
+                        document.getElementById('dayTargetErrorText').textContent = errorData.dayTarget;
+                    }
+                    if (errorData.title) {
+                        titleError.style.display = 'block';
+                        document.getElementById('titleErrorText').textContent = errorData.title;
+                    }
+                    if (errorData.description) {
+                        descriptionError.style.display = 'block';
+                        document.getElementById('descriptionErrorText').textContent = errorData.description;
+                    }
+                } else if (errorData.message) {
+                    // For BadRequestException
+                    globalErrorMessage.style.display = 'block';
+                    errorText.textContent = errorData.message;
+                }
+            } else if (status === 409 || status === 404) {
+                // For ResourceNotFoundException and other exceptions
+                globalErrorMessage.style.display = 'block';
+                errorText.textContent = errorData.message || 'An error occurred. Please try again.';
+            } else {
+                // For general server errors
+                globalErrorMessage.style.display = 'block';
+                errorText.textContent = 'An unexpected error occurred. Please try again later.';
+            }
+        }
+
+        // Real-time validation
+        dayTargetInput.addEventListener('input', function() {
+            if (!this.value || parseInt(this.value) <= 0) {
+                dayTargetError.style.display = 'block';
+            } else {
+                dayTargetError.style.display = 'none';
+            }
+        });
+
+        titleInput.addEventListener('input', function() {
+            if (!this.value.trim()) {
+                titleError.style.display = 'block';
+            } else {
+                titleError.style.display = 'none';
+            }
+        });
+
+        descriptionInput.addEventListener('input', function() {
+            if (!this.value.trim()) {
+                descriptionError.style.display = 'block';
+            } else {
+                descriptionError.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+</body>
+
+
+<!-- Mirrored from themesflat.co/html/remos/new-section.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:47 GMT -->
+</html>
+

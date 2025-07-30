@@ -76,48 +76,24 @@
                             <div class="text">Rating</div>
                         </a>
                     </li>
-                    <!--                    <li class="menu-item has-children" th:if="${user.roleName == 'ROLE_ADMIN'}">-->
-                    <!--                        <a href="javascript:void(0);" class="menu-item-button">-->
-                    <!--                            <div class="icon"><i class="icon-gift"></i></div>-->
-                    <!--                            <div class="text">Discount</div>-->
-                    <!--                        </a>-->
-                    <!--                        <ul class="sub-menu">-->
-                    <!--                            <li class="sub-menu-item">-->
-                    <!--                                <a th:href="@{/admin/discounts}" class="">-->
-                    <!--                                    <div class="text">Discount list</div>-->
-                    <!--                                </a>-->
-                    <!--                            </li>-->
-                    <!--                            <li class="sub-menu-item">-->
-                    <!--                                <a th:href="@{/admin/discounts/add}" class="">-->
-                    <!--                                    <div class="text">New discount</div>-->
-                    <!--                                </a>-->
-                    <!--                            </li>-->
-                    <!--                        </ul>-->
-                    <!--                    </li>-->
-                    <!--                    <li class="menu-item has-children" th:if="${user.roleName == 'ROLE_ADMIN'}">-->
-                    <!--                        <a href="javascript:void(0);" class="menu-item-button">-->
-                    <!--                            <div class="icon"><i class="icon-user"></i></div>-->
-                    <!--                            <div class="text">User</div>-->
-                    <!--                        </a>-->
-                    <!--                        <ul class="sub-menu">-->
-                    <!--                            <li class="sub-menu-item">-->
-                    <!--                                <a th:href="@{/admin/users}" class="">-->
-                    <!--                                    <div class="text">All user</div>-->
-                    <!--                                </a>-->
-                    <!--                            </li>-->
-                    <!--                            <li class="sub-menu-item">-->
-                    <!--                                <a href="add-new-user.html">-->
-                    <!--                                    <div class="text">Add new user</div>-->
-                    <!--                                </a>-->
-                    <!--                            </li>-->
-                    <!--                        </ul>-->
-                    <!--                    </li>-->
-                    <!--                    <li class="menu-item" th:if="${user.roleName == 'ROLE_ADMIN'}">-->
-                    <!--                        <a th:href="@{/admin/sale-report}" class="">-->
-                    <!--                            <div class="icon"><i class="icon-pie-chart"></i></div>-->
-                    <!--                            <div class="text">Report</div>-->
-                    <!--                        </a>-->
-                    <!--                    </li>-->
+                    <li class="menu-item has-children">
+                        <a href="javascript:void(0);" class="menu-item-button">
+                            <div class="icon"><i class="icon-bookmark"></i></div>
+                            <div class="text">Streak Milestone</div>
+                        </a>
+                        <ul class="sub-menu">
+                            <li class="sub-menu-item">
+                                <a th:href="@{/admin/streak-milestones}" class="">
+                                    <div class="text">Streak Milestone List</div>
+                                </a>
+                            </li>
+                            <li class="sub-menu-item">
+                                <a th:href="@{/admin/streak-milestones/create}" class="">
+                                    <div class="text">Add Streak Milestone</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
 
