@@ -59,10 +59,19 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
     @Async
     @Override
     public void updateCurrentStreak(String email) {
+        LocalDateTime now = LocalDateTime.now();
+        // Check if the last study date is today
+        LocalDateTime lastStudyDate = studyStreakRepository.findLastStudyDateByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Last study date not found for user: " + email));
+        if (lastStudyDate.toLocalDate().equals(now.toLocalDate())) {
+            // If the last study date is today, no need to update
+            return;
+        }
+
+        // Update current streak for the user
         StudyStreak studyStreak = studyStreakRepository.findByUser_Email(email)
                 .orElseThrow(() -> new IllegalStateException("Study streak not found for user: " + email));
 
-        LocalDateTime now = LocalDateTime.now();
         if (studyStreak.getLastStudyDate() == null || !studyStreak.getLastStudyDate().toLocalDate().equals(now.toLocalDate())) {
             studyStreak.setLastStudyDate(now);
             studyStreak.setCurrentStreak(studyStreak.getCurrentStreak() + 1);

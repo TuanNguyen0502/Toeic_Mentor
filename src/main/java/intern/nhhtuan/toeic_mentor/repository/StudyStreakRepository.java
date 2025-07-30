@@ -23,4 +23,7 @@ public interface StudyStreakRepository extends JpaRepository<StudyStreak, Long> 
 
     @Query("SELECT ss FROM StudyStreak ss WHERE ss.lastStudyDate IS NULL OR ss.lastStudyDate < :yesterday")
     List<StudyStreak> findAllOutdatedStreaks(@Param("yesterday") LocalDateTime yesterday);
+
+    @Query("SELECT ss.lastStudyDate FROM StudyStreak ss WHERE ss.user.email = :email")
+    Optional<LocalDateTime> findLastStudyDateByEmail(@Param("email") String email);
 }
