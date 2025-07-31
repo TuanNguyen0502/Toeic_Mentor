@@ -146,7 +146,8 @@
                         <div id="chartNoData" class="text-center" style="display: none;">
                             <div class="alert alert-info">
                                 <i class="feather-info"></i>
-                                <p class="mb-0">No recent test data available. Take some tests to see your performance chart!</p>
+                                <p class="mb-0">No recent test data available. Take some tests to see your performance
+                                    chart!</p>
                             </div>
                         </div>
                     </div>
@@ -180,7 +181,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Average Score -->
                             <div class="col-lg-3 col-md-6 mb-4">
                                 <div class="stat-card">
@@ -193,7 +194,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Highest Score -->
                             <div class="col-lg-3 col-md-6 mb-4">
                                 <div class="stat-card">
@@ -206,7 +207,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Total Time Spent -->
                             <div class="col-lg-3 col-md-6 mb-4">
                                 <div class="stat-card">
@@ -226,6 +227,114 @@
         </div>
     </section>
     <!-- Test Statistics Section end -->
+
+    <!-- Daily Goals Section start -->
+    <section class="daily-goals-section section-pt">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-capture">
+                        <div class="section-title d-flex justify-content-between align-items-center">
+                            <h2 data-animate="animate__fadeInUp">Today's Goals</h2>
+                            <button class="btn btn-style1" id="createGoalBtn" data-animate="animate__fadeInUp">
+                                <i class="feather-plus-circle me-1"></i> Create New Goal
+                            </button>
+                        </div>
+                    </div>
+                    <div class="goals-container" id="todayGoalsContainer">
+                        <!-- Goals will be loaded dynamically -->
+                        <div class="text-center my-4" id="goalsLoadingIndicator">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="row" id="goalsList">
+                            <!-- Goals will be inserted here -->
+                        </div>
+                        <div class="text-center my-4 d-none" id="noGoalsMessage">
+                            <p>No goals set for today. Start setting goals to track your progress!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Daily Goals Section end -->
+
+    <!-- Create Goal Modal -->
+    <div class="modal fade" id="createGoalModal" tabindex="-1" aria-labelledby="createGoalModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createGoalModalLabel">Create New Goal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createGoalForm">
+                        <div class="mb-3">
+                            <label for="goalTitle" class="form-label">Goal Title</label>
+                            <input type="text" class="form-control" id="goalTitle" placeholder="Enter goal title"
+                                   required>
+                            <div class="invalid-feedback">Please enter a goal title.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="goalType" class="form-label">Goal Type</label>
+                            <select class="form-select" id="goalType" required>
+                                <option value="" selected disabled>Select goal type</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a goal type.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="targetValue" class="form-label">Target Value</label>
+                            <input type="number" class="form-control" id="targetValue" min="1"
+                                   placeholder="Enter target value" required>
+                            <div class="invalid-feedback">Target value must be at least 1.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="unitType" class="form-label">Unit Type</label>
+                            <select class="form-select" id="unitType" required>
+                                <option value="" selected disabled>Select unit type</option>
+                                <option value="MINUTES">Minutes</option>
+                                <option value="QUESTIONS">Questions</option>
+                                <option value="PARTS">Parts</option>
+                                <option value="TESTS">Tests</option>
+                                <option value="WORDS">Words</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a unit type.</div>
+                        </div>
+
+                        <div class="mb-3" id="partContainer" style="display: none;">
+                            <label for="partNumber" class="form-label">TOEIC Part</label>
+                            <select class="form-select" id="partNumber">
+                                <option value="" selected disabled>Select part number</option>
+                                <option value="1">Part 1 - Photographs</option>
+                                <option value="2">Part 2 - Question-Response</option>
+                                <option value="3">Part 3 - Conversations</option>
+                                <option value="4">Part 4 - Talks</option>
+                                <option value="5">Part 5 - Incomplete Sentences</option>
+                                <option value="6">Part 6 - Text Completion</option>
+                                <option value="7">Part 7 - Reading Comprehension</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a TOEIC part.</div>
+                        </div>
+                    </form>
+                    <div class="alert alert-danger mt-3" id="goalFormError" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitGoalBtn">Create Goal</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </main>
 <!-- main end -->
@@ -250,7 +359,7 @@
 
 <!-- Fetch and display study streak -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Fetch current streak data
         fetchCurrentStreak();
     });
@@ -298,22 +407,22 @@
     let recentTestsChart = null;
 
     // Initialize chart when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         initializeChart();
-        
+
         // Add event listeners
-        document.getElementById('testCountSelect').addEventListener('change', function() {
+        document.getElementById('testCountSelect').addEventListener('change', function () {
             loadChartData();
         });
-        
-        document.getElementById('refreshChartBtn').addEventListener('click', function() {
+
+        document.getElementById('refreshChartBtn').addEventListener('click', function () {
             loadChartData();
         });
     });
 
     function initializeChart() {
         const ctx = document.getElementById('recentTestsChart').getContext('2d');
-        
+
         recentTestsChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -357,13 +466,13 @@
                         cornerRadius: 8,
                         displayColors: false,
                         callbacks: {
-                            title: function(context) {
+                            title: function (context) {
                                 return 'Test #' + (context[0].dataIndex + 1);
                             },
-                            label: function(context) {
+                            label: function (context) {
                                 return 'Accuracy: ' + context.parsed.y + '%';
                             },
-                            afterLabel: function(context) {
+                            afterLabel: function (context) {
                                 const data = context.chart.data.datasets[0].data;
                                 const index = context.dataIndex;
                                 const testData = window.chartTestData ? window.chartTestData[index] : null;
@@ -388,7 +497,7 @@
                                 size: 12
                             },
                             color: '#666',
-                            callback: function(value) {
+                            callback: function (value) {
                                 return value + '%';
                             }
                         },
@@ -436,9 +545,9 @@
                     duration: 1000,
                     easing: 'easeInOutQuart'
                 }
-            }
+            },
         });
-        
+
         // Load initial data
         loadChartData();
     }
@@ -448,12 +557,12 @@
         const loadingDiv = document.getElementById('chartLoading');
         const noDataDiv = document.getElementById('chartNoData');
         const chartWrapper = document.querySelector('.chart-wrapper');
-        
+
         // Show loading
         loadingDiv.style.display = 'block';
         noDataDiv.style.display = 'none';
         chartWrapper.style.display = 'none';
-        
+
         // Fetch data from API
         fetch(`/tests/recent-tests?number=${testCount}`)
             .then(response => {
@@ -465,25 +574,25 @@
             .then(data => {
                 // Hide loading
                 loadingDiv.style.display = 'none';
-                
+
                 if (!data || data.length === 0) {
                     noDataDiv.style.display = 'block';
                     return;
                 }
-                
+
                 // Show chart
                 chartWrapper.style.display = 'block';
-                
+
                 // Store test data for tooltip
                 window.chartTestData = data;
-                
+
                 // Prepare chart data - calculate percentage
                 const labels = data.map((test, index) => `Test ${index + 1}`);
                 const percentages = data.map(test => {
                     if (test.totalAnswers === 0) return 0;
                     return Math.round((test.score / test.totalAnswers) * 100);
                 });
-                
+
                 // Update chart
                 recentTestsChart.data.labels = labels;
                 recentTestsChart.data.datasets[0].data = percentages;
@@ -516,5 +625,292 @@
     }
 </script>
 
-</html>
+<!-- Today's Goals JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Fetch today's goals data
+        fetchTodayGoals();
+    });
 
+    function fetchTodayGoals() {
+        fetch('/goals/today')
+            .then(response => {
+                // Hide loading indicator
+                document.getElementById('goalsLoadingIndicator').style.display = 'none';
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // User is not authenticated
+                        showNoGoalsMessage("Please log in to view your goals");
+                        return;
+                    } else if (response.status === 204) {
+                        // No content (no goals)
+                        showNoGoalsMessage();
+                        return;
+                    }
+                    throw new Error('Failed to fetch goals data');
+                }
+                return response.json();
+            })
+            .then(goals => {
+                if (!goals || goals.length === 0) {
+                    showNoGoalsMessage();
+                    return;
+                }
+
+                // Display goals
+                displayGoals(goals);
+            })
+            .catch(error => {
+                console.error('Error fetching goals data:', error);
+                showNoGoalsMessage("Error loading goals. Please try again later.");
+            });
+    }
+
+    function displayGoals(goals) {
+        const goalsList = document.getElementById('goalsList');
+        goalsList.innerHTML = ''; // Clear existing content
+
+        goals.forEach(goal => {
+            // Create goal card
+            const goalCard = document.createElement('div');
+            goalCard.className = 'col-lg-4 col-md-6 mb-4';
+
+            // Determine status class for styling
+            let statusClass = 'bg-warning'; // Default for IN_PROGRESS
+            if (goal.status === 'COMPLETED') {
+                statusClass = 'bg-success';
+            } else if (goal.status === 'FAILED') {
+                statusClass = 'bg-danger';
+            }
+
+            // Determine progress percentage
+            const progressPercentage = Math.min(Math.round((goal.actualValue / goal.targetValue) * 100), 100);
+
+            // Only show part information if unit is QUESTIONS
+            const partBadge = goal.unit === 'QUESTIONS'
+                ? `<span class="ms-2 badge bg-info">Part ${goal.part}</span>`
+                : '';
+
+            // Build the card HTML
+            goalCard.innerHTML = `
+                <div class="card goal-card h-100">
+                    <div class="card-header ${statusClass} text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">${goal.title}</h5>
+                        <span class="badge bg-light text-dark">${goal.type}</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="goal-progress-text">
+                            <strong>Progress:</strong> ${goal.actualValue}/${goal.targetValue} ${formatUnitDisplay(goal.unit, goal.targetValue)}
+                            ${partBadge}
+                        </p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar ${statusClass}" role="progressbar"
+                                style="width: ${progressPercentage}%"
+                                aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100">
+                                ${progressPercentage}%
+                            </div>
+                        </div>
+                        <p class="goal-status">
+                            <strong>Status:</strong>
+                            <span class="badge ${statusClass}">${goal.status}</span>
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            goalsList.appendChild(goalCard);
+        });
+    }
+
+    function showNoGoalsMessage(message = "No goals set for today. Start setting goals to track your progress!") {
+        const noGoalsMessage = document.getElementById('noGoalsMessage');
+        noGoalsMessage.querySelector('p').textContent = message;
+        noGoalsMessage.classList.remove('d-none');
+    }
+
+    function formatUnitDisplay(unit, count) {
+        // Handle singular/plural forms
+        switch (unit) {
+            case 'MINUTES':
+                return count === 1 ? "minute" : "minutes";
+            case 'QUESTIONS':
+                return count === 1 ? "question" : "questions";
+            case 'PARTS':
+                return count === 1 ? "part" : "parts";
+            case 'TESTS':
+                return count === 1 ? "test" : "tests";
+            case 'WORDS':
+                return count === 1 ? "word" : "words";
+            case 'OTHER':
+            default:
+                return "units";
+        }
+    }
+</script>
+
+<!-- Goal Creation JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set up the create goal button to open the modal
+        document.getElementById('createGoalBtn').addEventListener('click', function () {
+            const createGoalModal = new bootstrap.Modal(document.getElementById('createGoalModal'));
+            createGoalModal.show();
+        });
+
+        // Show/hide part number field based on unit type selection
+        document.getElementById('unitType').addEventListener('change', function () {
+            const partContainer = document.getElementById('partContainer');
+            const partNumber = document.getElementById('partNumber');
+
+            if (this.value === 'QUESTIONS') {
+                partContainer.style.display = 'block';
+                partNumber.setAttribute('required', '');
+            } else {
+                partContainer.style.display = 'none';
+                partNumber.removeAttribute('required');
+                partNumber.value = ''; // Reset the part number
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('submitGoalBtn').addEventListener('click', function () {
+            if (validateGoalForm()) {
+                submitGoalForm();
+            }
+        });
+
+        // Form validation function
+        function validateGoalForm() {
+            const form = document.getElementById('createGoalForm');
+            const inputs = form.querySelectorAll('input, select');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                // Skip validation for hidden fields
+                if (input.parentElement.style.display === 'none') return;
+
+                // Check if required field is empty
+                if (input.hasAttribute('required') && !input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+
+                // Additional validation for number fields
+                if (input.type === 'number' && input.min && parseFloat(input.value) < parseFloat(input.min)) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        // Form submission function
+        function submitGoalForm() {
+            const title = document.getElementById('goalTitle').value.trim();
+            const type = document.getElementById('goalType').value;
+            const targetValue = parseInt(document.getElementById('targetValue').value);
+            const unit = document.getElementById('unitType').value;
+            const part = unit === 'QUESTIONS' ? parseInt(document.getElementById('partNumber').value) : null;
+
+            // Create the request payload
+            const payload = {
+                title: title,
+                type: type,
+                targetValue: targetValue,
+                unit: unit,
+                part: part
+            };
+
+            // Show loading state
+            const submitBtn = document.getElementById('submitGoalBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
+
+            // Hide any previous error messages
+            document.getElementById('goalFormError').style.display = 'none';
+
+            // Submit the form using fetch
+            fetch('/goals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Goal';
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Success - close modal and refresh goals
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createGoalModal'));
+                    modal.hide();
+
+                    // Reset form for next use
+                    document.getElementById('createGoalForm').reset();
+
+                    // Refresh the goals list
+                    fetchTodayGoals();
+
+                    // Show success toast or notification
+                    showToast('Success', 'Goal created successfully!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error creating goal:', error);
+                    // Display error message
+                    const errorElement = document.getElementById('goalFormError');
+                    errorElement.textContent = 'Failed to create goal. Please try again.';
+                    errorElement.style.display = 'block';
+                });
+        }
+
+        // Function to show toast notifications
+        function showToast(title, message, type = 'info') {
+            // Check if toast container exists, if not create it
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+
+            // Create toast element
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>${title}</strong>: ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+
+            // Add toast to container
+            toastContainer.appendChild(toastEl);
+
+            // Initialize and show toast
+            const toast = new bootstrap.Toast(toastEl, {delay: 5000});
+            toast.show();
+
+            // Remove toast from DOM after it's hidden
+            toastEl.addEventListener('hidden.bs.toast', function () {
+                toastEl.remove();
+            });
+        }
+    });
+</script>
+</html>
