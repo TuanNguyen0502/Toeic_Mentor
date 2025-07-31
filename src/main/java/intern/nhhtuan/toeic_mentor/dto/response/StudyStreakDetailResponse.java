@@ -12,6 +12,6 @@ public class StudyStreakDetailResponse {
     private int currentStreak;
     private int maxStreak;
     private String lastStudyDate;
-    private HashMap<Integer, String> achievements;
+    private HashMap<String, String> achievements;
     private HashMap<LocalDateTime, LocalDateTime> histories;
 }

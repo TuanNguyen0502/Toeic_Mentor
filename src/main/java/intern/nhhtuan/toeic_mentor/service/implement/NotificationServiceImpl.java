@@ -121,6 +121,39 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    public void createUserStreakAchievementNotifications(String email, String mileStoneTitle, int dayTarget) {
+        User userReceiver = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // check user setting notification
+        Optional<Boolean> enableNotification = notificationSettingRepository.isEnabled(userReceiver.getId(), ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT);
+
+        if (enableNotification.orElse(false)) {
+            // User has enabled notification for this action
+            Notification notification = Notification.builder()
+                    .receiver(userReceiver)
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT))
+                    .title("Achieve milestone " + mileStoneTitle + " (" + dayTarget + " days)")
+                    .message("Congratulations! You have achieved a new streak milestone.")
+                    .build();
+
+            notificationRepository.save(notification);
+
+            // Send WebSocket notification to user
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(userReceiver.getEmail(), "/queue/notifications", notificationResponse);
+        }
+    }
+
+    @Override
     public int countUnreadNotifications(String email) {
         return notificationRepository.findAllByReceiver_Email(email)
                 .stream()

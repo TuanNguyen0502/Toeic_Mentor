@@ -13,6 +13,8 @@ public interface INotificationService {
   
     void createResponseUserNotifications(ReportDetailDTO reportDetailDTO);
 
+    void createUserStreakAchievementNotifications(String email, String mileStoneTitle, int dayTarget);
+
     int countUnreadNotifications(String email);
 
     List<NotificationResponse> getNotificationResponses(String email, LocalDateTime before, int pageSize);

@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface StreakAchievementRepository extends JpaRepository<StreakAchievement, Long> {
     List<StreakAchievement> findByUser_Email(String userEmail);
+
+    boolean existsByUser_EmailAndStreakMilestone_DayTarget(String userEmail, Integer dayTarget);
 }

@@ -3,10 +3,13 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.response.StudyStreakDetailResponse;
 import intern.nhhtuan.toeic_mentor.entity.StreakAchievement;
 import intern.nhhtuan.toeic_mentor.entity.StreakHistory;
+import intern.nhhtuan.toeic_mentor.entity.StreakMilestone;
 import intern.nhhtuan.toeic_mentor.entity.StudyStreak;
 import intern.nhhtuan.toeic_mentor.repository.StreakAchievementRepository;
 import intern.nhhtuan.toeic_mentor.repository.StreakHistoryRepository;
+import intern.nhhtuan.toeic_mentor.repository.StreakMilestoneRepository;
 import intern.nhhtuan.toeic_mentor.repository.StudyStreakRepository;
+import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IStudyStreakService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -25,6 +28,8 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
     private final StudyStreakRepository studyStreakRepository;
     private final StreakAchievementRepository streakAchievementRepository;
     private final StreakHistoryRepository streakHistoryRepository;
+    private final StreakMilestoneRepository streakMilestoneRepository;
+    private final INotificationService notificationService;
 
     @Override
     public int getCurrentStreak(String email) {
@@ -38,9 +43,12 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
         List<StreakAchievement> streakAchievements = streakAchievementRepository.findByUser_Email(email);
         List<StreakHistory> streakHistories = streakHistoryRepository.findByUser_Email(email);
 
-        HashMap<Integer, String> achievementMap = new HashMap<>();
+        HashMap<String, String> achievementMap = new HashMap<>();
         for (StreakAchievement achievement : streakAchievements) {
-            achievementMap.put(achievement.getStreakMilestone().getDayTarget(), achievement.getAchievedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            achievementMap.put(
+                    achievement.getStreakMilestone().getTitle() + " (" + achievement.getStreakMilestone().getDayTarget() + " days)",
+                    achievement.getAchievedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            );
         }
         HashMap<LocalDateTime, LocalDateTime> historyMap = new HashMap<>();
         for (StreakHistory history : streakHistories) {
@@ -59,10 +67,19 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
     @Async
     @Override
     public void updateCurrentStreak(String email) {
+        LocalDateTime now = LocalDateTime.now();
+        // Check if the last study date is today
+        LocalDateTime lastStudyDate = studyStreakRepository.findLastStudyDateByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Last study date not found for user: " + email));
+        if (lastStudyDate.toLocalDate().equals(now.toLocalDate())) {
+            // If the last study date is today, no need to update
+            return;
+        }
+
+        // Update current streak for the user
         StudyStreak studyStreak = studyStreakRepository.findByUser_Email(email)
                 .orElseThrow(() -> new IllegalStateException("Study streak not found for user: " + email));
 
-        LocalDateTime now = LocalDateTime.now();
         if (studyStreak.getLastStudyDate() == null || !studyStreak.getLastStudyDate().toLocalDate().equals(now.toLocalDate())) {
             studyStreak.setLastStudyDate(now);
             studyStreak.setCurrentStreak(studyStreak.getCurrentStreak() + 1);
@@ -79,7 +96,23 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
             streakHistory = new StreakHistory();
             streakHistory.setUser(studyStreak.getUser());
             streakHistory.setStartStreak(now);
+            streakHistory.setEndStreak(now);
             streakHistoryRepository.save(streakHistory);
+        }
+
+        // Check for streak achievements
+        StreakMilestone nextStreakMilestone = streakMilestoneRepository.findByDayTarget(studyStreak.getCurrentStreak());
+        if (nextStreakMilestone != null &&
+                !streakAchievementRepository.existsByUser_EmailAndStreakMilestone_DayTarget(email, nextStreakMilestone.getDayTarget())) {
+            // Create a new streak achievement if the current streak meets or exceeds the milestone
+            StreakAchievement streakAchievement = new StreakAchievement();
+            streakAchievement.setUser(studyStreak.getUser());
+            streakAchievement.setStreakMilestone(nextStreakMilestone);
+            streakAchievement.setAchievedAt(now);
+            streakAchievementRepository.save(streakAchievement);
+
+            // Notify the user about the achievement
+            notificationService.createUserStreakAchievementNotifications(email, nextStreakMilestone.getTitle(), nextStreakMilestone.getDayTarget());
         }
     }
 
