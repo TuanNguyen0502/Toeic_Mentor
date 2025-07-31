@@ -72,8 +72,10 @@ public class StreakMilestoneServiceImpl implements IStreakMilestoneService {
         StreakMilestone existingMilestone = streakMilestoneRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Streak milestone", "id", id));
 
-        // Check if the day target already exists
-        if (streakMilestoneRepository.existsByDayTarget(streakMilestoneDTO.getDayTarget())) {
+        // Check if the day target is being updated and if it already exists
+        // If the day target is not being updated, we skip this check
+        if (!existingMilestone.getDayTarget().equals(streakMilestoneDTO.getDayTarget()) &&
+                streakMilestoneRepository.existsByDayTarget(streakMilestoneDTO.getDayTarget())) {
             throw new ResourceNotFoundException("Streak milestone", "day target", streakMilestoneDTO.getDayTarget());
         }
 
