@@ -1,10 +1,12 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.GoalCreateRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.GoalUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.GoalResponse;
 import intern.nhhtuan.toeic_mentor.entity.Goal;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGoalStatus;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGoalUnit;
+import intern.nhhtuan.toeic_mentor.exception.ResourceNotFoundException;
 import intern.nhhtuan.toeic_mentor.exception.UnauthorizedException;
 import intern.nhhtuan.toeic_mentor.repository.GoalRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
@@ -77,6 +79,54 @@ public class GoalServiceImpl implements IGoalService {
         goal.setStatus(EGoalStatus.IN_PROGRESS);
         goal.setUser(userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("User not found with email: " + email)));
+        goalRepository.save(goal);
+        return true;
+    }
+
+    @Override
+    public boolean updateGoal(Long id, GoalUpdateRequest goalUpdateRequest) {
+        Goal goal = goalRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Goal", "id", id));
+        if (goalUpdateRequest.getActualValue() > goalUpdateRequest.getTargetValue()) {
+            throw new ResourceNotFoundException("Goal", "actual value", goalUpdateRequest.getActualValue());
+        }
+
+        goal.setTitle(goalUpdateRequest.getTitle());
+        goal.setType(goalUpdateRequest.getType());
+        goal.setTargetValue(goalUpdateRequest.getTargetValue());
+        goal.setActualValue(goalUpdateRequest.getActualValue());
+
+        if (goalUpdateRequest.getActualValue() >= goalUpdateRequest.getTargetValue()) {
+            goal.setStatus(EGoalStatus.COMPLETED);
+        } else {
+            goal.setStatus(EGoalStatus.IN_PROGRESS);
+        }
+
+        goal.setUnit(goalUpdateRequest.getUnit());
+
+        if (EGoalUnit.QUESTIONS.equals(goalUpdateRequest.getUnit()) && goalUpdateRequest.getPart() != null) {
+            goal.setPart(goalUpdateRequest.getPart());
+        } else {
+            goal.setPart(null);
+        }
+
+        goal.setStatus(goalUpdateRequest.getStatus());
+
+        goalRepository.save(goal);
+        return true;
+    }
+
+    @Override
+    public boolean updateGoalStatus(Long id) {
+        Goal goal = goalRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Goal", "id", id));
+
+        if (goal.getStatus().equals(EGoalStatus.COMPLETED)) {
+            goal.setStatus(EGoalStatus.IN_PROGRESS);
+        } else if (goal.getStatus().equals(EGoalStatus.IN_PROGRESS)) {
+            goal.setStatus(EGoalStatus.COMPLETED);
+        }
+
         goalRepository.save(goal);
         return true;
     }

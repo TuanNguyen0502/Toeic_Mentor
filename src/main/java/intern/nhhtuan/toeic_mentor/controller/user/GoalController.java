@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.controller.user;
 
 import intern.nhhtuan.toeic_mentor.dto.request.GoalCreateRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.GoalUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.GoalResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IGoalService;
 import jakarta.validation.Valid;
@@ -52,6 +53,26 @@ public class GoalController {
             return ResponseEntity.ok("Goal created successfully");
         } else {
             return ResponseEntity.status(400).body("Failed to create goal");
+        }
+    }
+
+    @PutMapping("/{goalId}")
+    public ResponseEntity<String> updateGoal(@PathVariable Long goalId, @Valid @RequestBody GoalUpdateRequest goalUpdateRequest) {
+        boolean isUpdated = goalService.updateGoal(goalId, goalUpdateRequest);
+        if (isUpdated) {
+            return ResponseEntity.ok("Goal updated successfully");
+        } else {
+            return ResponseEntity.status(400).body("Failed to update goal");
+        }
+    }
+
+    @PutMapping("/{goalId}/status")
+    public ResponseEntity<String> updateGoalStatus(@PathVariable Long goalId) {
+        boolean isUpdated = goalService.updateGoalStatus(goalId);
+        if (isUpdated) {
+            return ResponseEntity.ok("Goal status updated successfully");
+        } else {
+            return ResponseEntity.status(400).body("Failed to update goal status");
         }
     }
 }
