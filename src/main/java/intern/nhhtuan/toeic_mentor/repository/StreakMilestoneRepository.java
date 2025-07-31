@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface StreakMilestoneRepository extends JpaRepository<StreakMilestone, Long> {
     boolean existsByDayTarget(Integer dayTarget);
 
-    StreakMilestone findFirstByDayTargetGreaterThanEqual(Integer dayTargetIsGreaterThan);
+    StreakMilestone findByDayTarget(Integer dayTarget);
 }

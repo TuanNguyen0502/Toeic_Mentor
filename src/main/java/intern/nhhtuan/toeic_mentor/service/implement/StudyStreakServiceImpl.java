@@ -101,10 +101,9 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
         }
 
         // Check for streak achievements
-        StreakMilestone nextStreakMilestone = streakMilestoneRepository.findFirstByDayTargetGreaterThanEqual(studyStreak.getCurrentStreak());
+        StreakMilestone nextStreakMilestone = streakMilestoneRepository.findByDayTarget(studyStreak.getCurrentStreak());
         if (nextStreakMilestone != null &&
-                !streakAchievementRepository.existsByUser_EmailAndStreakMilestone_DayTarget(email, nextStreakMilestone.getDayTarget()) &&
-                studyStreak.getCurrentStreak() >= nextStreakMilestone.getDayTarget()) {
+                !streakAchievementRepository.existsByUser_EmailAndStreakMilestone_DayTarget(email, nextStreakMilestone.getDayTarget())) {
             // Create a new streak achievement if the current streak meets or exceeds the milestone
             StreakAchievement streakAchievement = new StreakAchievement();
             streakAchievement.setUser(studyStreak.getUser());
