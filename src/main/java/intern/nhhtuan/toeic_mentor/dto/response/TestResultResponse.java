@@ -33,7 +33,7 @@ public class TestResultResponse {
         private int timeSpent; // Time spent on the question in seconds
         @JsonProperty("isCorrect")
         private boolean isCorrect;
-        private List<String> answerExplanation;
+        private List<String> optionExplanation;
     }
 
     @Data
