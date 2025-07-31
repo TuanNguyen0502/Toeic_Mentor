@@ -6,6 +6,7 @@ import intern.nhhtuan.toeic_mentor.entity.enums.EGoalUnit;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,7 +29,7 @@ public class Goal extends TrackingDate {
     private EGoalType type;
 
     @Column(name = "goal_date", nullable = false)
-    private LocalDateTime goalDate;
+    private LocalDate goalDate;
 
     @Column(name = "target_value", nullable = false)
     private Integer targetValue;
