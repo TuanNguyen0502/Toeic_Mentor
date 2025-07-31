@@ -9,6 +9,7 @@ import intern.nhhtuan.toeic_mentor.repository.StreakAchievementRepository;
 import intern.nhhtuan.toeic_mentor.repository.StreakHistoryRepository;
 import intern.nhhtuan.toeic_mentor.repository.StreakMilestoneRepository;
 import intern.nhhtuan.toeic_mentor.repository.StudyStreakRepository;
+import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IStudyStreakService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -28,6 +29,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
     private final StreakAchievementRepository streakAchievementRepository;
     private final StreakHistoryRepository streakHistoryRepository;
     private final StreakMilestoneRepository streakMilestoneRepository;
+    private final INotificationService notificationService;
 
     @Override
     public int getCurrentStreak(String email) {
@@ -109,6 +111,9 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
             streakAchievement.setStreakMilestone(nextStreakMilestone);
             streakAchievement.setAchievedAt(now);
             streakAchievementRepository.save(streakAchievement);
+
+            // Notify the user about the achievement
+            notificationService.createUserStreakAchievementNotifications(email, nextStreakMilestone.getTitle(), nextStreakMilestone.getDayTarget());
         }
     }
 
