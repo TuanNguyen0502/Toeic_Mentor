@@ -8,5 +8,7 @@ import java.util.List;
 public interface IGoalService {
     List<GoalResponse> getTodayGoals(String email);
 
+    List<GoalResponse> getAllGoals(String email);
+
     boolean createGoal(String email, GoalCreateRequest goalCreateRequest);
 }

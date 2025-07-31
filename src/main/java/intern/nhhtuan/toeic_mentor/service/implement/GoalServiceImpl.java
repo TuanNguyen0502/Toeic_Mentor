@@ -42,6 +42,25 @@ public class GoalServiceImpl implements IGoalService {
     }
 
     @Override
+    public List<GoalResponse> getAllGoals(String email) {
+        // Fetch all goals from the repository
+        return goalRepository.findByUser_Email(email)
+                .stream()
+                .map(goal -> GoalResponse.builder()
+                        .id(goal.getId())
+                        .title(goal.getTitle())
+                        .type(goal.getType().name())
+                        .goalDate(goal.getGoalDate())
+                        .targetValue(goal.getTargetValue())
+                        .actualValue(goal.getActualValue())
+                        .unit(goal.getUnit().name())
+                        .part(goal.getPart())
+                        .status(goal.getStatus().name())
+                        .build())
+                .toList();
+    }
+
+    @Override
     public boolean createGoal(String email, GoalCreateRequest goalCreateRequest) {
         Goal goal = new Goal();
         goal.setTitle(goalCreateRequest.getTitle());

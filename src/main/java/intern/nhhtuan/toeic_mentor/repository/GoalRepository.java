@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
     List<Goal> findByUser_EmailAndGoalDate(String userEmail, LocalDate goalDate);
+
+    List<Goal> findByUser_Email(String email);
 }

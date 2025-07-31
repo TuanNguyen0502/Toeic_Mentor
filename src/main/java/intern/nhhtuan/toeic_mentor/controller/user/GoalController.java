@@ -29,6 +29,17 @@ public class GoalController {
         return ResponseEntity.ok(goals);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<GoalResponse>> allGoals() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build(); // Unauthorized
+        }
+        String email = authentication.getName();
+        List<GoalResponse> goals = goalService.getAllGoals(email);
+        return ResponseEntity.ok(goals);
+    }
+
     @PostMapping("")
     public ResponseEntity<String> createGoal(@Valid @RequestBody GoalCreateRequest goalCreateRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
