@@ -5,6 +5,7 @@ import intern.nhhtuan.toeic_mentor.dto.request.GoalUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.GoalResponse;
 import intern.nhhtuan.toeic_mentor.entity.Goal;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGoalStatus;
+import intern.nhhtuan.toeic_mentor.entity.enums.EGoalType;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGoalUnit;
 import intern.nhhtuan.toeic_mentor.exception.ResourceNotFoundException;
 import intern.nhhtuan.toeic_mentor.exception.UnauthorizedException;
@@ -12,7 +13,9 @@ import intern.nhhtuan.toeic_mentor.repository.GoalRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IGoalService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -137,5 +140,29 @@ public class GoalServiceImpl implements IGoalService {
                 .orElseThrow(() -> new ResourceNotFoundException("Goal", "id", id));
         goalRepository.delete(goal);
         return true;
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
+    public void repeatDailyGoal() {
+        List<Goal> goals = goalRepository.findAllByType(EGoalType.DAILY);
+        LocalDate today = LocalDate.now();
+        for (Goal goal : goals) {
+            Goal newGoal = new Goal();
+            newGoal.setTitle(goal.getTitle());
+            newGoal.setType(goal.getType());
+            newGoal.setGoalDate(today);
+            newGoal.setTargetValue(goal.getTargetValue());
+            newGoal.setActualValue(0);
+            newGoal.setUnit(goal.getUnit());
+            if (EGoalUnit.QUESTIONS.equals(goal.getUnit()) && goal.getPart() != null) {
+                newGoal.setPart(goal.getPart());
+            } else {
+                newGoal.setPart(null);
+            }
+            newGoal.setStatus(EGoalStatus.IN_PROGRESS);
+            newGoal.setUser(goal.getUser());
+            goalRepository.save(newGoal);
+        }
     }
 }
