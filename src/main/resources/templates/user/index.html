@@ -908,7 +908,7 @@
             const partContainer = document.getElementById('partContainer');
             const partNumber = document.getElementById('partNumber');
 
-            if (this.value === 'QUESTIONS') {
+            if (this.value === 'QUESTIONS' || this.value === 'PARTS') {
                 partContainer.style.display = 'block';
                 partNumber.setAttribute('required', '');
             } else {
