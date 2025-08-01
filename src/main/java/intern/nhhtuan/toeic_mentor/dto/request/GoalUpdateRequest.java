@@ -25,7 +25,7 @@ public class GoalUpdateRequest {
     private Integer targetValue;
 
     @NotNull(message = "Target value cannot be null")
-    @Min(value = 1, message = "Target value must be at least 1")
+    @Min(value = 0, message = "Target value must be at least 0")
     @Max(value = 1000, message = "Target value must not exceed 1000")
     private Integer actualValue;
 
