@@ -76,7 +76,8 @@ public class GoalServiceImpl implements IGoalService {
         goal.setTargetValue(goalCreateRequest.getTargetValue());
         goal.setActualValue(0);
         goal.setUnit(goalCreateRequest.getUnit());
-        if (EGoalUnit.QUESTIONS.equals(goalCreateRequest.getUnit()) && goalCreateRequest.getPart() != null) {
+        if ((EGoalUnit.QUESTIONS.equals(goalCreateRequest.getUnit()) || EGoalUnit.PARTS.equals(goalCreateRequest.getUnit()))
+                && goalCreateRequest.getPart() != null) {
             goal.setPart(goalCreateRequest.getPart());
         } else {
             goal.setPart(null);
@@ -109,7 +110,8 @@ public class GoalServiceImpl implements IGoalService {
 
         goal.setUnit(goalUpdateRequest.getUnit());
 
-        if (EGoalUnit.QUESTIONS.equals(goalUpdateRequest.getUnit()) && goalUpdateRequest.getPart() != null) {
+        if ((EGoalUnit.QUESTIONS.equals(goalUpdateRequest.getUnit()) || EGoalUnit.PARTS.equals(goalUpdateRequest.getUnit()))
+                && goalUpdateRequest.getPart() != null) {
             goal.setPart(goalUpdateRequest.getPart());
         } else {
             goal.setPart(null);
