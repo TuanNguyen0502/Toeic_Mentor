@@ -388,6 +388,99 @@
         </div>
     </div>
 
+    <!-- Update Goal Modal -->
+    <div class="modal fade" id="updateGoalModal" tabindex="-1" aria-labelledby="updateGoalModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateGoalModalLabel">Update Goal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateGoalForm">
+                        <input type="hidden" id="updateGoalId">
+                        <div class="mb-3">
+                            <label for="updateGoalTitle" class="form-label">Goal Title</label>
+                            <input type="text" class="form-control" id="updateGoalTitle" placeholder="Enter goal title"
+                                   required>
+                            <div class="invalid-feedback">Please enter a goal title.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateGoalType" class="form-label">Goal Type</label>
+                            <select class="form-select" id="updateGoalType" required>
+                                <option value="" selected disabled>Select goal type</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a goal type.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateTargetValue" class="form-label">Target Value</label>
+                            <input type="number" class="form-control" id="updateTargetValue" min="1"
+                                   placeholder="Enter target value" required>
+                            <div class="invalid-feedback">Target value must be at least 1.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateActualValue" class="form-label">Actual Value</label>
+                            <input type="number" class="form-control" id="updateActualValue" min="1"
+                                   placeholder="Enter actual value" required>
+                            <div class="invalid-feedback">Actual value must be at least 1.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateUnitType" class="form-label">Unit Type</label>
+                            <select class="form-select" id="updateUnitType" required>
+                                <option value="" selected disabled>Select unit type</option>
+                                <option value="MINUTES">Minutes</option>
+                                <option value="QUESTIONS">Questions</option>
+                                <option value="PARTS">Parts</option>
+                                <option value="TESTS">Tests</option>
+                                <option value="WORDS">Words</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a unit type.</div>
+                        </div>
+
+                        <div class="mb-3" id="updatePartContainer" style="display: none;">
+                            <label for="updatePartNumber" class="form-label">TOEIC Part</label>
+                            <select class="form-select" id="updatePartNumber">
+                                <option value="" selected disabled>Select part number</option>
+                                <option value="1">Part 1 - Photographs</option>
+                                <option value="2">Part 2 - Question-Response</option>
+                                <option value="3">Part 3 - Conversations</option>
+                                <option value="4">Part 4 - Talks</option>
+                                <option value="5">Part 5 - Incomplete Sentences</option>
+                                <option value="6">Part 6 - Text Completion</option>
+                                <option value="7">Part 7 - Reading Comprehension</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a TOEIC part.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateGoalStatus" class="form-label">Status</label>
+                            <select class="form-select" id="updateGoalStatus" required>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="FAILED">Failed</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a status.</div>
+                        </div>
+                    </form>
+                    <div class="alert alert-danger mt-3" id="updateGoalFormError" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitUpdateGoalBtn">Update Goal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </main>
 <!-- main end -->
 <!-- footer start -->
@@ -1007,6 +1100,9 @@
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm">
+                        <button class="btn btn-primary btn-sm me-1" onclick="openUpdateGoalModal(${goal.id}, '${goal.title}', '${goal.type}', ${goal.targetValue}, ${goal.actualValue}, '${goal.unit}', ${goal.part || 'null'}, '${goal.status}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
                         ${goal.status !== 'FAILED' ?
                             `<button class="btn ${goal.status === 'IN_PROGRESS' ? 'btn-success' : 'btn-warning'} btn-sm me-1"
                                 onclick="toggleGoalStatus(${goal.id}, '${goal.status}')">
@@ -1114,7 +1210,134 @@
             });
     }
 
-    // Function to show toast notifications
+    // Open update goal modal and populate fields
+    function openUpdateGoalModal(goalId, title, type, targetValue, actualValue, unit, part, status) {
+        // Set values in the update form
+        document.getElementById('updateGoalId').value = goalId;
+        document.getElementById('updateGoalTitle').value = title;
+        document.getElementById('updateGoalType').value = type;
+        document.getElementById('updateTargetValue').value = targetValue;
+        document.getElementById('updateActualValue').value = actualValue;
+        document.getElementById('updateUnitType').value = unit;
+        document.getElementById('updatePartNumber').value = part ? part : '';
+        document.getElementById('updateGoalStatus').value = status;
+
+        // Show/hide part number field based on unit type
+        const updatePartContainer = document.getElementById('updatePartContainer');
+        if (unit === 'QUESTIONS') {
+            updatePartContainer.style.display = 'block';
+        } else {
+            updatePartContainer.style.display = 'none';
+        }
+
+        // Open the modal
+        const updateGoalModal = new bootstrap.Modal(document.getElementById('updateGoalModal'));
+        updateGoalModal.show();
+    }
+
+    // Update goal form submission
+    document.getElementById('submitUpdateGoalBtn').addEventListener('click', function () {
+        if (validateUpdateGoalForm()) {
+            submitUpdateGoalForm();
+        }
+    });
+
+    // Update goal form validation
+    function validateUpdateGoalForm() {
+        const form = document.getElementById('updateGoalForm');
+        const inputs = form.querySelectorAll('input, select');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            // Check if required field is empty
+            if (input.hasAttribute('required') && !input.value.trim()) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+
+            // Additional validation for number fields
+            if (input.type === 'number' && input.min && parseFloat(input.value) < parseFloat(input.min)) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    // Submit update goal form
+    function submitUpdateGoalForm() {
+        const goalId = document.getElementById('updateGoalId').value;
+        const title = document.getElementById('updateGoalTitle').value.trim();
+        const type = document.getElementById('updateGoalType').value;
+        const targetValue = parseInt(document.getElementById('updateTargetValue').value);
+        const actualValue = parseInt(document.getElementById('updateActualValue').value);
+        const unit = document.getElementById('updateUnitType').value;
+        const part = unit === 'QUESTIONS' ? parseInt(document.getElementById('updatePartNumber').value) : null;
+        const status = document.getElementById('updateGoalStatus').value;
+
+        // Create the request payload
+        const payload = {
+            title: title,
+            type: type,
+            targetValue: targetValue,
+            actualValue: actualValue,
+            unit: unit,
+            part: part,
+            status: status
+        };
+
+        // Show loading state
+        const submitBtn = document.getElementById('submitUpdateGoalBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Updating...';
+
+        // Hide any previous error messages
+        document.getElementById('updateGoalFormError').style.display = 'none';
+
+        // Submit the form using fetch
+        fetch(`/goals/${goalId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Goal';
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(data => {
+                // Success - close modal and refresh goals
+                const modal = bootstrap.Modal.getInstance(document.getElementById('updateGoalModal'));
+                modal.hide();
+
+                // Refresh the goals list
+                fetchAllGoals();
+                fetchTodayGoals();
+
+                // Show success toast or notification
+                showToast('Success', 'Goal updated successfully!', 'success');
+            })
+            .catch(error => {
+                console.error('Error updating goal:', error);
+                // Display error message
+                const errorElement = document.getElementById('updateGoalFormError');
+                errorElement.textContent = 'Failed to update goal. Please try again.';
+                errorElement.style.display = 'block';
+            });
+    }
+</script>
+
+<!-- Function to show toast notifications -->
+<script>
     function showToast(title, message, type = 'info') {
         // Check if toast container exists, if not create it
         let toastContainer = document.querySelector('.toast-container');
