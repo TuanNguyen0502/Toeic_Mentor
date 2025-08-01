@@ -427,9 +427,9 @@
 
                         <div class="mb-3">
                             <label for="updateActualValue" class="form-label">Actual Value</label>
-                            <input type="number" class="form-control" id="updateActualValue" min="1"
+                            <input type="number" class="form-control" id="updateActualValue" min="0"
                                    placeholder="Enter actual value" required>
-                            <div class="invalid-feedback">Actual value must be at least 1.</div>
+                            <div class="invalid-feedback">Actual value must be at least 0.</div>
                         </div>
 
                         <div class="mb-3">
@@ -833,7 +833,7 @@
             const progressPercentage = Math.min(Math.round((goal.actualValue / goal.targetValue) * 100), 100);
 
             // Only show part information if unit is QUESTIONS
-            const partBadge = goal.unit === 'QUESTIONS'
+            const partBadge = goal.unit === 'QUESTIONS' || goal.unit === 'PARTS'
                 ? `<span class="ms-2 badge bg-info">Part ${goal.part}</span>`
                 : '';
 
@@ -959,7 +959,7 @@
             const type = document.getElementById('goalType').value;
             const targetValue = parseInt(document.getElementById('targetValue').value);
             const unit = document.getElementById('unitType').value;
-            const part = unit === 'QUESTIONS' ? parseInt(document.getElementById('partNumber').value) : null;
+            const part = unit === 'QUESTIONS' || unit === 'PARTS' ? parseInt(document.getElementById('partNumber').value) : null;
 
             // Create the request payload
             const payload = {
@@ -1224,7 +1224,7 @@
 
         // Show/hide part number field based on unit type
         const updatePartContainer = document.getElementById('updatePartContainer');
-        if (unit === 'QUESTIONS') {
+        if (unit === 'QUESTIONS' || unit === 'PARTS') {
             updatePartContainer.style.display = 'block';
         } else {
             updatePartContainer.style.display = 'none';
@@ -1275,7 +1275,7 @@
         const targetValue = parseInt(document.getElementById('updateTargetValue').value);
         const actualValue = parseInt(document.getElementById('updateActualValue').value);
         const unit = document.getElementById('updateUnitType').value;
-        const part = unit === 'QUESTIONS' ? parseInt(document.getElementById('updatePartNumber').value) : null;
+        const part = unit === 'QUESTIONS' || unit === 'PARTS' ? parseInt(document.getElementById('updatePartNumber').value) : null;
         const status = document.getElementById('updateGoalStatus').value;
 
         // Create the request payload
