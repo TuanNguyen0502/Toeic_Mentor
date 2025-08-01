@@ -196,6 +196,9 @@ public class GoalServiceImpl implements IGoalService {
         // Fetch all daily goals for today
         List<Goal> todayGoals = goalRepository.findAllByUser_EmailAndTypeAndGoalDate(email, EGoalType.DAILY, today);
         // Filter goals by unit type
+        List<Goal> minuteGoals = todayGoals.stream()
+                .filter(goal -> EGoalUnit.MINUTES.equals(goal.getUnit()))
+                .toList();
         List<Goal> questionGoals = todayGoals.stream()
                 .filter(goal -> EGoalUnit.QUESTIONS.equals(goal.getUnit()))
                 .toList();
@@ -212,6 +215,24 @@ public class GoalServiceImpl implements IGoalService {
                 .map(TestResultResponse.AnswerResponse::getPart)
                 .distinct()
                 .toList();
+
+        // Update minute goals
+        for (Goal goal : minuteGoals) {
+            int minutesSpent = 0;
+            for (TestResultResponse.AnswerResponse answer : testResultResponse.getAnswerResponses()) {
+                // Calculate the total time spent in seconds for each answer
+                minutesSpent += answer.getTimeSpent();
+            }
+            // Increment the actual value by the total time spent in minutes
+            goal.setActualValue(goal.getActualValue() + minutesSpent / 60);
+            // Update the goal status based on the actual value
+            if (goal.getActualValue() >= goal.getTargetValue()) {
+                goal.setStatus(EGoalStatus.COMPLETED);
+            } else {
+                goal.setStatus(EGoalStatus.IN_PROGRESS);
+            }
+            goalRepository.save(goal);
+        }
 
         // Update question goals
         for (Goal goal : questionGoals) {
