@@ -49,7 +49,7 @@ public class GoalServiceImpl implements IGoalService {
     @Override
     public List<GoalResponse> getAllGoals(String email) {
         // Fetch all goals from the repository
-        return goalRepository.findByUser_Email(email)
+        return goalRepository.findByUser_EmailOrderByGoalDateDesc(email)
                 .stream()
                 .map(goal -> GoalResponse.builder()
                         .id(goal.getId())
