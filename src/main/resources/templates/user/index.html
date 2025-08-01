@@ -1006,9 +1006,17 @@
                     <span class="badge ${getStatusBadgeClass(goal.status)}">${goal.status}</span>
                 </td>
                 <td>
-                    <button class="btn btn-danger btn-sm" onclick="deleteGoal(${goal.id})">
-                        <i class="fas fa-trash-alt"></i> Delete
-                    </button>
+                    <div class="btn-group btn-group-sm">
+                        ${goal.status !== 'FAILED' ?
+                            `<button class="btn ${goal.status === 'IN_PROGRESS' ? 'btn-success' : 'btn-warning'} btn-sm me-1"
+                                onclick="toggleGoalStatus(${goal.id}, '${goal.status}')">
+                                <i class="fas ${goal.status === 'IN_PROGRESS' ? 'fa-check-circle' : 'fa-undo'}"></i>
+                                ${goal.status === 'IN_PROGRESS' ? 'Complete' : 'Reopen'}
+                            </button>` : ''}
+                        <button class="btn btn-danger btn-sm" onclick="deleteGoal(${goal.id})">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </div>
                 </td>
             `;
 
@@ -1070,6 +1078,39 @@
                 console.error('Error deleting goal:', error);
                 // Show error message
                 showToast('Error', 'Failed to delete goal. Please try again.', 'danger');
+            });
+    }
+
+    // Toggle goal status function
+    function toggleGoalStatus(goalId, currentStatus) {
+        // Send request to update the goal status
+        fetch(`/goals/${goalId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update goal status');
+                }
+                return response.text();
+            })
+            .then(data => {
+                // Status updated successfully, refresh the goals lists
+                fetchAllGoals();
+
+                // Refresh today's goals in case the updated goal was also a today's goal
+                fetchTodayGoals();
+
+                // Show success message
+                const newStatus = currentStatus === 'IN_PROGRESS' ? 'completed' : 'reopened';
+                showToast('Success', `Goal ${newStatus} successfully!`, 'success');
+            })
+            .catch(error => {
+                console.error('Error updating goal status:', error);
+                // Show error message
+                showToast('Error', 'Failed to update goal status. Please try again.', 'danger');
             });
     }
 
