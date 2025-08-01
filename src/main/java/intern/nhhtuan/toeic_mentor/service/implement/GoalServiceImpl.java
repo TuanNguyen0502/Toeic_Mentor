@@ -145,9 +145,27 @@ public class GoalServiceImpl implements IGoalService {
     @Transactional
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
     public void repeatDailyGoal() {
-        List<Goal> goals = goalRepository.findAllByType(EGoalType.DAILY);
+        // This method is scheduled to run at midnight every day
+        // It will find all daily goals from yesterday, mark them as completed,
+        // and create new goals for today with the same properties but with status IN_PROGRESS.
+
         LocalDate today = LocalDate.now();
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
+        // Fetch all daily goals from yesterday
+        List<Goal> goals = goalRepository.findAllByTypeAndGoalDate(EGoalType.DAILY, yesterday);
         for (Goal goal : goals) {
+            // Update the existing goal's status to COMPLETED if it was not already completed
+            if (EGoalStatus.IN_PROGRESS.equals(goal.getStatus())) {
+                if (goal.getActualValue() < goal.getTargetValue()) {
+                    goal.setStatus(EGoalStatus.FAILED);
+                } else {
+                    goal.setStatus(EGoalStatus.COMPLETED);
+                }
+            }
+
+            // Create a new goal for today with the same properties as the existing goal
+            // but with the status set to IN_PROGRESS
             Goal newGoal = new Goal();
             newGoal.setTitle(goal.getTitle());
             newGoal.setType(goal.getType());

@@ -15,4 +15,6 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     List<Goal> findByUser_EmailOrderByGoalDateDesc(String userEmail);
 
     List<Goal> findAllByType(EGoalType type);
+
+    List<Goal> findAllByTypeAndGoalDate(EGoalType type, LocalDate goalDate);
 }
