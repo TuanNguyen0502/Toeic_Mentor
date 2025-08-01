@@ -34,7 +34,7 @@ public class TestServiceImpl implements ITestService {
     private final IPartService partService;
     private final IStudyStreakService studyStreakService;
     private final UserRepository userRepository;
-
+    private final IGoalService goalService;
 
     @Override
     public List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest) {
@@ -209,6 +209,9 @@ public class TestServiceImpl implements ITestService {
 
         // Update study streak for the user
         studyStreakService.updateCurrentStreak(email);
+
+        // Update goals for the user
+        goalService.updateGoalProgressAfterTest(email, testResultResponse);
     }
 
     @Override

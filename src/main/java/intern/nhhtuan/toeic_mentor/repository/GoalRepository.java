@@ -13,8 +13,8 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     List<Goal> findByUser_EmailAndGoalDate(String userEmail, LocalDate goalDate);
 
     List<Goal> findByUser_EmailOrderByGoalDateDesc(String userEmail);
-
-    List<Goal> findAllByType(EGoalType type);
-
+    
     List<Goal> findAllByTypeAndGoalDate(EGoalType type, LocalDate goalDate);
+
+    List<Goal> findAllByUser_EmailAndTypeAndGoalDate(String userEmail, EGoalType type, LocalDate goalDate);
 }

@@ -3,6 +3,7 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.request.GoalCreateRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.GoalUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.GoalResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.entity.Goal;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGoalStatus;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGoalType;
@@ -13,6 +14,7 @@ import intern.nhhtuan.toeic_mentor.repository.GoalRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IGoalService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -181,6 +183,93 @@ public class GoalServiceImpl implements IGoalService {
             newGoal.setStatus(EGoalStatus.IN_PROGRESS);
             newGoal.setUser(goal.getUser());
             goalRepository.save(newGoal);
+        }
+    }
+
+    @Async
+    @Override
+    public void updateGoalProgressAfterTest(String email, TestResultResponse testResultResponse) {
+        // This method updates the goal progress after a test result is submitted
+        // It will find the goal for the specific part and update its actual value accordingly
+
+        LocalDate today = LocalDate.now();
+        // Fetch all daily goals for today
+        List<Goal> todayGoals = goalRepository.findAllByUser_EmailAndTypeAndGoalDate(email, EGoalType.DAILY, today);
+        // Filter goals by unit type
+        List<Goal> questionGoals = todayGoals.stream()
+                .filter(goal -> EGoalUnit.QUESTIONS.equals(goal.getUnit()))
+                .toList();
+        List<Goal> partGoals = todayGoals.stream()
+                .filter(goal -> EGoalUnit.PARTS.equals(goal.getUnit()))
+                .toList();
+        List<Goal> testGoals = todayGoals.stream()
+                .filter(goal -> EGoalUnit.TESTS.equals(goal.getUnit()))
+                .toList();
+
+        // Get distinct parts from the test result
+        List<Integer> parts = testResultResponse.getAnswerResponses()
+                .stream()
+                .map(TestResultResponse.AnswerResponse::getPart)
+                .distinct()
+                .toList();
+
+        // Update question goals
+        for (Goal goal : questionGoals) {
+            if (goal.getPart() != null) {
+                // For question goals with a specific part, check if the test result contains answers for that part
+                // and update the actual value accordingly
+
+                // Check if the goal's part is in the list of parts from the test result
+                if (parts.contains(goal.getPart())) {
+                    // Count the number of answers for the specific part
+                    long questionCount = testResultResponse.getAnswerResponses()
+                            .stream()
+                            .filter(answer -> answer.getPart().equals(goal.getPart()))
+                            .count();
+                    goal.setActualValue(goal.getActualValue() + (int) questionCount);
+                    // Update the goal status based on the actual value
+                    if (goal.getActualValue() >= goal.getTargetValue()) {
+                        goal.setStatus(EGoalStatus.COMPLETED);
+                    } else {
+                        goal.setStatus(EGoalStatus.IN_PROGRESS);
+                    }
+                    goalRepository.save(goal);
+                }
+            }
+        }
+
+        // Update part goals
+        for (Goal goal : partGoals) {
+            if (goal.getPart() != null) {
+                // For part goals with a specific part, check if the test result contains answers for that part
+                // and update the actual value accordingly
+
+                // Check if the goal's part is in the list of parts from the test result
+                if (parts.contains(goal.getPart())) {
+                    // Increment the actual value by 1 for each part completed in the test
+                    goal.setActualValue(goal.getActualValue() + 1);
+                    // Update the goal status based on the actual value
+                    if (goal.getActualValue() >= goal.getTargetValue()) {
+                        goal.setStatus(EGoalStatus.COMPLETED);
+                    } else {
+                        goal.setStatus(EGoalStatus.IN_PROGRESS);
+                    }
+                    goalRepository.save(goal);
+                }
+            }
+        }
+
+        // Update test goals
+        for (Goal goal : testGoals) {
+            // For test goals, increment the actual value by 1 for each test completed
+            goal.setActualValue(goal.getActualValue() + 1);
+            // Update the goal status based on the actual value
+            if (goal.getActualValue() >= goal.getTargetValue()) {
+                goal.setStatus(EGoalStatus.COMPLETED);
+            } else {
+                goal.setStatus(EGoalStatus.IN_PROGRESS);
+            }
+            goalRepository.save(goal);
         }
     }
 }
