@@ -369,6 +369,7 @@
                                     <th>Part</th>
                                     <th>Progress</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="allGoalsTableBody">
@@ -923,45 +924,6 @@
                     errorElement.style.display = 'block';
                 });
         }
-
-        // Function to show toast notifications
-        function showToast(title, message, type = 'info') {
-            // Check if toast container exists, if not create it
-            let toastContainer = document.querySelector('.toast-container');
-            if (!toastContainer) {
-                toastContainer = document.createElement('div');
-                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-                document.body.appendChild(toastContainer);
-            }
-
-            // Create toast element
-            const toastEl = document.createElement('div');
-            toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
-            toastEl.setAttribute('role', 'alert');
-            toastEl.setAttribute('aria-live', 'assertive');
-            toastEl.setAttribute('aria-atomic', 'true');
-
-            toastEl.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <strong>${title}</strong>: ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            `;
-
-            // Add toast to container
-            toastContainer.appendChild(toastEl);
-
-            // Initialize and show toast
-            const toast = new bootstrap.Toast(toastEl, {delay: 5000});
-            toast.show();
-
-            // Remove toast from DOM after it's hidden
-            toastEl.addEventListener('hidden.bs.toast', function () {
-                toastEl.remove();
-            });
-        }
     });
 </script>
 
@@ -979,6 +941,12 @@
     });
 
     function fetchAllGoals() {
+        // Reset UI elements before fetching
+        document.getElementById('allGoalsTableContainer').style.display = 'none';
+        document.getElementById('noAllGoalsMessage').classList.add('d-none');
+        document.getElementById('allGoalsLoadingIndicator').style.display = 'block';
+        document.getElementById('allGoalsError').style.display = 'none';
+
         fetch('/goals/all')
             .then(response => {
                 // Hide loading indicator
@@ -1037,6 +1005,11 @@
                 <td>
                     <span class="badge ${getStatusBadgeClass(goal.status)}">${goal.status}</span>
                 </td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="deleteGoal(${goal.id})">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                </td>
             `;
 
             allGoalsTableBody.appendChild(row);
@@ -1062,6 +1035,81 @@
             default:
                 return 'bg-warning';
         }
+    }
+
+    // Delete goal function
+    function deleteGoal(goalId) {
+        if (!confirm('Are you sure you want to delete this goal?')) {
+            return;
+        }
+
+        // Send delete request to the server
+        fetch(`/goals/${goalId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to delete goal');
+                }
+                return response.text(); // Change from json() to text() since the response is a string
+            })
+            .then(data => {
+                // Goal deleted successfully, refresh the goals list
+                fetchAllGoals();
+
+                // Refresh today's goals in case the deleted goal was also a today's goal
+                fetchTodayGoals();
+
+                // Show success message
+                showToast('Success', 'Goal deleted successfully!', 'success');
+            })
+            .catch(error => {
+                console.error('Error deleting goal:', error);
+                // Show error message
+                showToast('Error', 'Failed to delete goal. Please try again.', 'danger');
+            });
+    }
+
+    // Function to show toast notifications
+    function showToast(title, message, type = 'info') {
+        // Check if toast container exists, if not create it
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+
+        toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <strong>${title}</strong>: ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+
+        // Add toast to container
+        toastContainer.appendChild(toastEl);
+
+        // Initialize and show toast
+        const toast = new bootstrap.Toast(toastEl, {delay: 5000});
+        toast.show();
+
+        // Remove toast from DOM after it's hidden
+        toastEl.addEventListener('hidden.bs.toast', function () {
+            toastEl.remove();
+        });
     }
 </script>
 </html>
