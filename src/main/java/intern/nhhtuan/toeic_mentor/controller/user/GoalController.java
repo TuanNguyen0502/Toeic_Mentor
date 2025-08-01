@@ -75,4 +75,14 @@ public class GoalController {
             return ResponseEntity.status(400).body("Failed to update goal status");
         }
     }
+
+    @DeleteMapping("/{goalId}")
+    public ResponseEntity<String> deleteGoal(@PathVariable Long goalId) {
+        boolean isDeleted = goalService.deleteGoal(goalId);
+        if (isDeleted) {
+            return ResponseEntity.ok("Goal deleted successfully");
+        } else {
+            return ResponseEntity.status(400).body("Failed to delete goal");
+        }
+    }
 }

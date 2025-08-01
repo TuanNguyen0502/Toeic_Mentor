@@ -16,4 +16,6 @@ public interface IGoalService {
     boolean updateGoal(Long id, GoalUpdateRequest goalUpdateRequest);
 
     boolean updateGoalStatus(Long id);
+
+    boolean deleteGoal(Long id);
 }

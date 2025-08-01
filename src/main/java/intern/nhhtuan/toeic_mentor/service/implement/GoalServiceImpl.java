@@ -37,7 +37,7 @@ public class GoalServiceImpl implements IGoalService {
                         .targetValue(goal.getTargetValue())
                         .actualValue(goal.getActualValue())
                         .unit(goal.getUnit().name())
-                        .part(goal.getPart())
+                        .part(goal.getPart() != null ? goal.getPart() : 0)
                         .status(goal.getStatus().name())
                         .build())
                 .toList();
@@ -56,7 +56,7 @@ public class GoalServiceImpl implements IGoalService {
                         .targetValue(goal.getTargetValue())
                         .actualValue(goal.getActualValue())
                         .unit(goal.getUnit().name())
-                        .part(goal.getPart())
+                        .part(goal.getPart() != null ? goal.getPart() : 0)
                         .status(goal.getStatus().name())
                         .build())
                 .toList();
@@ -128,6 +128,14 @@ public class GoalServiceImpl implements IGoalService {
         }
 
         goalRepository.save(goal);
+        return true;
+    }
+
+    @Override
+    public boolean deleteGoal(Long id) {
+        Goal goal = goalRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Goal", "id", id));
+        goalRepository.delete(goal);
         return true;
     }
 }
