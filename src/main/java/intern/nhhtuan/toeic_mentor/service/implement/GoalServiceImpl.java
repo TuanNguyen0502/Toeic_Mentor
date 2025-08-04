@@ -179,6 +179,29 @@ public class GoalServiceImpl implements IGoalService {
         }
     }
 
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * MON", zone = "Asia/Ho_Chi_Minh")
+    public void repeatWeeklyGoal() {
+        // This method is scheduled to run at midnight every Monday
+        // It will find all daily goals from yesterday, mark them as completed,
+        // and create new goals for today with the same properties but with status IN_PROGRESS.
+
+        LocalDate thisWeek = LocalDate.now();
+        LocalDate lastWeek = LocalDate.now().minusDays(7);
+
+        // Fetch all daily goals from last week
+        List<Goal> goals = goalRepository.findAllByTypeAndGoalDate(EGoalType.WEEKLY, lastWeek);
+        for (Goal goal : goals) {
+            // Update the existing goal's status to COMPLETED if it was not already completed
+            if (EGoalStatus.IN_PROGRESS.equals(goal.getStatus())) {
+                updateGoalStatusByActualValue(goal);
+            }
+
+            // Create a new goal for this week with the same properties as the existing goal
+            duplicateGoal(goal, thisWeek);
+        }
+    }
+
     @Async
     @Override
     public void updateGoalProgressAfterTest(String email, TestResultResponse testResultResponse) {
@@ -278,5 +301,47 @@ public class GoalServiceImpl implements IGoalService {
             }
             goalRepository.save(goal);
         }
+    }
+
+    private LocalDate getGoalDateByType(EGoalType type) {
+        // Get the current date
+        LocalDate today = LocalDate.now();
+        // Determine the goal date based on the type of goal
+        if (EGoalType.DAILY.equals(type)) {
+            return today;
+        } else if (EGoalType.WEEKLY.equals(type)) {
+            return today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        } else {
+            return today;
+        }
+    }
+
+    private void duplicateGoal(Goal goal, LocalDate newDate) {
+        // Create a new goal with the same properties as the existing goal
+        Goal newGoal = new Goal();
+        newGoal.setTitle(goal.getTitle());
+        newGoal.setType(goal.getType());
+        newGoal.setGoalDate(newDate);
+        newGoal.setTargetValue(goal.getTargetValue());
+        newGoal.setActualValue(0);
+        newGoal.setUnit(goal.getUnit());
+        if (EGoalUnit.QUESTIONS.equals(goal.getUnit()) && goal.getPart() != null) {
+            newGoal.setPart(goal.getPart());
+        } else {
+            newGoal.setPart(null);
+        }
+        newGoal.setStatus(EGoalStatus.IN_PROGRESS);
+        newGoal.setUser(goal.getUser());
+        goalRepository.save(newGoal);
+    }
+
+    private void updateGoalStatusByActualValue(Goal goal) {
+        // Update the status of the goal based on the actual value and target value
+        if (goal.getActualValue() >= goal.getTargetValue()) {
+            goal.setStatus(EGoalStatus.COMPLETED);
+        } else {
+            goal.setStatus(EGoalStatus.IN_PROGRESS);
+        }
+        goalRepository.save(goal);
     }
 }
