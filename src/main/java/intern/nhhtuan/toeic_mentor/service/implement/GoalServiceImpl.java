@@ -13,6 +13,7 @@ import intern.nhhtuan.toeic_mentor.exception.UnauthorizedException;
 import intern.nhhtuan.toeic_mentor.repository.GoalRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IGoalService;
+import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,6 +30,7 @@ import java.util.List;
 public class GoalServiceImpl implements IGoalService {
     private final GoalRepository goalRepository;
     private final UserRepository userRepository;
+    private final INotificationService notificationService;
 
     @Override
     public List<GoalResponse> getTodayGoals(String email) {
@@ -258,6 +260,13 @@ public class GoalServiceImpl implements IGoalService {
             // Update the goal status based on the actual value
             if (goal.getActualValue() >= goal.getTargetValue()) {
                 goal.setStatus(EGoalStatus.COMPLETED);
+                notificationService.createGoalCompletedNotifications(
+                        goal.getUser(),
+                        goal.getTitle(),
+                        goal.getActualValue(),
+                        goal.getTargetValue(),
+                        goal.getUnit().name()
+                );
             }
             goalRepository.save(goal);
         }
@@ -279,6 +288,13 @@ public class GoalServiceImpl implements IGoalService {
                     // Update the goal status based on the actual value
                     if (goal.getActualValue() >= goal.getTargetValue()) {
                         goal.setStatus(EGoalStatus.COMPLETED);
+                        notificationService.createGoalCompletedNotifications(
+                                goal.getUser(),
+                                goal.getTitle(),
+                                goal.getActualValue(),
+                                goal.getTargetValue(),
+                                goal.getUnit().name()
+                        );
                     }
                     goalRepository.save(goal);
                 }
@@ -298,6 +314,13 @@ public class GoalServiceImpl implements IGoalService {
                     // Update the goal status based on the actual value
                     if (goal.getActualValue() >= goal.getTargetValue()) {
                         goal.setStatus(EGoalStatus.COMPLETED);
+                        notificationService.createGoalCompletedNotifications(
+                                goal.getUser(),
+                                goal.getTitle(),
+                                goal.getActualValue(),
+                                goal.getTargetValue(),
+                                goal.getUnit().name()
+                        );
                     }
                     goalRepository.save(goal);
                 }
@@ -311,6 +334,13 @@ public class GoalServiceImpl implements IGoalService {
             // Update the goal status based on the actual value
             if (goal.getActualValue() >= goal.getTargetValue()) {
                 goal.setStatus(EGoalStatus.COMPLETED);
+                notificationService.createGoalCompletedNotifications(
+                        goal.getUser(),
+                        goal.getTitle(),
+                        goal.getActualValue(),
+                        goal.getTargetValue(),
+                        goal.getUnit().name()
+                );
             }
             goalRepository.save(goal);
         }
@@ -352,8 +382,22 @@ public class GoalServiceImpl implements IGoalService {
         // Update the status of the goal based on the actual value and target value
         if (goal.getActualValue() >= goal.getTargetValue()) {
             goal.setStatus(EGoalStatus.COMPLETED);
+            notificationService.createGoalCompletedNotifications(
+                    goal.getUser(),
+                    goal.getTitle(),
+                    goal.getActualValue(),
+                    goal.getTargetValue(),
+                    goal.getUnit().name()
+            );
         } else {
-            goal.setStatus(EGoalStatus.IN_PROGRESS);
+            goal.setStatus(EGoalStatus.FAILED);
+            notificationService.createGoalFailedNotifications(
+                    goal.getUser(),
+                    goal.getTitle(),
+                    goal.getActualValue(),
+                    goal.getTargetValue(),
+                    goal.getUnit().name()
+            );
         }
         goalRepository.save(goal);
     }

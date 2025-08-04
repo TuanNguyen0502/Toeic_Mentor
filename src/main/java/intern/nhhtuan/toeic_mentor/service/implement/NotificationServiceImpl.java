@@ -154,6 +154,70 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    public void createGoalCompletedNotifications(User user, String title, int actualValue, int targetValue, String unit) {
+        // check user setting notification
+        Optional<Boolean> enableNotification = notificationSettingRepository.isEnabled(user.getId(), ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT);
+
+        if (enableNotification.orElse(false)) {
+            // User has enabled notification for this action
+            Notification notification = Notification.builder()
+                    .receiver(user)
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT))
+                    .title("Complete goal: " + title)
+                    .message("Congratulations! You have completed your goal: " + title + ".\n" +
+                            "Actual Value: " + actualValue + " " + unit + "\n" +
+                            "Target Value: " + targetValue + " " + unit)
+                    .build();
+
+            notificationRepository.save(notification);
+
+            // Send WebSocket notification to user
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(user.getEmail(), "/queue/notifications", notificationResponse);
+        }
+    }
+
+    @Override
+    public void createGoalFailedNotifications(User user, String title, int actualValue, int targetValue, String unit) {
+        // check user setting notification
+        Optional<Boolean> enableNotification = notificationSettingRepository.isEnabled(user.getId(), ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT);
+
+        if (enableNotification.orElse(false)) {
+            // User has enabled notification for this action
+            Notification notification = Notification.builder()
+                    .receiver(user)
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT))
+                    .title("Failed goal: " + title)
+                    .message("Unfortunately, you have not completed your goal: " + title + ".\n" +
+                            "Actual Value: " + actualValue + " " + unit + "\n" +
+                            "Target Value: " + targetValue + " " + unit)
+                    .build();
+
+            notificationRepository.save(notification);
+
+            // Send WebSocket notification to user
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(user.getEmail(), "/queue/notifications", notificationResponse);
+        }
+    }
+
+    @Override
     public int countUnreadNotifications(String email) {
         return notificationRepository.findAllByReceiver_Email(email)
                 .stream()
