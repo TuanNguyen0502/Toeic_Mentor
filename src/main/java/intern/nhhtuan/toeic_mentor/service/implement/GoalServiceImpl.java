@@ -36,8 +36,8 @@ public class GoalServiceImpl implements IGoalService {
         LocalDate now = LocalDate.now();
         LocalDate thisWeek = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
-        List<Goal> dailyGoals = goalRepository.findByUser_EmailAndGoalDate(email, now);
-        List<Goal> weeklyGoals = goalRepository.findByUser_EmailAndGoalDate(email, thisWeek);
+        List<Goal> dailyGoals = goalRepository.findByUser_EmailAndTypeAndGoalDate(email, EGoalType.DAILY, now);
+        List<Goal> weeklyGoals = goalRepository.findByUser_EmailAndTypeAndGoalDate(email, EGoalType.WEEKLY, thisWeek);
 
         // Combine today's goals and weekly goals
         dailyGoals.addAll(weeklyGoals);

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
-    List<Goal> findByUser_EmailAndGoalDate(String userEmail, LocalDate goalDate);
+    List<Goal> findByUser_EmailAndTypeAndGoalDate(String userEmail, EGoalType type, LocalDate goalDate);
 
     List<Goal> findByUser_EmailOrderByGoalDateDesc(String userEmail);
     
