@@ -1082,7 +1082,7 @@
                         <button class="btn btn-primary btn-sm me-1" onclick="openUpdateGoalModal(${goal.id}, '${goal.title}', '${goal.type}', ${goal.targetValue}, ${goal.actualValue}, '${goal.unit}', ${goal.part || 'null'}, '${goal.status}')">
                             <i class="fas fa-edit"></i> Edit
                         </button>
-                        ${goal.status !== 'FAILED' ?
+                        ${goal.status !== 'FAILED' && (goal.unit === 'WORDS' || goal.unit === 'OTHER') ?
                             `<button class="btn ${goal.status === 'IN_PROGRESS' ? 'btn-success' : 'btn-warning'} btn-sm me-1"
                                 onclick="toggleGoalStatus(${goal.id}, '${goal.status}')">
                                 <i class="fas ${goal.status === 'IN_PROGRESS' ? 'fa-check-circle' : 'fa-undo'}"></i>
