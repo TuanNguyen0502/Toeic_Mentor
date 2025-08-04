@@ -428,46 +428,25 @@
                         <div class="mb-3">
                             <label for="updateActualValue" class="form-label">Actual Value</label>
                             <input type="number" class="form-control" id="updateActualValue" min="0"
-                                   placeholder="Enter actual value" required>
+                                   placeholder="Enter actual value" readonly>
                             <div class="invalid-feedback">Actual value must be at least 0.</div>
                         </div>
 
                         <div class="mb-3">
                             <label for="updateUnitType" class="form-label">Unit Type</label>
-                            <select class="form-select" id="updateUnitType" required>
-                                <option value="" selected disabled>Select unit type</option>
-                                <option value="MINUTES">Minutes</option>
-                                <option value="QUESTIONS">Questions</option>
-                                <option value="PARTS">Parts</option>
-                                <option value="TESTS">Tests</option>
-                                <option value="WORDS">Words</option>
-                                <option value="OTHER">Other</option>
-                            </select>
+                            <input type="text" class="form-control" id="updateUnitType" readonly>
                             <div class="invalid-feedback">Please select a unit type.</div>
                         </div>
 
                         <div class="mb-3" id="updatePartContainer" style="display: none;">
                             <label for="updatePartNumber" class="form-label">TOEIC Part</label>
-                            <select class="form-select" id="updatePartNumber">
-                                <option value="" selected disabled>Select part number</option>
-                                <option value="1">Part 1 - Photographs</option>
-                                <option value="2">Part 2 - Question-Response</option>
-                                <option value="3">Part 3 - Conversations</option>
-                                <option value="4">Part 4 - Talks</option>
-                                <option value="5">Part 5 - Incomplete Sentences</option>
-                                <option value="6">Part 6 - Text Completion</option>
-                                <option value="7">Part 7 - Reading Comprehension</option>
-                            </select>
+                            <input type="text" class="form-control" id="updatePartNumber" readonly>
                             <div class="invalid-feedback">Please select a TOEIC part.</div>
                         </div>
 
                         <div class="mb-3">
                             <label for="updateGoalStatus" class="form-label">Status</label>
-                            <select class="form-select" id="updateGoalStatus" required>
-                                <option value="IN_PROGRESS">In Progress</option>
-                                <option value="COMPLETED">Completed</option>
-                                <option value="FAILED">Failed</option>
-                            </select>
+                            <input type="text" class="form-control" id="updateGoalStatus" readonly>
                             <div class="invalid-feedback">Please select a status.</div>
                         </div>
                     </form>
@@ -1230,6 +1209,9 @@
             updatePartContainer.style.display = 'none';
         }
 
+        const updateActualValueInput = document.getElementById('updateActualValue');
+        updateActualValueInput.readOnly = !(unit === 'WORDS' || unit === 'OTHER');
+
         // Open the modal
         const updateGoalModal = new bootstrap.Modal(document.getElementById('updateGoalModal'));
         updateGoalModal.show();
@@ -1274,9 +1256,6 @@
         const type = document.getElementById('updateGoalType').value;
         const targetValue = parseInt(document.getElementById('updateTargetValue').value);
         const actualValue = parseInt(document.getElementById('updateActualValue').value);
-        const unit = document.getElementById('updateUnitType').value;
-        const part = unit === 'QUESTIONS' || unit === 'PARTS' ? parseInt(document.getElementById('updatePartNumber').value) : null;
-        const status = document.getElementById('updateGoalStatus').value;
 
         // Create the request payload
         const payload = {
@@ -1284,9 +1263,6 @@
             type: type,
             targetValue: targetValue,
             actualValue: actualValue,
-            unit: unit,
-            part: part,
-            status: status
         };
 
         // Show loading state

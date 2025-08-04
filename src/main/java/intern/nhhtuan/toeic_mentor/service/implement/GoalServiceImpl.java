@@ -93,31 +93,22 @@ public class GoalServiceImpl implements IGoalService {
     public boolean updateGoal(Long id, GoalUpdateRequest goalUpdateRequest) {
         Goal goal = goalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Goal", "id", id));
-        if (goalUpdateRequest.getActualValue() > goalUpdateRequest.getTargetValue()) {
-            throw new ResourceNotFoundException("Goal", "actual value", goalUpdateRequest.getActualValue());
-        }
 
         goal.setTitle(goalUpdateRequest.getTitle());
         goal.setType(goalUpdateRequest.getType());
         goal.setTargetValue(goalUpdateRequest.getTargetValue());
-        goal.setActualValue(goalUpdateRequest.getActualValue());
 
-        if (goalUpdateRequest.getActualValue() >= goalUpdateRequest.getTargetValue()) {
+        // Update the actual value based on the unit type
+        if (EGoalUnit.WORDS.equals(goal.getUnit()) || EGoalUnit.OTHER.equals(goal.getUnit())) {
+            goal.setActualValue(goalUpdateRequest.getActualValue());
+        }
+
+        // Update status based on the actual value and target value
+        if (goal.getActualValue() >= goal.getTargetValue()) {
             goal.setStatus(EGoalStatus.COMPLETED);
         } else {
             goal.setStatus(EGoalStatus.IN_PROGRESS);
         }
-
-        goal.setUnit(goalUpdateRequest.getUnit());
-
-        if ((EGoalUnit.QUESTIONS.equals(goalUpdateRequest.getUnit()) || EGoalUnit.PARTS.equals(goalUpdateRequest.getUnit()))
-                && goalUpdateRequest.getPart() != null) {
-            goal.setPart(goalUpdateRequest.getPart());
-        } else {
-            goal.setPart(null);
-        }
-
-        goal.setStatus(goalUpdateRequest.getStatus());
 
         goalRepository.save(goal);
         return true;
