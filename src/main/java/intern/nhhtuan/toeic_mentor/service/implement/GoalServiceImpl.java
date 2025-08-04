@@ -196,7 +196,8 @@ public class GoalServiceImpl implements IGoalService {
 
         LocalDate today = LocalDate.now();
         // Fetch all daily goals for today
-        List<Goal> todayGoals = goalRepository.findAllByUser_EmailAndTypeAndGoalDate(email, EGoalType.DAILY, today);
+        List<Goal> todayGoals = goalRepository
+                .findAllByUser_EmailAndTypeAndGoalDateAndStatus(email, EGoalType.DAILY, today, EGoalStatus.IN_PROGRESS);
         // Filter goals by unit type
         List<Goal> minuteGoals = todayGoals.stream()
                 .filter(goal -> EGoalUnit.MINUTES.equals(goal.getUnit()))
@@ -230,8 +231,6 @@ public class GoalServiceImpl implements IGoalService {
             // Update the goal status based on the actual value
             if (goal.getActualValue() >= goal.getTargetValue()) {
                 goal.setStatus(EGoalStatus.COMPLETED);
-            } else {
-                goal.setStatus(EGoalStatus.IN_PROGRESS);
             }
             goalRepository.save(goal);
         }
@@ -253,8 +252,6 @@ public class GoalServiceImpl implements IGoalService {
                     // Update the goal status based on the actual value
                     if (goal.getActualValue() >= goal.getTargetValue()) {
                         goal.setStatus(EGoalStatus.COMPLETED);
-                    } else {
-                        goal.setStatus(EGoalStatus.IN_PROGRESS);
                     }
                     goalRepository.save(goal);
                 }
@@ -274,8 +271,6 @@ public class GoalServiceImpl implements IGoalService {
                     // Update the goal status based on the actual value
                     if (goal.getActualValue() >= goal.getTargetValue()) {
                         goal.setStatus(EGoalStatus.COMPLETED);
-                    } else {
-                        goal.setStatus(EGoalStatus.IN_PROGRESS);
                     }
                     goalRepository.save(goal);
                 }
@@ -289,8 +284,6 @@ public class GoalServiceImpl implements IGoalService {
             // Update the goal status based on the actual value
             if (goal.getActualValue() >= goal.getTargetValue()) {
                 goal.setStatus(EGoalStatus.COMPLETED);
-            } else {
-                goal.setStatus(EGoalStatus.IN_PROGRESS);
             }
             goalRepository.save(goal);
         }
