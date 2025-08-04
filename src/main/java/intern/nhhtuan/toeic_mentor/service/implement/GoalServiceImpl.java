@@ -19,7 +19,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 @Service
@@ -72,16 +74,24 @@ public class GoalServiceImpl implements IGoalService {
         Goal goal = new Goal();
         goal.setTitle(goalCreateRequest.getTitle());
         goal.setType(goalCreateRequest.getType());
-        goal.setGoalDate(LocalDate.now());
+
+        // Set the goal date based on the type of goal
+        goal.setGoalDate(getGoalDateByType(goalCreateRequest.getType()));
+
         goal.setTargetValue(goalCreateRequest.getTargetValue());
         goal.setActualValue(0);
         goal.setUnit(goalCreateRequest.getUnit());
+
+        // Set the part if the unit is QUESTIONS or PARTS and part is provided
+        // Otherwise, set it to null
         if ((EGoalUnit.QUESTIONS.equals(goalCreateRequest.getUnit()) || EGoalUnit.PARTS.equals(goalCreateRequest.getUnit()))
                 && goalCreateRequest.getPart() != null) {
             goal.setPart(goalCreateRequest.getPart());
         } else {
             goal.setPart(null);
         }
+
+        // Set the initial status to IN_PROGRESS
         goal.setStatus(EGoalStatus.IN_PROGRESS);
         goal.setUser(userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("User not found with email: " + email)));
@@ -96,6 +106,10 @@ public class GoalServiceImpl implements IGoalService {
 
         goal.setTitle(goalUpdateRequest.getTitle());
         goal.setType(goalUpdateRequest.getType());
+
+        // Set the goal date based on the type of goal
+        goal.setGoalDate(getGoalDateByType(goalUpdateRequest.getType()));
+
         goal.setTargetValue(goalUpdateRequest.getTargetValue());
 
         // Update the actual value based on the unit type
@@ -152,30 +166,11 @@ public class GoalServiceImpl implements IGoalService {
         for (Goal goal : goals) {
             // Update the existing goal's status to COMPLETED if it was not already completed
             if (EGoalStatus.IN_PROGRESS.equals(goal.getStatus())) {
-                if (goal.getActualValue() < goal.getTargetValue()) {
-                    goal.setStatus(EGoalStatus.FAILED);
-                } else {
-                    goal.setStatus(EGoalStatus.COMPLETED);
-                }
+                updateGoalStatusByActualValue(goal);
             }
 
             // Create a new goal for today with the same properties as the existing goal
-            // but with the status set to IN_PROGRESS
-            Goal newGoal = new Goal();
-            newGoal.setTitle(goal.getTitle());
-            newGoal.setType(goal.getType());
-            newGoal.setGoalDate(today);
-            newGoal.setTargetValue(goal.getTargetValue());
-            newGoal.setActualValue(0);
-            newGoal.setUnit(goal.getUnit());
-            if (EGoalUnit.QUESTIONS.equals(goal.getUnit()) && goal.getPart() != null) {
-                newGoal.setPart(goal.getPart());
-            } else {
-                newGoal.setPart(null);
-            }
-            newGoal.setStatus(EGoalStatus.IN_PROGRESS);
-            newGoal.setUser(goal.getUser());
-            goalRepository.save(newGoal);
+            duplicateGoal(goal, today);
         }
     }
 
