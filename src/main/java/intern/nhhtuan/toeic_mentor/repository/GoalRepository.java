@@ -17,7 +17,5 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     
     List<Goal> findAllByTypeAndGoalDate(EGoalType type, LocalDate goalDate);
 
-    List<Goal> findAllByUser_EmailAndTypeAndGoalDate(String userEmail, EGoalType type, LocalDate goalDate);
-
     List<Goal> findAllByUser_EmailAndTypeAndGoalDateAndStatus(String userEmail, EGoalType type, LocalDate goalDate, EGoalStatus status);
 }

@@ -204,9 +204,20 @@ public class GoalServiceImpl implements IGoalService {
         // It will find the goal for the specific part and update its actual value accordingly
 
         LocalDate today = LocalDate.now();
+        LocalDate thisWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         // Fetch all daily goals for today
         List<Goal> todayGoals = goalRepository
                 .findAllByUser_EmailAndTypeAndGoalDateAndStatus(email, EGoalType.DAILY, today, EGoalStatus.IN_PROGRESS);
+        // Fetch all weekly goals for this week
+        List<Goal> weeklyGoals = goalRepository
+                .findAllByUser_EmailAndTypeAndGoalDateAndStatus(email, EGoalType.WEEKLY, thisWeek, EGoalStatus.IN_PROGRESS);
+        // Combine today's goals and weekly goals
+        todayGoals.addAll(weeklyGoals);
+        if (todayGoals.isEmpty()) {
+            // If there are no goals for today, return early
+            return;
+        }
+
         // Filter goals by unit type
         List<Goal> minuteGoals = todayGoals.stream()
                 .filter(goal -> EGoalUnit.MINUTES.equals(goal.getUnit()))
