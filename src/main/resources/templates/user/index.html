@@ -146,7 +146,8 @@
                         <div id="chartNoData" class="text-center" style="display: none;">
                             <div class="alert alert-info">
                                 <i class="feather-info"></i>
-                                <p class="mb-0">No recent test data available. Take some tests to see your performance chart!</p>
+                                <p class="mb-0">No recent test data available. Take some tests to see your performance
+                                    chart!</p>
                             </div>
                         </div>
                     </div>
@@ -180,7 +181,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Average Score -->
                             <div class="col-lg-3 col-md-6 mb-4">
                                 <div class="stat-card">
@@ -193,7 +194,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Highest Score -->
                             <div class="col-lg-3 col-md-6 mb-4">
                                 <div class="stat-card">
@@ -206,7 +207,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Total Time Spent -->
                             <div class="col-lg-3 col-md-6 mb-4">
                                 <div class="stat-card">
@@ -226,583 +227,246 @@
         </div>
     </section>
     <!-- Test Statistics Section end -->
-    
-    <!-- category-slider start -->
-    <section class="slider-category section-pt">
-        <div class="section-capture">
-            <div class="section-title">
-                <h2 data-animate="animate__fadeInUp">Popular brand</h2>
-            </div>
-        </div>
-        <!-- brand-slider start -->
-        <div class="brand-area section-pb">
-            <div class="container">
-                <div class="testi-category">
-                    <div class="testi-wrap">
-                        <div class="brand-slider owl-carousel owl-theme" id="brand-slider">
-                            <div class="item" data-animate="animate__fadeInUp" th:each="brand : ${brands}">
-                                <div class="brand-img">
-                                    <a th:href="@{/products(brandNames=${brand.name})}" class="brand-img"><img
-                                            th:src="*{brand.getImage()}" class="img-fluid"
-                                            alt="brand"></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- brand-slider end -->
-    </section>
-    <!-- category-slider end -->
 
-    <!-- product-tab start -->
-    <section class="product-tab-area section-ptb">
+    <!-- Daily Goals Section start -->
+    <section class="daily-goals-section section-pt">
         <div class="container">
-            <div class="collection-category">
-                <div class="section-capture">
-                    <div class="section-title">
-                        <h2 data-animate="animate__fadeInUp">Trending product</h2>
-                    </div>
-                </div>
-                <div class="collection-wrap">
-                    <div class="collection-slider swiper" id="new-product">
-                        <div class="swiper-wrapper">
-                            <div class="swiper-slide" data-animate="animate__fadeInUp"
-                                 th:each="product : ${productHomeTrending}">
-                                <div class="single-product-wrap">
-                                    <div class="product-image">
-                                        <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html" class="pro-img">
-                                            <img th:src="${product.thumbnail}" class="img-fluid img1 resp-img1"
-                                                 alt="p-1">
-                                            <img th:src="${product.thumbnail}" class="img-fluid img2 resp-img2"
-                                                 alt="p-2">
-                                        </a>
-                                        <div class="product-action">
-                                            <a href="#" class="quickview" th:data-product-id="${product.getId()}">
-                                                <span class="product-icon"><i class="feather-eye"></i></span>
-                                                <span class="tooltip-text">quickview</span>
-                                            </a>
-                                        </div>
-                                        <!-- Thêm thuộc tính xác thực -->
-                                        <div th:attr="data-authenticated=${user != null}"></div>
-                                        <div class="product-cart">
-                                            <button type="button" class="add-to-cart"
-                                                    th:attr="data-product-id=${product.id}"
-                                                    onclick="addToCart(this)">
-                                                <span class="product-icon">
-                                                    <span class="product-bag-icon"><i class="feather-shopping-bag"></i></span>
-                                                    <span class="product-loader-icon"><i class="feather-loader"></i></span>
-                                                    <span class="product-check-icon"><i class="feather-check"></i></span>
-                                                </span>
-                                            </button>
-                                        </div>
-
-                                    </div>
-                                    <div class="product-content">
-                                        <div class="product-title">
-                                            <h6><a th:href="@{/products/{id}(id=${product.id})}" th:text="${product.name}"></a></h6>
-                                        </div>
-                                        <div class="price-box">
-                                            <span class="new-price" th:text="'' + ${product.price}"></span>
-                                            <!--                                            <span class="old-price">$70.00</span>-->
-                                        </div>
-                                        <div class="product-ratting">
-                                                    <span class="review-ratting">
-                                                        <span class="review-star">
-                                                            <span th:if="${product.getStars() > 0}">
-                                                                <span th:each="i : ${#numbers.sequence(1, product.stars)}">
-                                                                    <i class="fas fa-star"></i>
-                                                                </span>
-                                                            </span>
-                                                            <span th:if="${product.getStars() < 5}">
-                                                                <span th:each="i : ${#numbers.sequence(1, 5 - product.stars)}">
-                                                                    <i class="feather-star"></i>
-                                                                </span>
-                                                            </span>
-                                                        </span>
-                                                        <span class="review-caption">No reviews</span>
-                                                    </span>
-                                        </div>
-                                        <div class="product-description">
-                                            <p th:text="${product.description}"></p>
-                                        </div>
-                                        <div class="product-action">
-                                            <a th:href="@{/add-cart}" class="add-to-cart">
-                                                        <span class="product-icon">
-                                                            <span class="product-bag-icon"><i
-                                                                    class="feather-shopping-bag"></i></span>
-                                                            <span class="product-loader-icon"><i
-                                                                    class="feather-loader"></i></span>
-                                                            <span class="product-check-icon"><i
-                                                                    class="feather-check"></i></span>
-                                                        </span>
-                                                <span class="tooltip-text">add to cart</span>
-                                            </a>
-                                            <a href="#quickview-modal" data-bs-toggle="modal" class="quick-view">
-                                                <span class="product-icon"><i class="feather-eye"></i></span>
-                                                <span class="tooltip-text">quickview</span>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-capture">
+                        <div class="section-title d-flex justify-content-between align-items-center">
+                            <h2 data-animate="animate__fadeInUp">Today's Goals</h2>
+                            <div class="btn-group" data-animate="animate__fadeInUp">
+                                <button class="btn btn-outline-primary me-2" id="viewAllGoalsBtn">
+                                    <i class="feather-list me-1"></i> View All Goals
+                                </button>
+                                <button class="btn btn-style1" id="createGoalBtn">
+                                    <i class="feather-plus-circle me-1"></i> Create New Goal
+                                </button>
                             </div>
-                        </div>
-                        <div class="collection-button" data-animate="animate__fadeInUp">
-                            <a th:href="@{/products}" class="btn-style3">view more</a>
                         </div>
                     </div>
-                    <div class="swiper-buttons">
-                        <div class="swiper-buttons-wrap">
-                            <button class="swiper-prev swiper-prev-new"><i class="feather-arrow-left"></i></button>
-                            <button class="swiper-next swiper-next-new"><i class="feather-arrow-right"></i></button>
-                        </div>
-                    </div>
-                    <div class="swiper-dots">
-                        <div class="swiper-pagination swiper-pagination-new"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- product-tab end -->
-    <!-- testimonials-slider start -->
-    <section class="testimonials-slider section-ptb">
-        <div class="section-capture">
-            <div class="section-title">
-                <h2 data-animate="animate__fadeInUp">Our customers love</h2>
-            </div>
-        </div>
-        <div class="container">
-            <div class="testi-category">
-                <div class="testi-wrap">
-                    <div class="testi-slider owl-carousel owl-theme" id="testimonials-slider">
-                        <div class="item" data-animate="animate__fadeInUp">
-                            <div class="testi-content">
-                                <div class="test-quite">
-                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
-                                </div>
-                                <div class="testi-desc">
-                                    <p>Trang web rõ ràng, nhân viên tư vấn kỹ, đặc biệt giao hàng đúng giờ. Lần sau sẽ giới thiệu bạn bè đến mua!</p>
-                                </div>
-                                <div class="testi-image">
-                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-1.jpg}"
-                                               class="img-fluid" alt="test-2"></span>
-                                </div>
-                                <div class="author-info">
-                                    <h6>Nguyễn Thảo Vy</h6>
-                                </div>
-                                <span class="review-star">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star-half-alt"></i>
-                                        </span>
+                    <div class="goals-container" id="todayGoalsContainer">
+                        <!-- Goals will be loaded dynamically -->
+                        <div class="text-center my-4" id="goalsLoadingIndicator">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
                         </div>
-                        <div class="item" data-animate="animate__fadeInUp">
-                            <div class="testi-content">
-                                <div class="test-quite">
-                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
-                                </div>
-                                <div class="testi-desc">
-                                    <p>Dịch vụ rất chuyên nghiệp, có cả trả góp 0% lãi suất, giao hàng tận nơi và hỗ trợ kỹ thuật miễn phí sau khi mua.
-                                         Rất đáng tin cậy!</p>
-                                </div>
-                                <div class="testi-image">
-                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-2.jpg}"
-                                               class="img-fluid" alt="test-2"></span>
-                                </div>
-                                <div class="author-info">
-                                    <h6>Lê Quỳnh Anh</h6>
-                                </div>
-                                <span class="review-star">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                        </span>
-                            </div>
+                        <div class="row" id="goalsList">
+                            <!-- Goals will be inserted here -->
                         </div>
-                        <div class="item" data-animate="animate__fadeInUp">
-                            <div class="testi-content">
-                                <div class="test-quite">
-                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
-                                </div>
-                                <div class="testi-desc">
-                                    <p>Mình mua iPhone 15 Pro Max ở đây với giá rẻ hơn 2 cửa hàng khác. Hàng chính hãng, bảo hành đầy đủ. Giao hàng cũng cực nhanh!</p>
-                                </div>
-                                <div class="testi-image">
-                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-3.jpg}"
-                                               class="img-fluid" alt="test-2"></span>
-                                </div>
-                                <div class="author-info">
-                                    <h6>Vũ Thành Đạt </h6>
-                                </div>
-                                <span class="review-star">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                        </span>
-                            </div>
-                        </div>
-                        <div class="item" data-animate="animate__fadeInUp">
-                            <div class="testi-content">
-                                <div class="test-quite">
-                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
-                                </div>
-                                <div class="testi-desc">
-                                    <p>Website dễ dùng, lọc máy theo nhu cầu nhanh. Tư vấn viên hỗ trợ nhiệt tình, mình chọn được đúng chiếc phù hợp với công việc.</p>
-                                </div>
-                                <div class="testi-image">
-                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-4.jpg}"
-                                               class="img-fluid" alt="test-2"></span>
-                                </div>
-                                <div class="author-info">
-                                    <h6>Nguyễn Hoàng Long</h6>
-                                </div>
-                                <span class="review-star">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star-half-alt"></i>
-                                        </span>
-                            </div>
-                        </div>
-                        <div class="item" data-animate="animate__fadeInUp">
-                            <div class="testi-content">
-                                <div class="test-quite">
-                                    <a href="JavaScript:void(0)"><i class="fa fa-quote-left"></i></a>
-                                </div>
-                                <div class="testi-desc">
-                                    <p>Mình đặt Galaxy S23 Ultra hôm qua, hôm nay đã nhận được hàng. Đóng gói kỹ, máy mới nguyên seal. Sẽ ủng hộ lần sau!</p>
-                                </div>
-                                <div class="testi-image">
-                                    <span><img th:src="@{/user/asset/image/home1/testimonial/test-5.jpg}"
-                                               class="img-fluid" alt="test-2"></span>
-                                </div>
-                                <div class="author-info">
-                                    <h6>Đỗ Khánh Linh</h6>
-                                </div>
-                                <span class="review-star">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star-half-alt"></i>
-                                        </span>
-                            </div>
+                        <div class="text-center my-4 d-none" id="noGoalsMessage">
+                            <p>No goals set for today. Start setting goals to track your progress!</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <!-- testimonials-slider end -->
+    <!-- Daily Goals Section end -->
 
-    <!-- offer-text-section start -->
-    <div class="offer-text-area section-tb-padding">
-        <div class="offer-text-wrap">
-            <div class="offer-text">
-                <ul>
-                    <li class="text1">
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
+    <!-- Create Goal Modal -->
+    <div class="modal fade" id="createGoalModal" tabindex="-1" aria-labelledby="createGoalModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createGoalModalLabel">Create New Goal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createGoalForm">
+                        <div class="mb-3">
+                            <label for="goalTitle" class="form-label">Goal Title</label>
+                            <input type="text" class="form-control" id="goalTitle" placeholder="Enter goal title"
+                                   required>
+                            <div class="invalid-feedback">Please enter a goal title.</div>
                         </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
+
+                        <div class="mb-3">
+                            <label for="goalType" class="form-label">Goal Type</label>
+                            <select class="form-select" id="goalType" required>
+                                <option value="" selected disabled>Select goal type</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a goal type.</div>
                         </div>
-                        <div class="offer-text-block">
-                            <p>Newest products 10% off use code: NEW10</p>
+
+                        <div class="mb-3">
+                            <label for="targetValue" class="form-label">Target Value</label>
+                            <input type="number" class="form-control" id="targetValue" min="1"
+                                   placeholder="Enter target value" required>
+                            <div class="invalid-feedback">Target value must be at least 1.</div>
                         </div>
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
+
+                        <div class="mb-3">
+                            <label for="unitType" class="form-label">Unit Type</label>
+                            <select class="form-select" id="unitType" required>
+                                <option value="" selected disabled>Select unit type</option>
+                                <option value="MINUTES">Minutes</option>
+                                <option value="QUESTIONS">Questions</option>
+                                <option value="PARTS">Parts</option>
+                                <option value="TESTS">Tests</option>
+                                <option value="WORDS">Words</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a unit type.</div>
                         </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
+
+                        <div class="mb-3" id="partContainer" style="display: none;">
+                            <label for="partNumber" class="form-label">TOEIC Part</label>
+                            <select class="form-select" id="partNumber">
+                                <option value="" selected disabled>Select part number</option>
+                                <option value="1">Part 1 - Photographs</option>
+                                <option value="2">Part 2 - Question-Response</option>
+                                <option value="3">Part 3 - Conversations</option>
+                                <option value="4">Part 4 - Talks</option>
+                                <option value="5">Part 5 - Incomplete Sentences</option>
+                                <option value="6">Part 6 - Text Completion</option>
+                                <option value="7">Part 7 - Reading Comprehension</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a TOEIC part.</div>
                         </div>
-                    </li>
-                    <li class="text2">
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Newest products 10% off use code: NEW10</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                    </li>
-                    <li class="text1">
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Newest products 10% off use code: NEW10</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                    </li>
-                    <li class="text2">
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Newest products 10% off use code: NEW10</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                    </li>
-                    <li class="text1">
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Newest products 10% off use code: NEW10</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                    </li>
-                    <li class="text2">
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Newest products 10% off use code: NEW10</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                    </li>
-                    <li class="text1">
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Newest products 10% off use code: NEW10</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                    </li>
-                    <li class="text2">
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Newest products 10% off use code: NEW10</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Summer sale discount 40% off all products</p>
-                        </div>
-                        <div class="offer-text-block">
-                            <p>Explore the latest shopping related offers</p>
-                        </div>
-                    </li>
-                </ul>
+                    </form>
+                    <div class="alert alert-danger mt-3" id="goalFormError" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitGoalBtn">Create Goal</button>
+                </div>
             </div>
         </div>
     </div>
-    <br>
-    <!-- offer-text-section end -->
-    <!-- service-area start-->
-    <div class="service-area section-p" data-animate="animate__fadeInUp">
-        <div class="container">
-            <ul class="single-service">
-                <li class="service-content" data-animate="animate__fadeInUp">
-                    <div class="ser-block">
-                        <a class="service-icon" href="JavaScript:void(0)">
-                            <span><i class="feather-truck"></i></span>
-                        </a>
-                        <div class="service-text">
-                            <h6>Free shipping</h6>
-                            <p>Delivery within 5 to 7 day</p>
+
+    <!-- View All Goals Modal -->
+    <div class="modal fade" id="allGoalsModal" tabindex="-1" aria-labelledby="allGoalsModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allGoalsModalLabel">All Goals</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center my-4" id="allGoalsLoadingIndicator">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
+                        <p class="mt-2">Loading all goals...</p>
                     </div>
-                </li>
-                <li class="service-content" data-animate="animate__fadeInUp">
-                    <div class="ser-block">
-                        <a class="service-icon" href="JavaScript:void(0)">
-                            <span><i class="feather-gift"></i></span>
-                        </a>
-                        <div class="service-text">
-                            <h6>Gift voucher</h6>
-                            <p>Surprise coupon voucher</p>
-                        </div>
+                    <div id="allGoalsError" class="alert alert-danger" style="display: none;"></div>
+                    <div class="table-responsive" id="allGoalsTableContainer" style="display: none;">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Goal Date</th>
+                                    <th>Unit</th>
+                                    <th>Part</th>
+                                    <th>Progress</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allGoalsTableBody">
+                                <!-- All goals will be inserted here -->
+                            </tbody>
+                        </table>
                     </div>
-                </li>
-                <li class="service-content" data-animate="animate__fadeInUp">
-                    <div class="ser-block">
-                        <a class="service-icon" href="JavaScript:void(0)">
-                            <span><i class="feather-shield"></i></span>
-                        </a>
-                        <div class="service-text">
-                            <h6>Money back</h6>
-                            <p>Refund within 30 days</p>
-                        </div>
+                    <div class="text-center my-4 d-none" id="noAllGoalsMessage">
+                        <p>You don't have any goals yet. Start by creating a new goal!</p>
                     </div>
-                </li>
-                <li class="service-content" data-animate="animate__fadeInUp">
-                    <div class="ser-block">
-                        <a class="service-icon" href="JavaScript:void(0)">
-                            <span><i class="feather-briefcase"></i></span>
-                        </a>
-                        <div class="service-text">
-                            <h6>Safe payment</h6>
-                            <p>100% secure with us</p>
-                        </div>
-                    </div>
-                </li>
-            </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
-    <!-- service-area end-->
+
+    <!-- Update Goal Modal -->
+    <div class="modal fade" id="updateGoalModal" tabindex="-1" aria-labelledby="updateGoalModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateGoalModalLabel">Update Goal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateGoalForm">
+                        <input type="hidden" id="updateGoalId">
+                        <div class="mb-3">
+                            <label for="updateGoalTitle" class="form-label">Goal Title</label>
+                            <input type="text" class="form-control" id="updateGoalTitle" placeholder="Enter goal title"
+                                   required>
+                            <div class="invalid-feedback">Please enter a goal title.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateGoalType" class="form-label">Goal Type</label>
+                            <select class="form-select" id="updateGoalType" required>
+                                <option value="" selected disabled>Select goal type</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a goal type.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateTargetValue" class="form-label">Target Value</label>
+                            <input type="number" class="form-control" id="updateTargetValue" min="1"
+                                   placeholder="Enter target value" required>
+                            <div class="invalid-feedback">Target value must be at least 1.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateActualValue" class="form-label">Actual Value</label>
+                            <input type="number" class="form-control" id="updateActualValue" min="0"
+                                   placeholder="Enter actual value" readonly>
+                            <div class="invalid-feedback">Actual value must be at least 0.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateUnitType" class="form-label">Unit Type</label>
+                            <input type="text" class="form-control" id="updateUnitType" readonly>
+                            <div class="invalid-feedback">Please select a unit type.</div>
+                        </div>
+
+                        <div class="mb-3" id="updatePartContainer" style="display: none;">
+                            <label for="updatePartNumber" class="form-label">TOEIC Part</label>
+                            <input type="text" class="form-control" id="updatePartNumber" readonly>
+                            <div class="invalid-feedback">Please select a TOEIC part.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="updateGoalStatus" class="form-label">Status</label>
+                            <input type="text" class="form-control" id="updateGoalStatus" readonly>
+                            <div class="invalid-feedback">Please select a status.</div>
+                        </div>
+                    </form>
+                    <div class="alert alert-danger mt-3" id="updateGoalFormError" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitUpdateGoalBtn">Update Goal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </main>
 <!-- main end -->
 <!-- footer start -->
 <br>
 <div th:insert="~{user/fragments/footer::footer}"></div>
 <!-- footer end -->
-<!-- Quickview Modal -->
-<div class="modal fade quickview-modal" id="quickview-modal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="quickview-content"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Quickview Modal End -->
-<!-- search-modal start -->
-<div class="search-modal modal fade" id="searchmodal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="container">
-                    <div class="search-content">
-                        <div class="search-box">
-                            <button type="button" class="search-close" data-bs-dismiss="modal"><span><i
-                                    class="feather-x"></i></span></button>
-                            <form method="get" action="https://spacingtech.com/search" class="search-form">
-                                <div class="search-bar">
-                                    <div class="form-search">
-                                        <input type="search" name="search-input" class="search-input" value=""
-                                               placeholder="Search our store" required="">
-                                        <button type="button" onclick="location.href='search.html'" class="search-btn"
-                                                disabled=""><i class="feather-search"></i></button>
-                                    </div>
-                                    <div class="search-results">
-                                        <p class="search-for">Search for <span class="search-text">a</span></p>
-                                        <ul>
-                                            <li>
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
-                                                    <img th:src="@{/user/asset/image/home1/product/product-1.jpg}"
-                                                         class="img-fluid" alt="product-1.jpg}">
-                                                    <span>Earbuds</span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
-                                                    <img th:src="@{/user/asset/image/home1/product/product-7.jpg}"
-                                                         class="img-fluid" alt="product-7.jpg}">
-                                                    <span>Sandisk ssd</span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
-                                                    <img th:src="@{/user/asset/image/home1/product/product-15.jpg}"
-                                                         class="img-fluid" alt="product-15.jpg}">
-                                                    <span>Router wifi6</span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
-                                                    <img th:src="@{/user/asset/image/home1/product/product-18.jpg}"
-                                                         class="img-fluid" alt="product-18.jpg}">
-                                                    <span>Smartphone</span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
-                                                    <img th:src="@{/user/asset/image/home1/product/product-31.jpg}"
-                                                         class="img-fluid" alt="product-31.jpg}">
-                                                    <span>IPad mini</span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/product-template.html">
-                                                    <img th:src="@{/user/asset/image/home1/product/product-49.jpg}"
-                                                         class="img-fluid" alt="product-49.jpg}">
-                                                    <span>HP color printer</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                        <p class="search-more"><a href="../../../../../../../TechStore-master/src/main/resources/templates/user/search.html">See all results (12)</a></p>
-                                        <p class="search-fail">Search not found</p>
-                                    </div>
-                                    <a href="../../../../../../../TechStore-master/src/main/resources/templates/user/search.html" class="search-btn">Search</a>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="search-example-text">Trending search: a, e, Sunglasses...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- search-modal end -->
+
 <!-- cart-drawer start -->
 <div th:insert="~{user/fragments/cart_drawer::cart-drawer}"></div>
 <!-- cart-drawer end -->
@@ -813,157 +477,13 @@
 </body>
 <!-- Javascript -->
 <div th:insert="~{user/fragments/script::script}"></div>
-<script>
-    function addToCart(button) {
-        const isAuthenticated = [[${#authentication.principal != 'anonymousUser'}]];
-        if (!isAuthenticated) {
-            window.location.href = "/login";
-            return;
-        }
-
-        const productId = button.getAttribute('data-product-id');
-
-        fetch(`/add-cart?productId=${productId}`, {
-            method: 'GET'
-        })
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
-                } else {
-                    throw new Error('Thêm thất bại!');
-                }
-            })
-            .then(data => {
-                alert(data);
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra!');
-            });
-    }
-</script>
-<script>
-    function increaseQuantity(button) {
-        console.log("increaseQuantity called");
-        const productId = getProductId(button);
-        fetch(window.location.origin + "/add-cart?productId=" + productId)
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
-                }
-                throw new Error('Tăng số lượng thất bại!');
-            })
-            .then(data => {
-                alert(data);
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert(error.message);
-            });
-    }
-
-    function decreaseQuantity(button) {
-        console.log("decreaseQuantity called");
-        const productId = getProductId(button);
-        fetch(window.location.origin + "/decrease-cart?productId=" + productId)
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
-                }
-                throw new Error('Giảm số lượng thất bại!');
-            })
-            .then(data => {
-                alert(data);
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert(error.message);
-            });
-    }
-
-    function deleteItem(button) {
-        console.log("deleteItem called");
-        const productId = getProductId(button);
-        fetch(window.location.origin + "/delete-cart?productId=" + productId)
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
-                }
-                throw new Error('Xóa sản phẩm thất bại!');
-            })
-            .then(data => {
-                alert(data);
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert(error.message);
-            });
-    }
-
-    function getProductId(button) {
-        const cartItem = button.closest('.cart-item');
-        return cartItem ? cartItem.getAttribute('data-product-id') : null;
-    }
-</script>
-<script>
-    // Quickview functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const quickviewButtons = document.querySelectorAll('.quickview');
-
-        quickviewButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const productId = this.getAttribute('data-product-id');
-
-                // Load quickview content
-                fetch(`/products/quickview/${productId}`)
-                    .then(response => response.text())
-                    .then(html => {
-                        document.getElementById('quickview-content').innerHTML = html;
-
-                        // Initialize modal
-                        const modal = new bootstrap.Modal(document.getElementById('quickview-modal'));
-                        modal.show();
-
-                        // Initialize Swiper for quickview slider
-                        const galleryThumbs = new Swiper('.gallery-thumbs', {
-                            spaceBetween: 10,
-                            slidesPerView: 4,
-                            freeMode: true,
-                            watchSlidesVisibility: true,
-                            watchSlidesProgress: true,
-                        });
-
-                        const galleryTop = new Swiper('.gallery-top', {
-                            spaceBetween: 10,
-                            navigation: {
-                                nextEl: '.quick-next',
-                                prevEl: '.quick-prev',
-                            },
-                            thumbs: {
-                                swiper: galleryThumbs
-                            }
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi tải quickview!');
-                    });
-            });
-        });
-    });
-</script>
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- Fetch and display study streak -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Fetch current streak data
         fetchCurrentStreak();
     });
@@ -1011,22 +531,22 @@
     let recentTestsChart = null;
 
     // Initialize chart when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         initializeChart();
-        
+
         // Add event listeners
-        document.getElementById('testCountSelect').addEventListener('change', function() {
+        document.getElementById('testCountSelect').addEventListener('change', function () {
             loadChartData();
         });
-        
-        document.getElementById('refreshChartBtn').addEventListener('click', function() {
+
+        document.getElementById('refreshChartBtn').addEventListener('click', function () {
             loadChartData();
         });
     });
 
     function initializeChart() {
         const ctx = document.getElementById('recentTestsChart').getContext('2d');
-        
+
         recentTestsChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -1070,13 +590,13 @@
                         cornerRadius: 8,
                         displayColors: false,
                         callbacks: {
-                            title: function(context) {
+                            title: function (context) {
                                 return 'Test #' + (context[0].dataIndex + 1);
                             },
-                            label: function(context) {
+                            label: function (context) {
                                 return 'Accuracy: ' + context.parsed.y + '%';
                             },
-                            afterLabel: function(context) {
+                            afterLabel: function (context) {
                                 const data = context.chart.data.datasets[0].data;
                                 const index = context.dataIndex;
                                 const testData = window.chartTestData ? window.chartTestData[index] : null;
@@ -1101,7 +621,7 @@
                                 size: 12
                             },
                             color: '#666',
-                            callback: function(value) {
+                            callback: function (value) {
                                 return value + '%';
                             }
                         },
@@ -1149,9 +669,9 @@
                     duration: 1000,
                     easing: 'easeInOutQuart'
                 }
-            }
+            },
         });
-        
+
         // Load initial data
         loadChartData();
     }
@@ -1161,12 +681,12 @@
         const loadingDiv = document.getElementById('chartLoading');
         const noDataDiv = document.getElementById('chartNoData');
         const chartWrapper = document.querySelector('.chart-wrapper');
-        
+
         // Show loading
         loadingDiv.style.display = 'block';
         noDataDiv.style.display = 'none';
         chartWrapper.style.display = 'none';
-        
+
         // Fetch data from API
         fetch(`/tests/recent-tests?number=${testCount}`)
             .then(response => {
@@ -1178,25 +698,25 @@
             .then(data => {
                 // Hide loading
                 loadingDiv.style.display = 'none';
-                
+
                 if (!data || data.length === 0) {
                     noDataDiv.style.display = 'block';
                     return;
                 }
-                
+
                 // Show chart
                 chartWrapper.style.display = 'block';
-                
+
                 // Store test data for tooltip
                 window.chartTestData = data;
-                
+
                 // Prepare chart data - calculate percentage
                 const labels = data.map((test, index) => `Test ${index + 1}`);
                 const percentages = data.map(test => {
                     if (test.totalAnswers === 0) return 0;
                     return Math.round((test.score / test.totalAnswers) * 100);
                 });
-                
+
                 // Update chart
                 recentTestsChart.data.labels = labels;
                 recentTestsChart.data.datasets[0].data = percentages;
@@ -1229,5 +749,607 @@
     }
 </script>
 
-</html>
+<!-- Today's Goals JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Fetch today's goals data
+        fetchTodayGoals();
+    });
 
+    function fetchTodayGoals() {
+        fetch('/goals/today')
+            .then(response => {
+                // Hide loading indicator
+                document.getElementById('goalsLoadingIndicator').style.display = 'none';
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // User is not authenticated
+                        showNoGoalsMessage("Please log in to view your goals");
+                        return;
+                    } else if (response.status === 204) {
+                        // No content (no goals)
+                        showNoGoalsMessage();
+                        return;
+                    }
+                    throw new Error('Failed to fetch goals data');
+                }
+                return response.json();
+            })
+            .then(goals => {
+                if (!goals || goals.length === 0) {
+                    showNoGoalsMessage();
+                    return;
+                }
+
+                // Display goals
+                displayGoals(goals);
+            })
+            .catch(error => {
+                console.error('Error fetching goals data:', error);
+                showNoGoalsMessage("Error loading goals. Please try again later.");
+            });
+    }
+
+    function displayGoals(goals) {
+        const goalsList = document.getElementById('goalsList');
+        goalsList.innerHTML = ''; // Clear existing content
+
+        goals.forEach(goal => {
+            // Create goal card
+            const goalCard = document.createElement('div');
+            goalCard.className = 'col-lg-4 col-md-6 mb-4';
+
+            // Determine status class for styling
+            let statusClass = 'bg-warning'; // Default for IN_PROGRESS
+            if (goal.status === 'COMPLETED') {
+                statusClass = 'bg-success';
+            } else if (goal.status === 'FAILED') {
+                statusClass = 'bg-danger';
+            }
+
+            // Determine progress percentage
+            const progressPercentage = Math.min(Math.round((goal.actualValue / goal.targetValue) * 100), 100);
+
+            // Only show part information if unit is QUESTIONS
+            const partBadge = goal.unit === 'QUESTIONS' || goal.unit === 'PARTS'
+                ? `<span class="ms-2 badge bg-info">Part ${goal.part}</span>`
+                : '';
+
+            // Build the card HTML
+            goalCard.innerHTML = `
+                <div class="card goal-card h-100">
+                    <div class="card-header ${statusClass} text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">${goal.title}</h5>
+                        <span class="badge bg-light text-dark">${goal.type}</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="goal-progress-text">
+                            <strong>Progress:</strong> ${goal.actualValue}/${goal.targetValue} ${formatUnitDisplay(goal.unit, goal.targetValue)}
+                            ${partBadge}
+                        </p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar ${statusClass}" role="progressbar"
+                                style="width: ${progressPercentage}%"
+                                aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100">
+                                ${progressPercentage}%
+                            </div>
+                        </div>
+                        <p class="goal-status">
+                            <strong>Status:</strong>
+                            <span class="badge ${statusClass}">${goal.status}</span>
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            goalsList.appendChild(goalCard);
+        });
+    }
+
+    function showNoGoalsMessage(message = "No goals set for today. Start setting goals to track your progress!") {
+        const noGoalsMessage = document.getElementById('noGoalsMessage');
+        noGoalsMessage.querySelector('p').textContent = message;
+        noGoalsMessage.classList.remove('d-none');
+    }
+
+    function formatUnitDisplay(unit, count) {
+        // Handle singular/plural forms
+        switch (unit) {
+            case 'MINUTES':
+                return count === 1 ? "minute" : "minutes";
+            case 'QUESTIONS':
+                return count === 1 ? "question" : "questions";
+            case 'PARTS':
+                return count === 1 ? "part" : "parts";
+            case 'TESTS':
+                return count === 1 ? "test" : "tests";
+            case 'WORDS':
+                return count === 1 ? "word" : "words";
+            case 'OTHER':
+            default:
+                return "units";
+        }
+    }
+</script>
+
+<!-- Goal Creation JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set up the create goal button to open the modal
+        document.getElementById('createGoalBtn').addEventListener('click', function () {
+            const createGoalModal = new bootstrap.Modal(document.getElementById('createGoalModal'));
+            createGoalModal.show();
+        });
+
+        // Show/hide part number field based on unit type selection
+        document.getElementById('unitType').addEventListener('change', function () {
+            const partContainer = document.getElementById('partContainer');
+            const partNumber = document.getElementById('partNumber');
+
+            if (this.value === 'QUESTIONS' || this.value === 'PARTS') {
+                partContainer.style.display = 'block';
+                partNumber.setAttribute('required', '');
+            } else {
+                partContainer.style.display = 'none';
+                partNumber.removeAttribute('required');
+                partNumber.value = ''; // Reset the part number
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('submitGoalBtn').addEventListener('click', function () {
+            if (validateGoalForm()) {
+                submitGoalForm();
+            }
+        });
+
+        // Form validation function
+        function validateGoalForm() {
+            const form = document.getElementById('createGoalForm');
+            const inputs = form.querySelectorAll('input, select');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                // Skip validation for hidden fields
+                if (input.parentElement.style.display === 'none') return;
+
+                // Check if required field is empty
+                if (input.hasAttribute('required') && !input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+
+                // Additional validation for number fields
+                if (input.type === 'number' && input.min && parseFloat(input.value) < parseFloat(input.min)) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        // Form submission function
+        function submitGoalForm() {
+            const title = document.getElementById('goalTitle').value.trim();
+            const type = document.getElementById('goalType').value;
+            const targetValue = parseInt(document.getElementById('targetValue').value);
+            const unit = document.getElementById('unitType').value;
+            const part = unit === 'QUESTIONS' || unit === 'PARTS' ? parseInt(document.getElementById('partNumber').value) : null;
+
+            // Create the request payload
+            const payload = {
+                title: title,
+                type: type,
+                targetValue: targetValue,
+                unit: unit,
+                part: part
+            };
+
+            // Show loading state
+            const submitBtn = document.getElementById('submitGoalBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
+
+            // Hide any previous error messages
+            document.getElementById('goalFormError').style.display = 'none';
+
+            // Submit the form using fetch
+            fetch('/goals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Goal';
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Success - close modal and refresh goals
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createGoalModal'));
+                    modal.hide();
+
+                    // Reset form for next use
+                    document.getElementById('createGoalForm').reset();
+
+                    // Refresh the goals list
+                    fetchTodayGoals();
+
+                    // Show success toast or notification
+                    showToast('Success', 'Goal created successfully!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error creating goal:', error);
+                    // Display error message
+                    const errorElement = document.getElementById('goalFormError');
+                    errorElement.textContent = 'Failed to create goal. Please try again.';
+                    errorElement.style.display = 'block';
+                });
+        }
+    });
+</script>
+
+<!-- All Goals JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set up the view all goals button to open the modal
+        document.getElementById('viewAllGoalsBtn').addEventListener('click', function () {
+            const allGoalsModal = new bootstrap.Modal(document.getElementById('allGoalsModal'));
+            allGoalsModal.show();
+
+            // Fetch and display all goals
+            fetchAllGoals();
+        });
+    });
+
+    function fetchAllGoals() {
+        // Reset UI elements before fetching
+        document.getElementById('allGoalsTableContainer').style.display = 'none';
+        document.getElementById('noAllGoalsMessage').classList.add('d-none');
+        document.getElementById('allGoalsLoadingIndicator').style.display = 'block';
+        document.getElementById('allGoalsError').style.display = 'none';
+
+        fetch('/goals/all')
+            .then(response => {
+                // Hide loading indicator
+                document.getElementById('allGoalsLoadingIndicator').style.display = 'none';
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // User is not authenticated
+                        showNoAllGoalsMessage("Please log in to view all your goals");
+                        return;
+                    } else if (response.status === 204) {
+                        // No content (no goals)
+                        showNoAllGoalsMessage();
+                        return;
+                    }
+                    throw new Error('Failed to fetch all goals data');
+                }
+                return response.json();
+            })
+            .then(goals => {
+                if (!goals || goals.length === 0) {
+                    showNoAllGoalsMessage();
+                    return;
+                }
+
+                // Display all goals in the table
+                displayAllGoals(goals);
+            })
+            .catch(error => {
+                console.error('Error fetching all goals data:', error);
+                showNoAllGoalsMessage("Error loading all goals. Please try again later.");
+            });
+    }
+
+    function displayAllGoals(goals) {
+        const allGoalsTableBody = document.getElementById('allGoalsTableBody');
+        allGoalsTableBody.innerHTML = ''; // Clear existing content
+
+        goals.forEach(goal => {
+            // Create table row
+            const row = document.createElement('tr');
+
+            // Format goal date
+            const goalDate = new Date(goal.goalDate);
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            const formattedDate = goalDate.toLocaleDateString('en-US', options);
+
+            // Build the row HTML
+            row.innerHTML = `
+                <td>${goal.title}</td>
+                <td>${goal.type}</td>
+                <td>${formattedDate}</td>
+                <td>${goal.unit}</td>
+                <td>${goal.part ? goal.part : '-'}</td>
+                <td>${goal.actualValue} / ${goal.targetValue}</td>
+                <td>
+                    <span class="badge ${getStatusBadgeClass(goal.status)}">${goal.status}</span>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-primary btn-sm me-1" onclick="openUpdateGoalModal(${goal.id}, '${goal.title}', '${goal.type}', ${goal.targetValue}, ${goal.actualValue}, '${goal.unit}', ${goal.part || 'null'}, '${goal.status}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        ${goal.status !== 'FAILED' && (goal.unit === 'WORDS' || goal.unit === 'OTHER') ?
+                            `<button class="btn ${goal.status === 'IN_PROGRESS' ? 'btn-success' : 'btn-warning'} btn-sm me-1"
+                                onclick="toggleGoalStatus(${goal.id}, '${goal.status}')">
+                                <i class="fas ${goal.status === 'IN_PROGRESS' ? 'fa-check-circle' : 'fa-undo'}"></i>
+                                ${goal.status === 'IN_PROGRESS' ? 'Complete' : 'Reopen'}
+                            </button>` : ''}
+                        <button class="btn btn-danger btn-sm" onclick="deleteGoal(${goal.id})">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            allGoalsTableBody.appendChild(row);
+        });
+
+        // Show the table container
+        document.getElementById('allGoalsTableContainer').style.display = 'block';
+    }
+
+    function showNoAllGoalsMessage(message = "You don't have any goals yet. Start by creating a new goal!") {
+        const noAllGoalsMessage = document.getElementById('noAllGoalsMessage');
+        noAllGoalsMessage.querySelector('p').textContent = message;
+        noAllGoalsMessage.classList.remove('d-none');
+    }
+
+    function getStatusBadgeClass(status) {
+        switch (status) {
+            case 'COMPLETED':
+                return 'bg-success';
+            case 'FAILED':
+                return 'bg-danger';
+            case 'IN_PROGRESS':
+            default:
+                return 'bg-warning';
+        }
+    }
+
+    // Delete goal function
+    function deleteGoal(goalId) {
+        if (!confirm('Are you sure you want to delete this goal?')) {
+            return;
+        }
+
+        // Send delete request to the server
+        fetch(`/goals/${goalId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to delete goal');
+                }
+                return response.text(); // Change from json() to text() since the response is a string
+            })
+            .then(data => {
+                // Goal deleted successfully, refresh the goals list
+                fetchAllGoals();
+
+                // Refresh today's goals in case the deleted goal was also a today's goal
+                fetchTodayGoals();
+
+                // Show success message
+                showToast('Success', 'Goal deleted successfully!', 'success');
+            })
+            .catch(error => {
+                console.error('Error deleting goal:', error);
+                // Show error message
+                showToast('Error', 'Failed to delete goal. Please try again.', 'danger');
+            });
+    }
+
+    // Toggle goal status function
+    function toggleGoalStatus(goalId, currentStatus) {
+        // Send request to update the goal status
+        fetch(`/goals/${goalId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update goal status');
+                }
+                return response.text();
+            })
+            .then(data => {
+                // Status updated successfully, refresh the goals lists
+                fetchAllGoals();
+
+                // Refresh today's goals in case the updated goal was also a today's goal
+                fetchTodayGoals();
+
+                // Show success message
+                const newStatus = currentStatus === 'IN_PROGRESS' ? 'completed' : 'reopened';
+                showToast('Success', `Goal ${newStatus} successfully!`, 'success');
+            })
+            .catch(error => {
+                console.error('Error updating goal status:', error);
+                // Show error message
+                showToast('Error', 'Failed to update goal status. Please try again.', 'danger');
+            });
+    }
+
+    // Open update goal modal and populate fields
+    function openUpdateGoalModal(goalId, title, type, targetValue, actualValue, unit, part, status) {
+        // Set values in the update form
+        document.getElementById('updateGoalId').value = goalId;
+        document.getElementById('updateGoalTitle').value = title;
+        document.getElementById('updateGoalType').value = type;
+        document.getElementById('updateTargetValue').value = targetValue;
+        document.getElementById('updateActualValue').value = actualValue;
+        document.getElementById('updateUnitType').value = unit;
+        document.getElementById('updatePartNumber').value = part ? part : '';
+        document.getElementById('updateGoalStatus').value = status;
+
+        // Show/hide part number field based on unit type
+        const updatePartContainer = document.getElementById('updatePartContainer');
+        if (unit === 'QUESTIONS' || unit === 'PARTS') {
+            updatePartContainer.style.display = 'block';
+        } else {
+            updatePartContainer.style.display = 'none';
+        }
+
+        const updateActualValueInput = document.getElementById('updateActualValue');
+        updateActualValueInput.readOnly = !(unit === 'WORDS' || unit === 'OTHER');
+
+        // Open the modal
+        const updateGoalModal = new bootstrap.Modal(document.getElementById('updateGoalModal'));
+        updateGoalModal.show();
+    }
+
+    // Update goal form submission
+    document.getElementById('submitUpdateGoalBtn').addEventListener('click', function () {
+        if (validateUpdateGoalForm()) {
+            submitUpdateGoalForm();
+        }
+    });
+
+    // Update goal form validation
+    function validateUpdateGoalForm() {
+        const form = document.getElementById('updateGoalForm');
+        const inputs = form.querySelectorAll('input, select');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            // Check if required field is empty
+            if (input.hasAttribute('required') && !input.value.trim()) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+
+            // Additional validation for number fields
+            if (input.type === 'number' && input.min && parseFloat(input.value) < parseFloat(input.min)) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    // Submit update goal form
+    function submitUpdateGoalForm() {
+        const goalId = document.getElementById('updateGoalId').value;
+        const title = document.getElementById('updateGoalTitle').value.trim();
+        const type = document.getElementById('updateGoalType').value;
+        const targetValue = parseInt(document.getElementById('updateTargetValue').value);
+        const actualValue = parseInt(document.getElementById('updateActualValue').value);
+
+        // Create the request payload
+        const payload = {
+            title: title,
+            type: type,
+            targetValue: targetValue,
+            actualValue: actualValue,
+        };
+
+        // Show loading state
+        const submitBtn = document.getElementById('submitUpdateGoalBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Updating...';
+
+        // Hide any previous error messages
+        document.getElementById('updateGoalFormError').style.display = 'none';
+
+        // Submit the form using fetch
+        fetch(`/goals/${goalId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Goal';
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(data => {
+                // Success - close modal and refresh goals
+                const modal = bootstrap.Modal.getInstance(document.getElementById('updateGoalModal'));
+                modal.hide();
+
+                // Refresh the goals list
+                fetchAllGoals();
+                fetchTodayGoals();
+
+                // Show success toast or notification
+                showToast('Success', 'Goal updated successfully!', 'success');
+            })
+            .catch(error => {
+                console.error('Error updating goal:', error);
+                // Display error message
+                const errorElement = document.getElementById('updateGoalFormError');
+                errorElement.textContent = 'Failed to update goal. Please try again.';
+                errorElement.style.display = 'block';
+            });
+    }
+</script>
+
+<!-- Function to show toast notifications -->
+<script>
+    function showToast(title, message, type = 'info') {
+        // Check if toast container exists, if not create it
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+
+        toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <strong>${title}</strong>: ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+
+        // Add toast to container
+        toastContainer.appendChild(toastEl);
+
+        // Initialize and show toast
+        const toast = new bootstrap.Toast(toastEl, {delay: 5000});
+        toast.show();
+
+        // Remove toast from DOM after it's hidden
+        toastEl.addEventListener('hidden.bs.toast', function () {
+            toastEl.remove();
+        });
+    }
+</script>
+</html>

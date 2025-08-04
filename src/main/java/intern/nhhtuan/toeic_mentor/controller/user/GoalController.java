@@ -1,0 +1,88 @@
+package intern.nhhtuan.toeic_mentor.controller.user;
+
+import intern.nhhtuan.toeic_mentor.dto.request.GoalCreateRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.GoalUpdateRequest;
+import intern.nhhtuan.toeic_mentor.dto.response.GoalResponse;
+import intern.nhhtuan.toeic_mentor.service.interfaces.IGoalService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/goals")
+@RequiredArgsConstructor
+public class GoalController {
+    private final IGoalService goalService;
+
+    @GetMapping("/today")
+    public ResponseEntity<List<GoalResponse>> todayGoals() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build(); // Unauthorized
+        }
+        String email = authentication.getName();
+        List<GoalResponse> goals = goalService.getTodayGoals(email);
+        return ResponseEntity.ok(goals);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<GoalResponse>> allGoals() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build(); // Unauthorized
+        }
+        String email = authentication.getName();
+        List<GoalResponse> goals = goalService.getAllGoals(email);
+        return ResponseEntity.ok(goals);
+    }
+
+    @PostMapping("")
+    public ResponseEntity<String> createGoal(@Valid @RequestBody GoalCreateRequest goalCreateRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build(); // Unauthorized
+        }
+        String email = authentication.getName();
+        boolean isCreated = goalService.createGoal(email, goalCreateRequest);
+        if (isCreated) {
+            return ResponseEntity.ok("Goal created successfully");
+        } else {
+            return ResponseEntity.status(400).body("Failed to create goal");
+        }
+    }
+
+    @PutMapping("/{goalId}")
+    public ResponseEntity<String> updateGoal(@PathVariable Long goalId, @Valid @RequestBody GoalUpdateRequest goalUpdateRequest) {
+        boolean isUpdated = goalService.updateGoal(goalId, goalUpdateRequest);
+        if (isUpdated) {
+            return ResponseEntity.ok("Goal updated successfully");
+        } else {
+            return ResponseEntity.status(400).body("Failed to update goal");
+        }
+    }
+
+    @PutMapping("/{goalId}/status")
+    public ResponseEntity<String> updateGoalStatus(@PathVariable Long goalId) {
+        boolean isUpdated = goalService.updateGoalStatus(goalId);
+        if (isUpdated) {
+            return ResponseEntity.ok("Goal status updated successfully");
+        } else {
+            return ResponseEntity.status(400).body("Failed to update goal status");
+        }
+    }
+
+    @DeleteMapping("/{goalId}")
+    public ResponseEntity<String> deleteGoal(@PathVariable Long goalId) {
+        boolean isDeleted = goalService.deleteGoal(goalId);
+        if (isDeleted) {
+            return ResponseEntity.ok("Goal deleted successfully");
+        } else {
+            return ResponseEntity.status(400).body("Failed to delete goal");
+        }
+    }
+}
