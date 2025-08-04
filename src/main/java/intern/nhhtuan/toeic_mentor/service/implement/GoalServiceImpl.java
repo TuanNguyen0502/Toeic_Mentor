@@ -34,8 +34,15 @@ public class GoalServiceImpl implements IGoalService {
     public List<GoalResponse> getTodayGoals(String email) {
         // Fetch today's goals from the repository
         LocalDate now = LocalDate.now();
-        return goalRepository.findByUser_EmailAndGoalDate(email, now)
-                .stream()
+        LocalDate thisWeek = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        List<Goal> dailyGoals = goalRepository.findByUser_EmailAndGoalDate(email, now);
+        List<Goal> weeklyGoals = goalRepository.findByUser_EmailAndGoalDate(email, thisWeek);
+
+        // Combine today's goals and weekly goals
+        dailyGoals.addAll(weeklyGoals);
+
+        return dailyGoals.stream()
                 .map(goal -> GoalResponse.builder()
                         .id(goal.getId())
                         .title(goal.getTitle())
