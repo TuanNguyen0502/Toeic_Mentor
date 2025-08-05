@@ -237,7 +237,9 @@ public class NotificationServiceImpl implements INotificationService {
                 .stream()
                 .map(notification -> NotificationResponse.builder()
                         .id(notification.getId())
-                        .urlToReportDetail("/admin/reports/{" + notification.getReport().getId().toString() + "}")
+                        .urlToReportDetail(notification.getReport() != null
+                                ? "/admin/reports/" + notification.getReport().getId()
+                                : "")
                         .title(notification.getTitle())
                         .message(notification.getMessage())
                         .isRead(notification.isRead())
@@ -253,7 +255,9 @@ public class NotificationServiceImpl implements INotificationService {
 
         return NotificationDetailResponse.builder()
                 .notificationId(notification.getId())
-                .urlToReportDetail("/reports/{" + notification.getReport().getId() + "}")
+                .urlToReportDetail(notification.getReport() != null
+                        ? "/admin/reports/" + notification.getReport().getId()
+                        : "")
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .isRead(notification.isRead())
