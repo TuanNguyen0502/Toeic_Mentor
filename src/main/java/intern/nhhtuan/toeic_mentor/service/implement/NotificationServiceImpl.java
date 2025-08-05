@@ -121,6 +121,37 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    public void createUserStreakAchievementRevokedNotification(String email, String milestoneTitle, int dayTarget) {
+        User userReceiver = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        Optional<Boolean> enableNotification = notificationSettingRepository
+                .isEnabled(userReceiver.getId(), ENotificationTypeAction.STREAK_ACHIEVE_REVOKED);
+
+        if (enableNotification.orElse(false)) {
+            Notification notification = Notification.builder()
+                    .receiver(userReceiver)
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.STREAK_ACHIEVE_REVOKED))
+                    .title("Milestone revoked: " + milestoneTitle + " (" + dayTarget + " days)")
+                    .message("Your previously achieved streak milestone has been revoked due to an update or delete.")
+                    .build();
+
+            notificationRepository.save(notification);
+
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(userReceiver.getEmail(), "/queue/notifications", notificationResponse);
+        }
+    }
+
+    @Override
     public void createUserStreakAchievementNotifications(String email, String mileStoneTitle, int dayTarget) {
         User userReceiver = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
@@ -152,6 +183,7 @@ public class NotificationServiceImpl implements INotificationService {
             socketNotifier.sendToUser(userReceiver.getEmail(), "/queue/notifications", notificationResponse);
         }
     }
+
 
     @Override
     public void createGoalCompletedNotifications(User user, String title, int actualValue, int targetValue, String unit) {

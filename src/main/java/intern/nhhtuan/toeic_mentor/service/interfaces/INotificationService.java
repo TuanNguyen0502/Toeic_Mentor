@@ -14,6 +14,9 @@ public interface INotificationService {
   
     void createResponseUserNotifications(ReportDetailDTO reportDetailDTO);
 
+    void createUserStreakAchievementRevokedNotification(String email, String milestoneTitle, int dayTarget);
+
+
     void createUserStreakAchievementNotifications(String email, String mileStoneTitle, int dayTarget);
 
     void createGoalCompletedNotifications(User user, String title, int actualValue, int targetValue, String unit);
