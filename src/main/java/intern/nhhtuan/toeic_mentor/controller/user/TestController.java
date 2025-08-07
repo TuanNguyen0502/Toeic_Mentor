@@ -3,7 +3,9 @@ package intern.nhhtuan.toeic_mentor.controller.user;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerExplanationRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestStatisticResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IPdfService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ITestService;
@@ -23,7 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Slf4j
+@Slf4j(topic = "TestController")
 @RestController
 @RequestMapping("/tests")
 @RequiredArgsConstructor
@@ -77,5 +79,21 @@ public class TestController {
             log.error("Error generating PDF for test ID {}: {}", testId, e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @GetMapping("/recent-tests")
+    public List<RecentTestResponse> getRecentTests(@RequestParam(value = "number", defaultValue = "10") int number) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Determine the email of the authenticated user or use "anonymous" if not authenticated
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+        log.info("Fetching recent tests for user: {}", email);
+        return testService.getRecentTests(email, number);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<TestStatisticResponse> getTestStatistics() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+        return ResponseEntity.ok(testService.calculateTestStatistic(email));
     }
 }

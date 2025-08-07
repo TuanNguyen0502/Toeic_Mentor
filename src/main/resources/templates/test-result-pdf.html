@@ -186,10 +186,10 @@
         <span th:each="tag : ${ans.tags}" class="tag" th:text="${tag}"></span>
     </div>
 
-    <div th:if="${ans.answerExplanation != null and ans.answerExplanation.size() > 0}" class="explanation">
+    <div th:if="${ans.optionExplanation != null and ans.optionExplanation.size() > 0}" class="explanation">
         <strong>Explanation:</strong>
         <ul style="margin: 5px 0; padding-left: 20px;">
-            <li th:each="exp : ${ans.answerExplanation}" th:text="${exp}"></li>
+            <li th:each="exp : ${ans.optionExplanation}" th:text="${exp}"></li>
         </ul>
     </div>
 </div>

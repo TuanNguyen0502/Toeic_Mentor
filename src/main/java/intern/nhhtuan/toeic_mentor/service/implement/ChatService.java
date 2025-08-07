@@ -320,7 +320,7 @@ public class ChatService implements IChatService {
                                 - If the option is the correct answer: why it is correct.
                                 - If the option is incorrect: why it is not correct.
                             - Example:
-                                "answerExplanation": [
+                                "optionExplanation": [
                                   "Option A ('reviewed'): Correct because it is the past tense indicating completed action.",
                                   "Option B ('reviews'): Incorrect because it is present tense.",
                                   "Option C ('was reviewing'): Incorrect because it suggests an ongoing past action.",
@@ -369,7 +369,7 @@ public class ChatService implements IChatService {
                       "tags": [String],
                       "timeSpent": Integer, // Time spent in seconds
                       "isCorrect": Boolean,
-                      "answerExplanation": [String]   // List of 4 explanations (one per option)
+                      "optionExplanation": [String]   // List of 4 explanations (one per option)
                     }
                   ],
                   "recommendations": String,     // concise improvement suggestions

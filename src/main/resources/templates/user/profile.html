@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="https://www.thymeleaf.org">
 
-<head th:replace="user/fragments/head :: head('TOEIC Mentor - Profile')"></head>
+<head th:replace="~{user/fragments/head :: head('TOEIC Mentor - Profile')}"></head>
 <title>TOEIC Mentor - Profile</title>
 
 <body>
@@ -133,6 +133,108 @@
                         </div>
                         <!-- order info end -->
                     </div>
+
+                    <!-- User Statistics History Section start -->
+                    <div class="password-block mt-4">
+                        <div class="profile-form profile-address">
+                            <div class="billing-area">
+                                <div class="pro-add-title d-flex justify-content-between align-items-center">
+                                    <h6 data-animate="animate__fadeInUp">TOEIC Statistics History</h6>
+                                    <button id="loadStatisticsBtn" class="btn btn-primary btn-sm">
+                                        Load Statistics
+                                    </button>
+                                </div>
+
+                                <div id="statisticsTable" style="display: none;">
+                                    <div class="table-responsive mt-3">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Estimated Score</th>
+                                                    <th>Score Range</th>
+                                                    <th>Questions</th>
+                                                    <th>Correct</th>
+                                                    <th>Accuracy</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="statisticsBody">
+                                                <!-- Statistics will be inserted here dynamically -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div id="statisticsLoading" style="display: none;" class="text-center my-3">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading your statistics...</p>
+                                </div>
+
+                                <div id="statisticsEmpty" style="display: none;" class="alert alert-info mt-3">
+                                    No statistics available yet. Complete some tests to see your progress!
+                                </div>
+
+                                <div id="statisticsError" style="display: none;" class="alert alert-danger mt-3">
+                                    Failed to load statistics. Please try again later.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- User Statistics History Section end -->
+
+                    <!-- Study Streak Section start -->
+                    <div class="password-block mt-4">
+                        <div class="profile-form profile-address">
+                            <div class="billing-area">
+                                <div class="pro-add-title d-flex justify-content-between align-items-center">
+                                    <h6 data-animate="animate__fadeInUp">Study Streak</h6>
+                                    <div>
+                                        <span class="badge bg-primary p-2 me-2" id="currentStreak">Current Streak: 0</span>
+                                        <span class="badge bg-success p-2" id="maxStreak">Max Streak: 0</span>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Study History</h5>
+                                                <p class="card-text">Last study date: <span id="lastStudyDate">-</span></p>
+                                                <div id="studyCalendar" class="mt-3">
+                                                    <!-- Calendar will be rendered here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Achievements</h5>
+                                                <div id="achievements" class="mt-3">
+                                                    <!-- Achievements will be rendered here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="streakLoading" style="display: none;" class="text-center my-3">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading your study streak data...</p>
+                                </div>
+
+                                <div id="streakError" style="display: none;" class="alert alert-danger mt-3">
+                                    Failed to load streak data. Please try again later.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Study Streak Section end -->
+
                 </div>
             </div>
         </div>
@@ -149,6 +251,8 @@
 <!-- cart-drawer start -->
 <div th:insert="~{user/fragments/cart_drawer::cart-drawer}"></div>
 <!-- cart-drawer end -->
+
+
 
 <!-- back-to-top start -->
 <a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>

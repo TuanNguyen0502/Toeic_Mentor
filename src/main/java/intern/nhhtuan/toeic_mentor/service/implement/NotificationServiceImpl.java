@@ -121,6 +121,135 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    public void createUserStreakAchievementRevokedNotification(String email, String milestoneTitle, int dayTarget) {
+        User userReceiver = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        Optional<Boolean> enableNotification = notificationSettingRepository
+                .isEnabled(userReceiver.getId(), ENotificationTypeAction.STREAK_ACHIEVE_REVOKED);
+
+        if (enableNotification.orElse(false)) {
+            Notification notification = Notification.builder()
+                    .receiver(userReceiver)
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.STREAK_ACHIEVE_REVOKED))
+                    .title("Milestone revoked: " + milestoneTitle + " (" + dayTarget + " days)")
+                    .message("Your previously achieved streak milestone has been revoked due to an update or delete.")
+                    .build();
+
+            notificationRepository.save(notification);
+
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(userReceiver.getEmail(), "/queue/notifications", notificationResponse);
+        }
+    }
+
+    @Override
+    public void createUserStreakAchievementNotifications(String email, String mileStoneTitle, int dayTarget) {
+        User userReceiver = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // check user setting notification
+        Optional<Boolean> enableNotification = notificationSettingRepository.isEnabled(userReceiver.getId(), ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT);
+
+        if (enableNotification.orElse(false)) {
+            // User has enabled notification for this action
+            Notification notification = Notification.builder()
+                    .receiver(userReceiver)
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT))
+                    .title("Achieve milestone " + mileStoneTitle + " (" + dayTarget + " days)")
+                    .message("Congratulations! You have achieved a new streak milestone.")
+                    .build();
+
+            notificationRepository.save(notification);
+
+            // Send WebSocket notification to user
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(userReceiver.getEmail(), "/queue/notifications", notificationResponse);
+        }
+    }
+
+
+    @Override
+    public void createGoalCompletedNotifications(User user, String title, int actualValue, int targetValue, String unit) {
+        // check user setting notification
+        Optional<Boolean> enableNotification = notificationSettingRepository.isEnabled(user.getId(), ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT);
+
+        if (enableNotification.orElse(false)) {
+            // User has enabled notification for this action
+            Notification notification = Notification.builder()
+                    .receiver(user)
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT))
+                    .title("Complete goal: " + title)
+                    .message("Congratulations! You have completed your goal: " + title + ".\n" +
+                            "Actual Value: " + actualValue + " " + unit + "\n" +
+                            "Target Value: " + targetValue + " " + unit)
+                    .build();
+
+            notificationRepository.save(notification);
+
+            // Send WebSocket notification to user
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(user.getEmail(), "/queue/notifications", notificationResponse);
+        }
+    }
+
+    @Override
+    public void createGoalFailedNotifications(User user, String title, int actualValue, int targetValue, String unit) {
+        // check user setting notification
+        Optional<Boolean> enableNotification = notificationSettingRepository.isEnabled(user.getId(), ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT);
+
+        if (enableNotification.orElse(false)) {
+            // User has enabled notification for this action
+            Notification notification = Notification.builder()
+                    .receiver(user)
+                    .notificationType(notificationTypeRepository.findByAction(ENotificationTypeAction.NEW_STREAK_ACHIEVEMENT))
+                    .title("Failed goal: " + title)
+                    .message("Unfortunately, you have not completed your goal: " + title + ".\n" +
+                            "Actual Value: " + actualValue + " " + unit + "\n" +
+                            "Target Value: " + targetValue + " " + unit)
+                    .build();
+
+            notificationRepository.save(notification);
+
+            // Send WebSocket notification to user
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .id(notification.getId())
+                    .urlToReportDetail("")
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .isRead(notification.isRead())
+                    .createdAt(notification.getCreatedAt().toString())
+                    .build();
+
+            socketNotifier.sendToUser(user.getEmail(), "/queue/notifications", notificationResponse);
+        }
+    }
+
+    @Override
     public int countUnreadNotifications(String email) {
         return notificationRepository.findAllByReceiver_Email(email)
                 .stream()
@@ -140,7 +269,9 @@ public class NotificationServiceImpl implements INotificationService {
                 .stream()
                 .map(notification -> NotificationResponse.builder()
                         .id(notification.getId())
-                        .urlToReportDetail("/admin/reports/{" + notification.getReport().getId().toString() + "}")
+                        .urlToReportDetail(notification.getReport() != null
+                                ? "/admin/reports/" + notification.getReport().getId()
+                                : "")
                         .title(notification.getTitle())
                         .message(notification.getMessage())
                         .isRead(notification.isRead())
@@ -156,7 +287,9 @@ public class NotificationServiceImpl implements INotificationService {
 
         return NotificationDetailResponse.builder()
                 .notificationId(notification.getId())
-                .urlToReportDetail("/reports/{" + notification.getReport().getId() + "}")
+                .urlToReportDetail(notification.getReport() != null
+                        ? "/admin/reports/" + notification.getReport().getId()
+                        : "")
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .isRead(notification.isRead())
