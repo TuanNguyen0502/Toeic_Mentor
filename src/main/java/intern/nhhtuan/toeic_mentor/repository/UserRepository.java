@@ -3,6 +3,7 @@ package intern.nhhtuan.toeic_mentor.repository;
 import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
