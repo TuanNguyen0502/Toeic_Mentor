@@ -10,31 +10,14 @@
                 <div class="main-menu-wrap">
                     <!-- header-logo start -->
                     <div class="header-theme-logo">
-                        <a th:href="@{/}" class="theme-logo">
-                            <img th:src="@{/user/asset/image/home1/logo.png}" class="img-fluid" alt="logo">
-                        </a>
+
                     </div>
                     <!-- header-logo end -->
                     <!-- search-wrapper start -->
                     <!-- header-search start -->
                     <div class="header-element header-search">
                         <div class="header-theme-search">
-                            <form method="get" action="/products" class="search-form">
-                                <div class="search-bar">
-                                    <div class="form-search">
-                                        <input type="search" id="search-input" name="name" class="search-input"
-                                               placeholder="Search" autocomplete="off">
-                                    </div>
-                                    <div class="search-results" style="display: none;">
-                                        <p class="search-for d-none">Search for <span class="search-text"></span></p>
-                                        <ul id="search-suggestions"></ul>
-                                        <p class="search-more d-none">
-                                            <a href="/products" id="see-all-results-link">See all results</a>
-                                        </p>
-                                        <p class="search-fail d-none">Search not found</p>
-                                    </div>
-                                </div>
-                            </form>
+
                         </div>
                     </div>
                     <!-- header-text end -->
@@ -49,11 +32,7 @@
                                 </div>
                             </li>
                             <li class="side-wrap search-wrap">
-                                <div class="search-wrapper">
-                                    <a href="#searchmodal" data-bs-toggle="modal">
-                                        <span class="search-icon"><i class="feather-search"></i></span>
-                                    </a>
-                                </div>
+
                             </li>
                             <li class="side-wrap user-wrap">
                                 <div class="user-info">
@@ -140,29 +119,6 @@
                                 <li class="menu-link" th:unless="${#authentication.principal == 'anonymousUser'}">
                                     <a th:href="@{/chat}" class="link-title">
                                         <span class="sp-link-title">Chatbot</span>
-                                    </a>
-                                </li>
-                                <li class="menu-link">
-                                    <a th:href="@{/products}" class="link-title">
-                                        <span class="sp-link-title">Brands</span>
-                                        <span class="menu-arrow"><i class="feather-chevron-down"></i></span>
-                                    </a>
-                                    <div class="menu-dropdown menu-single collapse" id="blogs2">
-                                        <ul class="ul">
-                                            <li class="menusingle-li" th:each="brand : ${brands}">
-                                                <a th:href="@{/products(brandNames=${brand.name})}"
-                                                   class="menusingle-title">
-                                                    <img class="sp-link-title" style="height: 50px; width: 50px"
-                                                         th:src="${brand.image}" th:text="${brand.name}">
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-                                <li class="menu-link">
-                                    <a th:href="@{/about-us}" class="link-title">
-                                        <span class="sp-link-title">About us</span>
-                                        <span class="menu-arrow"></span>
                                     </a>
                                 </li>
                             </ul>

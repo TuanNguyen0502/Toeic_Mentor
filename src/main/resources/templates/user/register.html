@@ -6,24 +6,7 @@
 <head th:replace="~{user/fragments/head :: head('TOEIC Mentor - Register')}"></head>
 
 <body>
-<!-- top notification start -->
-<div class="top-notification-bar">
-    <div class="container">
-        <ul class="notification-entry">
-            <li class="notify-wrap notify-mail">
-                <div class="notify-text">
-                    <ul class="grid-wrap">
-                        <li class="grid-wrapper">
-                            <p class="notification-free"><span class="top-c">Free delivery</span> on orders over $100
-                                discount</p>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-        </ul>
-    </div>
-</div>
-<!-- top notification end -->
+
 <!-- header-area start -->
 <div th:insert="~{user/fragments/header::header}"></div>
 <!-- header end -->
@@ -39,7 +22,7 @@
                         <ul class="breadcrumb-ul">
                             <li class="breadcrumb-li">
                                 <a class="breadcrumb-link"
-                                   href="../../../../../../../TechStore-master/src/main/resources/templates/user/index1.html">Home</a>
+                                   th:href="@{/}">Home</a>
                             </li>
                             <li class="breadcrumb-li">
                                 <span class="breadcrumb-text">Create Account</span>
@@ -150,9 +133,7 @@
         </div>
     </section>
     <!-- customer-page end  -->
-    <!-- news-letter start -->
-    <div th:insert="~{user/fragments/newsletter::newsletter}"></div>
-    <!-- news-letter end -->
+
 </main>
 <!-- main end -->
 <!-- footer start -->
