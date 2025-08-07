@@ -36,30 +36,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const viewAllLi = notificationList.lastElementChild;
         notifications.forEach(notification => {
             const li = document.createElement('li');
-            const notiClass = notification.isRead ? "noti-item w-full wg-user" : "noti-item w-full wg-user unread";
+            const notiClass = notification.isRead
+                ? "notification-item"
+                : "notification-item notification-unread";
             li.innerHTML = `
-                <div class="${notiClass} active">
-                    <div class="flex-grow">
-                        <div class="flex items-center justify-between">
-                            <a href="${notification.urlToReportDetail}" class="body-title">${notification.title}</a>
-                            <div class="time">${formatDateTime(notification.createdAt)}</div>
+                <div class="${notiClass}">
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <a href="${notification.urlToReportDetail}" class="notification-title">${notification.title}</a>
+                            <span class="notification-time">${formatDateTime(notification.createdAt)}</span>
                         </div>
-                        <div class="text-tiny">${notification.message}</div>
+                        <div class="notification-message">${notification.message}</div>
                     </div>
                 </div>
             `;
             // Attach click handler directly to the link
-            const link = li.querySelector('.body-title');
+            const link = li.querySelector('.notification-title');
             link.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                const notiDiv = link.closest('.noti-item');
+                const notiDiv = link.closest('.notification-item');
                 const notificationId = notification.id;
                 // Mark as read, then redirect
                 fetch(`/notifications/${notificationId}/read`, { method: 'POST' })
                     .then(() => {
-                        if (notiDiv.classList.contains('unread')) {
-                            notiDiv.classList.remove('unread');
+                        if (notiDiv.classList.contains('notification-unread')) {
+                            notiDiv.classList.remove('notification-unread');
                             const countElem = document.getElementById('userCountUnreadNotification');
                             let count = parseInt(countElem.textContent) || 0;
                             if (count > 0) countElem.textContent = count - 1 === 0 ? '' : (count - 1);
@@ -80,8 +82,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!loadingLi) {
             loadingLi = document.createElement('li');
             loadingLi.id = 'user-notification-loading';
-            loadingLi.style.textAlign = 'center';
-            loadingLi.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            loadingLi.className = 'notification-loading';
+            loadingLi.innerHTML = '<div class="loading-spinner"></div><span>Loading...</span>';
             const notificationList = document.getElementById('userNotificationList');
             const viewAllLi = notificationList.lastElementChild;
             notificationList.insertBefore(loadingLi, viewAllLi);
@@ -157,9 +159,9 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             fetch('/notifications/read-all', { method: 'POST' })
                 .then(() => {
-                    document.getElementById('userCountUnreadNotification').textContent = '0';
-                    document.querySelectorAll('#userNotificationList .noti-item.unread').forEach(div => {
-                        div.classList.remove('unread');
+                    document.getElementById('userCountUnreadNotification').textContent = '';
+                    document.querySelectorAll('#userNotificationList .notification-item.notification-unread').forEach(div => {
+                        div.classList.remove('notification-unread');
                     });
                 });
         });
@@ -169,17 +171,129 @@ document.addEventListener('DOMContentLoaded', function() {
 (function() {
     const style = document.createElement('style');
     style.innerHTML = `
-        #userNotificationList .noti-item.unread {
-            background-color: #f0f6ff;
-            font-weight: bold;
+        /* New notification styles */
+        #userNotificationList {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 0;
+            margin: 0;
+            list-style-type: none;
+            scrollbar-width: thin;
         }
-        #userNotificationList .noti-item.unread .body-title {
-            color: #0d6efd;
+        
+        #userNotificationList::-webkit-scrollbar {
+            width: 6px;
         }
-        #userNotificationList .noti-item.unread:hover {
-            background-color: #e0eaff;
+        
+        #userNotificationList::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+        
+        #userNotificationList::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eaeaea;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .notification-item:hover {
+            background-color: #f7f9fc;
+        }
+        
+        .notification-content {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .notification-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            text-decoration: none;
+            margin-right: 10px;
+            flex: 1;
+        }
+        
+        .notification-title:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
+        
+        .notification-time {
+            font-size: 12px;
+            color: #7f8c8d;
+            white-space: nowrap;
+        }
+        
+        .notification-message {
+            font-size: 13px;
+            color: #34495e;
+            line-height: 1.4;
+        }
+        
+        .notification-unread {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-left: 3px solid #3498db;
+        }
+        
+        .notification-unread .notification-title {
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        .notification-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            gap: 8px;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+        
+        .loading-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(52, 152, 219, 0.3);
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #userMarkAllAsReadBtn {
+            color: #3498db;
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        #userMarkAllAsReadBtn:hover {
+            color: #2980b9;
+            background-color: rgba(52, 152, 219, 0.1);
+            border-radius: 4px;
         }
     `;
     document.head.appendChild(style);
 })();
-
