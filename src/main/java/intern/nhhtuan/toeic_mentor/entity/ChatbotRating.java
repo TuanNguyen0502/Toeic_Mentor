@@ -24,8 +24,11 @@ public class ChatbotRating {
     @Column(name = "rating", nullable = false)
     private EChatbotRating rating;
 
-    @Column(name = "message_id", nullable = false)
+    @Column(name = "message_id")
     private String messageId;
+
+    @Column(name = "message", nullable = false)
+    private String message;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

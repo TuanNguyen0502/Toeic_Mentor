@@ -3,6 +3,7 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 import intern.nhhtuan.toeic_mentor.dto.request.ChatbotRatingRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotRatingDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.ChatbotRatingResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.ChatbotResponse;
 import intern.nhhtuan.toeic_mentor.entity.ChatbotRating;
 import intern.nhhtuan.toeic_mentor.entity.RatableMessage;
 import intern.nhhtuan.toeic_mentor.entity.User;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +47,8 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
         chatbotRating.setCreatedAt(LocalDateTime.now());
         chatbotRating.setUser(user);
         chatbotRating.setMessageId(ratingRequest.getMessageId());
+        chatbotRating.setMessage(ratingEnabledChatMemoryRepository
+                .getMessageById(ratingRequest.getMessageId()).getText());
         // Save the feedback to the repository
         chatbotRatingRepository.save(chatbotRating);
     }
@@ -79,19 +84,14 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
 
         return chatbotRatingRepository.findAll(spec, pageable)
                 .map(feedbackEntity -> {
-                            String[] conversationIds = ratingEnabledChatMemoryRepository
+                            String conversationId = feedbackEntity.getMessageId() != null
+                                    ? ratingEnabledChatMemoryRepository
                                     .getConversationIdByMessageId(feedbackEntity.getMessageId())
-                                    .split("_");
-                            String conversationTitle;
-                            if (conversationIds.length < 2) {
-                                conversationTitle = conversationIds[0].replaceAll("_", " ");
-                            } else {
-                                conversationTitle = conversationIds[1].replaceAll("_", " ");
-                            }
+                                    : null;
                             return new ChatbotRatingResponse(
                                     feedbackEntity.getId(),
                                     feedbackEntity.getUser().getEmail(),
-                                    conversationTitle,
+                                    getConversationTitle(conversationId),
                                     feedbackEntity.getRating().name(),
                                     feedbackEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))
                             );
@@ -104,29 +104,32 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
         ChatbotRating rating = chatbotRatingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Chatbot rating not found with ID: " + id));
 
-        RatableMessage ratableMessage = ratingEnabledChatMemoryRepository.getMessageById(rating.getMessageId());
-        if (ratableMessage == null) {
-            throw new IllegalArgumentException("Chat memory not found with message ID: " + rating.getMessageId());
-        }
+        RatableMessage ratableMessage = rating.getMessageId() != null
+                ? ratingEnabledChatMemoryRepository.getMessageById(rating.getMessageId())
+                : null;
 
-        String[] conversationIds = ratableMessage.getConversationId().split("_");
-        String conversationTitle;
-        if (conversationIds.length < 2) {
-            conversationTitle = conversationIds[0].replaceAll("_", " ");
-        } else {
-            conversationTitle = conversationIds[1].replaceAll("_", " ");
+        String conversationTitle = "Unknown Or Deleted Conversation";
+        String chatbotResponseCreatedAt = "Unknown Or Deleted Conversation";
+        List<ChatbotResponse> chatbotResponses = new ArrayList<>();
+
+        if (ratableMessage != null) {
+            conversationTitle = getConversationTitle(ratableMessage.getConversationId());
+            chatbotResponseCreatedAt = ratingEnabledChatMemoryRepository
+                    .getCreatedAtByMessageId(rating.getMessageId());
+            chatbotResponses = ratingEnabledChatMemoryRepository.getChatHistory(ratableMessage.getConversationId());
+            System.out.println(chatbotResponses.size());
         }
 
         return ChatbotRatingDetailResponse.builder()
                 .id(rating.getId())
                 .userEmail(rating.getUser().getEmail())
                 .messageId(rating.getMessageId())
-                .content(ratableMessage.getText())
+                .content(rating.getMessage())
                 .conversationTitle(conversationTitle)
-                .chatbotResponseCreatedAt(ratingEnabledChatMemoryRepository.getCreatedAtByMessageId(ratableMessage.getMessageId()))
+                .chatbotResponseCreatedAt(chatbotResponseCreatedAt)
                 .rating(rating.getRating().name())
                 .ratedAt(rating.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
-                .chatbotResponses(ratingEnabledChatMemoryRepository.getChatHistory(ratableMessage.getConversationId()))
+                .chatbotResponses(chatbotResponses)
                 .build();
     }
 
@@ -138,5 +141,26 @@ public class ChatbotRatingServiceImpl implements IChatbotRatingService {
     @Override
     public int countDislikeRating() {
         return chatbotRatingRepository.countByRating(EChatbotRating.DISLIKE);
+    }
+
+    private String getConversationTitle(String conversationId) {
+        if (conversationId == null || conversationId.isEmpty()) {
+            return "Unknown Or Deleted Conversation";
+        }
+
+        // Split the conversationId to extract the title
+        // Assuming the format is "conversationId_title" or just "title"
+        // If the conversationId does not contain an underscore, it is treated as the title
+        if (!conversationId.contains("_")) {
+            return conversationId.replaceAll("_", " ");
+        }
+        // If it contains an underscore, split and return the second part as the title
+        // If there is no second part, return the first part as the title
+        String[] conversationIds = conversationId.split("_");
+        if (conversationIds.length < 2) {
+            return conversationIds[0].replaceAll("_", " ");
+        } else {
+            return conversationIds[1].replaceAll("_", " ");
+        }
     }
 }
