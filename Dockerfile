@@ -9,8 +9,5 @@ FROM eclipse-temurin:24.0.2_12-jre-ubi9-minimal
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# 3. Expose port (nếu cần)
-EXPOSE 8080
-
-# 4. Command để chạy app
+# 3. Command để chạy app
 ENTRYPOINT ["java", "-jar", "app.jar"]
