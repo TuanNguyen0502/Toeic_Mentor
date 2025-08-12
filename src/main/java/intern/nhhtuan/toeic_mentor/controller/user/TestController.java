@@ -86,7 +86,6 @@ public class TestController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // Determine the email of the authenticated user or use "anonymous" if not authenticated
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
-        log.info("Fetching recent tests for user: {}", email);
         return testService.getRecentTests(email, number);
     }
 
