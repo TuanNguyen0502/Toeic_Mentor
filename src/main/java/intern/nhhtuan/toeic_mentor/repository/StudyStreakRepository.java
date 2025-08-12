@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,10 +24,10 @@ public interface StudyStreakRepository extends JpaRepository<StudyStreak, Long> 
     Optional<StudyStreak> findByUser_Email(String userEmail);
 
     @Query("SELECT ss FROM StudyStreak ss WHERE ss.lastStudyDate IS NULL OR ss.lastStudyDate < :yesterday")
-    List<StudyStreak> findAllOutdatedStreaks(@Param("yesterday") LocalDateTime yesterday);
+    List<StudyStreak> findAllOutdatedStreaks(@Param("yesterday") LocalDate yesterday);
 
     @Query("SELECT ss.lastStudyDate FROM StudyStreak ss WHERE ss.user.email = :email")
-    Optional<LocalDateTime> findLastStudyDateByEmail(@Param("email") String email);
+    Optional<LocalDate> findLastStudyDateByEmail(@Param("email") String email);
 
     @Query("""
        SELECT s.user
@@ -41,4 +41,6 @@ public interface StudyStreakRepository extends JpaRepository<StudyStreak, Long> 
        """)
     List<User> findEligibleUsersForMilestone(@Param("target") int target,
                                              @Param("milestone") StreakMilestone milestone);
+
+    boolean existsByUser(User user);
 }

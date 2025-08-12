@@ -1,10 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.response.StudyStreakDetailResponse;
-import intern.nhhtuan.toeic_mentor.entity.StreakAchievement;
-import intern.nhhtuan.toeic_mentor.entity.StreakHistory;
-import intern.nhhtuan.toeic_mentor.entity.StreakMilestone;
-import intern.nhhtuan.toeic_mentor.entity.StudyStreak;
+import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.repository.StreakAchievementRepository;
 import intern.nhhtuan.toeic_mentor.repository.StreakHistoryRepository;
 import intern.nhhtuan.toeic_mentor.repository.StreakMilestoneRepository;
@@ -17,7 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +47,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
                     achievement.getAchievedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
             );
         }
-        HashMap<LocalDateTime, LocalDateTime> historyMap = new HashMap<>();
+        HashMap<LocalDate, LocalDate> historyMap = new HashMap<>();
         for (StreakHistory history : streakHistories) {
             historyMap.put(history.getStartStreak(), history.getEndStreak());
         }
@@ -67,11 +64,11 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
     @Async
     @Override
     public void updateCurrentStreak(String email) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         // Check if the last study date is today
-        LocalDateTime lastStudyDate = studyStreakRepository.findLastStudyDateByEmail(email)
+        LocalDate lastStudyDate = studyStreakRepository.findLastStudyDateByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Last study date not found for user: " + email));
-        if (lastStudyDate.toLocalDate().equals(now.toLocalDate())) {
+        if (lastStudyDate.equals(now)) {
             // If the last study date is today, no need to update
             return;
         }
@@ -80,7 +77,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
         StudyStreak studyStreak = studyStreakRepository.findByUser_Email(email)
                 .orElseThrow(() -> new IllegalStateException("Study streak not found for user: " + email));
 
-        if (studyStreak.getLastStudyDate() == null || !studyStreak.getLastStudyDate().toLocalDate().equals(now.toLocalDate())) {
+        if (studyStreak.getLastStudyDate() == null || !studyStreak.getLastStudyDate().equals(now)) {
             studyStreak.setLastStudyDate(now);
             studyStreak.setCurrentStreak(studyStreak.getCurrentStreak() + 1);
             if (studyStreak.getCurrentStreak() > studyStreak.getMaxStreak()) {
@@ -91,7 +88,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
 
         // Update streak history
         StreakHistory streakHistory = streakHistoryRepository.findFirstByUser_EmailOrderByStartStreakDesc(email);
-        if (streakHistory == null || streakHistory.getEndStreak().toLocalDate().isBefore(now.toLocalDate())) {
+        if (streakHistory == null || streakHistory.getEndStreak().isBefore(now)) {
             // Create a new streak history entry if no current streak history exists or if the last entry is from a previous day
             streakHistory = new StreakHistory();
             streakHistory.setUser(studyStreak.getUser());
@@ -119,7 +116,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
     @Transactional
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
     public void lostCurrentStreak() {
-        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+        LocalDate yesterday = LocalDate.now().minusDays(1);
 
         // Reset current streak if the last study date is not yesterday
         List<StudyStreak> outdatedStreaks = studyStreakRepository.findAllOutdatedStreaks(yesterday);
@@ -133,9 +130,32 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
 
             if (streakHistory != null && streakHistory.getEndStreak() == null) {
                 // If the streak history exists and has no end date, set the end date to yesterday
-                streakHistory.setEndStreak(LocalDateTime.now().minusDays(1));
+                streakHistory.setEndStreak(LocalDate.now().minusDays(1));
                 streakHistoryRepository.save(streakHistory);
             }
         }
+    }
+
+    @Async
+    @Override
+    public void createNewUserStudyStreak(User user) {
+        // Kiểm tra xem người dùng đã có StudyStreak chưa
+        if (studyStreakRepository.existsByUser(user)) {
+            return; // Người dùng đã có StudyStreak, không cần tạo mới
+        }
+
+        // Tạo StudyStreak mới cho người dùng
+        StudyStreak studyStreak = new StudyStreak();
+        studyStreak.setCurrentStreak(1);
+        studyStreak.setMaxStreak(1);
+        studyStreak.setLastStudyDate(LocalDate.now());
+        studyStreak.setUser(user);
+        studyStreakRepository.save(studyStreak);
+
+        // Tạo StreakHistory mới cho người dùng
+        StreakHistory streakHistory = new StreakHistory();
+        streakHistory.setStartStreak(LocalDate.now());
+        streakHistory.setUser(user);
+        streakHistoryRepository.save(streakHistory);
     }
 }

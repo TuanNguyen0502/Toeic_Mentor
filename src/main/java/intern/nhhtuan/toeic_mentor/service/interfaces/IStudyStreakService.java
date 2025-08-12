@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import intern.nhhtuan.toeic_mentor.dto.response.StudyStreakDetailResponse;
+import intern.nhhtuan.toeic_mentor.entity.User;
 import org.springframework.scheduling.annotation.Async;
 
 public interface IStudyStreakService {
@@ -10,4 +11,7 @@ public interface IStudyStreakService {
 
     @Async
     void updateCurrentStreak(String email);
+
+    @Async
+    void createNewUserStudyStreak(User user);
 }
