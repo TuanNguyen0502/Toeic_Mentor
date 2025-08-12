@@ -36,7 +36,7 @@ public class JwtFilter extends OncePerRequestFilter {
             email = jwtService.extractUsername(jwt);
         } catch (Exception e) {
             // Log the exception or handle it as needed
-            System.out.println("JWT extraction failed: " + e.getMessage());
+            // For example, you can log it or ignore it if the JWT is invalid
         }
 
         // If JWT is valid and the user is not authenticated, set the authentication in the context

@@ -35,8 +35,15 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         accessor.setUser(auth); // attach Principal
                     }
-                } catch (Exception e) {
-                    System.out.println("Invalid WebSocket token: " + e.getMessage());
+                } catch (Exception _) {
+                    // Handle the exception if needed, e.g., log it or ignore it
+                    // This is where you can handle invalid tokens or other issues
+                    // For example, you might want to log the error or send an error response
+                    // System.err.println("Invalid JWT token: " + _.getMessage());
+                    // You can also throw a custom exception if you want to handle it differently
+                    // throw new JwtAuthenticationException("Invalid JWT token", _);
+                    // In this case, we simply ignore the error and do not set the user
+                    // This means that if the token is invalid, the user will not be authenticated
                 }
             }
         }
