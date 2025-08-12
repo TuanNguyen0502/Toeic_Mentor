@@ -6,6 +6,8 @@ import intern.nhhtuan.toeic_mentor.entity.enums.EGender;
 import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.repository.RoleRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
+import intern.nhhtuan.toeic_mentor.service.implement.NotificationSettingServiceImpl;
+import intern.nhhtuan.toeic_mentor.service.implement.StudyStreakServiceImpl;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,7 +27,9 @@ public class ToeicMentorApplication {
 
     @Bean
     CommandLineRunner initData(RoleRepository roleRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               StudyStreakServiceImpl studyStreakService,
+                               NotificationSettingServiceImpl notificationSettingService) {
         return args -> {
             // Tạo role nếu chưa có
             for (ERole roleName : ERole.values()) {
@@ -53,6 +57,12 @@ public class ToeicMentorApplication {
                         .build();
 
                 userRepository.save(admin);
+
+                // Tạo StudyStreak cho người dùng mới
+                studyStreakService.createNewUserStudyStreak(admin);
+
+                // Tạo NotificationSettings cho người dùng mới
+                notificationSettingService.createNewUserNotificationSettings(admin);
             }
 
             // Tạo user mặc định nếu chưa có
@@ -71,6 +81,13 @@ public class ToeicMentorApplication {
                         .build();
 
                 userRepository.save(user);
+
+                // Tạo StudyStreak cho người dùng mới
+                studyStreakService.createNewUserStudyStreak(user);
+
+                // Tạo NotificationSettings cho người dùng mới
+                notificationSettingService.createNewUserNotificationSettings(user);
+
             }
         };
     }
