@@ -8,9 +8,9 @@ import intern.nhhtuan.toeic_mentor.entity.NotificationType;
 import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.repository.NotificationSettingRepository;
 import intern.nhhtuan.toeic_mentor.repository.NotificationTypeRepository;
+import intern.nhhtuan.toeic_mentor.repository.UserRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationSettingService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IRoleNotificationService;
-import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class NotificationSettingServiceImpl implements INotificationSettingServi
     private final NotificationSettingRepository notificationSettingRepository;
     private final NotificationTypeRepository notificationTypeRepository;
     private final IRoleNotificationService roleNotificationService;
-    private final IUserService userService;
+    private final UserRepository userRepository;
 
     @Override
     public List<NotificationSettingResponse> getNotificationSettingsByEmail(String email) {
@@ -34,7 +34,7 @@ public class NotificationSettingServiceImpl implements INotificationSettingServi
         }
 
         // Fetch the user by email
-        User user = userService.findByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (user == null) {
             throw new IllegalArgumentException("User not found with email: " + email);
         }
@@ -89,7 +89,7 @@ public class NotificationSettingServiceImpl implements INotificationSettingServi
                     .findByUser_EmailAndNotificationType_Action(email, setting.getNotificationType());
             if (notificationSetting == null) {
                 // If the notification setting does not exist, create a new one
-                User user = userService.findByEmail(email);
+                User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
                 NotificationType notificationType = notificationTypeRepository.findByAction(setting.getNotificationType());
                 notificationSetting = new NotificationSetting();
                 notificationSetting.setId(new NotificationSettingId(user.getId(), notificationType.getId()));
