@@ -3,7 +3,7 @@ package intern.nhhtuan.toeic_mentor.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "streak_histories")
@@ -18,10 +18,10 @@ public class StreakHistory extends TrackingDate {
     private Long id;
 
     @Column(name = "start_streak", nullable = false)
-    private LocalDateTime startStreak;
+    private LocalDate startStreak;
 
     @Column(name = "end_streak")
-    private LocalDateTime endStreak;
+    private LocalDate endStreak;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

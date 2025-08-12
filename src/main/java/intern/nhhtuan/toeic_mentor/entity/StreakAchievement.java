@@ -3,7 +3,7 @@ package intern.nhhtuan.toeic_mentor.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(
@@ -25,7 +25,7 @@ public class StreakAchievement extends TrackingDate {
     private StreakMilestone streakMilestone;
 
     @Column(name = "achieved_at", nullable = false)
-    private LocalDateTime achievedAt;
+    private LocalDate achievedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

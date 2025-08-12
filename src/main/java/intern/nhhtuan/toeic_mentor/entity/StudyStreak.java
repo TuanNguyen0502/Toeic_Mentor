@@ -3,7 +3,7 @@ package intern.nhhtuan.toeic_mentor.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "study_streaks")
@@ -24,7 +24,7 @@ public class StudyStreak extends TrackingDate {
     private Integer maxStreak;
 
     @Column(name = "last_study_date", nullable = false)
-    private LocalDateTime lastStudyDate;
+    private LocalDate lastStudyDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

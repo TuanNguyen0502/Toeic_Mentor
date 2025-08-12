@@ -3,7 +3,7 @@ package intern.nhhtuan.toeic_mentor.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.HashMap;
 
 @Data
@@ -13,5 +13,5 @@ public class StudyStreakDetailResponse {
     private int maxStreak;
     private String lastStudyDate;
     private HashMap<String, String> achievements;
-    private HashMap<LocalDateTime, LocalDateTime> histories;
+    private HashMap<LocalDate, LocalDate> histories;
 }
