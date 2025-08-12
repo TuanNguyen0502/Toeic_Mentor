@@ -12,6 +12,7 @@ import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationSettingServic
 import intern.nhhtuan.toeic_mentor.service.interfaces.IRoleNotificationService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -56,6 +57,23 @@ public class NotificationSettingServiceImpl implements INotificationSettingServi
 
         // Convert to response DTOs
         return responses;
+    }
+
+    @Async
+    @Override
+    public void createNewUserNotificationSettings(User user) {
+        // Fetch all notification types for the user's role
+        List<NotificationType> notificationTypes = roleNotificationService.getNotificationTypesByRole(user.getRole());
+
+        // Create default notification settings for each type
+        for (NotificationType notificationType : notificationTypes) {
+            NotificationSetting setting = new NotificationSetting();
+            setting.setId(new NotificationSettingId(user.getId(), notificationType.getId()));
+            setting.setUser(user);
+            setting.setNotificationType(notificationType);
+            setting.setEnabled(true); // Default to enabled
+            notificationSettingRepository.save(setting);
+        }
     }
 
     @Override

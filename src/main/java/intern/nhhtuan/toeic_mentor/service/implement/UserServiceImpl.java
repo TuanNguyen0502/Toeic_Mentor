@@ -8,6 +8,7 @@ import intern.nhhtuan.toeic_mentor.entity.enums.ERole;
 import intern.nhhtuan.toeic_mentor.entity.User;
 import intern.nhhtuan.toeic_mentor.repository.RoleRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
+import intern.nhhtuan.toeic_mentor.service.interfaces.INotificationSettingService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IStudyStreakService;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IUserService;
 import intern.nhhtuan.toeic_mentor.util.ImageUtil;
@@ -28,6 +29,7 @@ public class UserServiceImpl implements IUserService {
     private final RoleRepository roleRepository;
     private final ImageUtil imageUtil;
     private final IStudyStreakService studyStreakService;
+    private final INotificationSettingService notificationSettingService;
 
     @Override
     public User findByEmail(String email) {
@@ -76,6 +78,9 @@ public class UserServiceImpl implements IUserService {
 
         // Tạo StudyStreak cho người dùng mới
         studyStreakService.createNewUserStudyStreak(user);
+
+        // Tạo NotificationSettings cho người dùng mới
+        notificationSettingService.createNewUserNotificationSettings(user);
 
         return true;
     }
