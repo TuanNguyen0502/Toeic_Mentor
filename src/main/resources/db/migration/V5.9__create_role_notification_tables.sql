@@ -13,15 +13,23 @@ CREATE TABLE role_notifications
 
 -- 2. Thêm dữ liệu mẫu vào bảng "role_notifications"
 INSERT INTO role_notifications (role_id, notification_type_id)
-SELECT 1, id
-FROM notification_types
-WHERE action ='NEW_REPORT'
-UNION ALL
-SELECT 1, id
-FROM notification_types
-WHERE action ='COMPLETE_REPORT'
-UNION ALL
-SELECT 2, id
-FROM notification_types
-WHERE action ='COMPLETE_REPORT';
+SELECT r.id, nt.id
+FROM roles r
+         JOIN notification_types nt
+              ON nt.action = 'NEW_REPORT'
+WHERE r.name = 'ROLE_ADMIN';
+
+INSERT INTO role_notifications (role_id, notification_type_id)
+SELECT r.id, nt.id
+FROM roles r
+         JOIN notification_types nt
+              ON nt.action = 'COMPLETE_REPORT'
+WHERE r.name = 'ROLE_ADMIN';
+
+INSERT INTO role_notifications (role_id, notification_type_id)
+SELECT r.id, nt.id
+FROM roles r
+         JOIN notification_types nt
+              ON nt.action = 'COMPLETE_REPORT'
+WHERE r.name = 'ROLE_USER';
 

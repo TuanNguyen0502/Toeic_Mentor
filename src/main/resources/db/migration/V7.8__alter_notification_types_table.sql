@@ -13,3 +13,10 @@ FROM roles r
          JOIN notification_types nt
               ON nt.action = 'NEW_STREAK_ACHIEVEMENT'
 WHERE r.name = 'ROLE_USER';
+
+INSERT INTO role_notifications (role_id, notification_type_id)
+SELECT r.id, nt.id
+FROM roles r
+         JOIN notification_types nt
+              ON nt.action = 'NEW_STREAK_ACHIEVEMENT'
+WHERE r.name = 'ROLE_ADMIN';
