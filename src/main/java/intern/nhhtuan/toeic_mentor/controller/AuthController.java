@@ -131,6 +131,14 @@ public class AuthController {
 
     @GetMapping("/")
     public String index() {
-        return "user/index";
+        // Kiểm tra xem người dùng đã đăng nhập hay chưa
+        // Nếu đã đăng nhập, hiển thị trang chính của người dùng
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return "user/index";
+        }
+        // Nếu chưa đăng nhập, redirect đến trang đăng nhập
+        return "redirect:/login";
     }
 }
