@@ -193,7 +193,7 @@
                         <div class="d-flex align-items-center">
                             <h4 class="mb-0 me-3">Question <span th:text="${answerStat.count}">1</span></h4>
                             <span class="badge bg-primary me-2 text-white" th:text="'Part ' + ${answer.part}">Part 1</span>
-                            <span class="badge text-white" th:class="${answer.isCorrect ? 'bg-success' : 'bg-danger'}"
+                            <span class="badge" th:classappend="${answer.isCorrect ? 'bg-success text-white' : 'bg-danger text-white'}"
                                   th:text="${answer.isCorrect ? 'Correct' : 'Incorrect'}">Correct</span>
                         </div>
                         <div>
@@ -237,13 +237,13 @@
                                      (${option.key == answer.correctAnswer ? 'border-success bg-success-subtle' :
                                      (option.key == answer.userAnswer && option.key != answer.correctAnswer ? 'border-danger bg-danger-subtle' : '')})">
                                     <div class="me-2">
-                                        <span class="badge rounded-pill"
+                                        <span class="badge rounded-pill text-white"
                                           th:class="${
-                                              option.key == answer.correctAnswer ? 'bg-success' :
-                                              (option.key == answer.userAnswer && option.key != answer.correctAnswer ? 'bg-danger' :
-                                              (option.key == 'A' ? 'bg-primary' :
-                                              (option.key == 'B' ? 'bg-info' :
-                                              (option.key == 'C' ? 'bg-warning' : 'bg-dark'))))
+                                              option.key == answer.correctAnswer ? 'bg-success text-white' :
+                                              (option.key == answer.userAnswer && option.key != answer.correctAnswer ? 'bg-danger text-white' :
+                                              (option.key == 'A' ? 'bg-primary text-white' :
+                                              (option.key == 'B' ? 'bg-info text-white' :
+                                              (option.key == 'C' ? 'bg-warning text-white' : 'bg-dark text-white'))))
                                           }"
                                           th:text="${option.key}">A</span>
                                     </div>
