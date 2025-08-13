@@ -11,30 +11,6 @@
 <div th:insert="~{user/fragments/main_menu::main-menu}"></div>
 <!-- main start -->
 <main id="main">
-    <!-- main-slider start -->
-    <section class="slider-content">
-        <div class="home-slider owl-carousel owl-theme" id="home-slider">
-            <div class="item" th:each="product : ${productHomeSliders}">
-                <div class="slider-image">
-                    <div class="slide-img" style="display: flex; justify-content: center;">
-                        <img th:src="${product.getThumbnail()}"
-                             style="max-width: 100%; max-height: 500px; width: auto; height: auto" alt="slider">
-                        <img th:src="${product.getThumbnail()}" class="img-fluid resp-img" alt="mobile-slider">
-                    </div>
-                    <div class="container slider-text-info">
-                        <div class="slider-text-content">
-                            <span class="sub-title" th:text="${product.price}"></span>
-                            <h2><span th:text="${product.name}"></span></h2>
-                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn-block">
-                                <span class="shopnow">Shop now</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- main-slider end -->
 
     <!-- TOEIC Score Statistics Section start -->
     <section class="estimated-score-section section-pt">
