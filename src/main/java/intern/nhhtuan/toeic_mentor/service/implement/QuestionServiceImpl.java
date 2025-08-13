@@ -52,6 +52,7 @@ public class QuestionServiceImpl implements IQuestionService {
             question.setPart(partRepository.findByName(getPartName(dto.getPart())));
             question.setStatus(EQuestionStatus.IN_SECTION);
             question.setAnswerExplanation(dto.getAnswerExplanation());
+            question.setDifficulty(1); // Mặc định difficulty là 1
             question.setTags(dto.getTags());
             question.setSection(section);
             // Lưu trước để có ID cho liên kết
