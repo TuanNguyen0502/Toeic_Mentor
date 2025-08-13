@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/asset/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Allow access to admin routes for ADMIN role
                         .requestMatchers("/chat", "/chat/*", "/profile", "/change-password", "/home",
-                                "/statistics/**", "/study-streaks/**", "/goals/**")
+                                "/statistics/**", "/study-streaks/**", "/goals/**", "test-histories/**")
                         .hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated() // Require authentication for all other requests
                 )
