@@ -4,6 +4,7 @@ import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.*;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
+import intern.nhhtuan.toeic_mentor.exception.ResourceNotFoundException;
 import intern.nhhtuan.toeic_mentor.exception.UnauthorizedException;
 import intern.nhhtuan.toeic_mentor.repository.TestRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
@@ -80,6 +81,66 @@ public class TestServiceImpl implements ITestService {
                             .doneAt(test.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                             .build();
                 });
+    }
+
+    @Override
+    public TestHistoryDetailResponse getTestHistoryDetailResponseById(Long testId) {
+        Optional<Test> testOpt = testRepository.findById(testId);
+        if (testOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Test", "id", testId);
+        }
+
+        Test test = testOpt.get();
+
+        // Convert Test entity to TestResultResponse
+        List<TestHistoryDetailResponse.AnswerResponse> answerResponses = new ArrayList<>();
+
+        for (Answer answer : test.getAnswers()) {
+            Question question = answer.getQuestion();
+
+            // Convert options to OptionResponse format
+            List<TestHistoryDetailResponse.OptionResponse> options = question.getOptions().stream()
+                    .map(opt -> TestHistoryDetailResponse.OptionResponse.builder()
+                            .key(opt.getKey())
+                            .value(opt.getValue())
+                            .build())
+                    .collect(Collectors.toList());
+            List<String> questionImages = question.getPassageImageUrls().stream()
+                    .map(QuestionImage::getImage)
+                    .toList();
+
+            TestHistoryDetailResponse.AnswerResponse answerResponse = TestHistoryDetailResponse.AnswerResponse.builder()
+                    .answerId(answer.getId())
+                    .userAnswer(answer.getAnswer()) // Get user's answer from answer
+                    .isCorrect(answer.isCorrect())
+                    .questionText(question.getQuestionText())
+                    .optionExplanation(answer.getAnswerExplanation())
+                    .correctAnswer(question.getCorrectAnswer()) // Get correct answer from question
+                    .timeSpent(answer.getTimeSpent())
+                    .questionId(question.getId())
+                    .correctAnswer(question.getCorrectAnswer())
+                    .passage(question.getPassage())
+                    .questionText(question.getQuestionText())
+                    .part(Integer.parseInt(question.getPart().getName().toString().replace("PART_", "")))
+                    .difficulty(question.getDifficulty())
+                    .tags(question.getTags())
+                    .questionImages(questionImages)
+                    .options(options)
+                    .build();
+
+            answerResponses.add(answerResponse);
+        }
+
+        return TestHistoryDetailResponse.builder()
+                .testId(test.getId())
+                .score(test.getScore())
+                .correctPercent((int) ((test.getScore() * 100.0) / answerResponses.size()))
+                .recommendations(test.getRecommendations())
+                .performance(test.getPerformance())
+                .referenceUrls(test.getReferenceUrls())
+                .createdAt(test.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .answerResponses(answerResponses)
+                .build();
     }
 
     @Override

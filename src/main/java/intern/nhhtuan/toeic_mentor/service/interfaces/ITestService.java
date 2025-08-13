@@ -17,6 +17,8 @@ public interface ITestService {
                                                       String sortBy,
                                                       String direction);
 
+    TestHistoryDetailResponse getTestHistoryDetailResponseById(Long id);
+
     List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest);
 
     int getTotalTests();
