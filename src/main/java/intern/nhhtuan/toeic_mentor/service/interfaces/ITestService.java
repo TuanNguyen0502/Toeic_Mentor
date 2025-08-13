@@ -1,17 +1,22 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
-import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
-import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.TestStatisticResponse;
-import jakarta.servlet.http.HttpServletResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.*;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ITestService {
+    Page<TestHistoryResponse> getTestHistoryResponses(String email,
+                                                      LocalDateTime createdAtStart,
+                                                      LocalDateTime createdAtEnd,
+                                                      int page,
+                                                      int size,
+                                                      String sortBy,
+                                                      String direction);
+
     List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest);
 
     int getTotalTests();

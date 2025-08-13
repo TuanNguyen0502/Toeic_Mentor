@@ -1,22 +1,25 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
-import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.TestCountResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.TestStatisticResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.*;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
+import intern.nhhtuan.toeic_mentor.exception.UnauthorizedException;
 import intern.nhhtuan.toeic_mentor.repository.TestRepository;
 import intern.nhhtuan.toeic_mentor.repository.UserRepository;
+import intern.nhhtuan.toeic_mentor.repository.specification.TestSpecification;
 import intern.nhhtuan.toeic_mentor.service.interfaces.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +40,49 @@ public class TestServiceImpl implements ITestService {
     private final IGoalService goalService;
 
     @Override
+    public Page<TestHistoryResponse> getTestHistoryResponses(String email,
+                                                             LocalDateTime createdAtStart,
+                                                             LocalDateTime createdAtEnd,
+                                                             int page,
+                                                             int size,
+                                                             String sortBy,
+                                                             String direction) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found with email: " + email));
+
+        Specification<Test> specification = (root, query, cb) -> cb.conjunction(); // Bắt đầu với 1 điều kiện TRUE
+        if (user != null) {
+            specification = specification.and(TestSpecification.belongsToUser(user.getId()));
+        }
+        if (createdAtStart != null || createdAtEnd != null) {
+            specification = specification.and(TestSpecification.createdAtBetween(createdAtStart, createdAtEnd));
+        }
+
+        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return testRepository.findAll(specification, pageable)
+                .map(test -> {
+                    int totalQuestions = test.getAnswers().size();
+                    int timeSpent = test.getAnswers().stream()
+                            .mapToInt(answer -> Objects.requireNonNullElse(answer.getTimeSpent(), 0))
+                            .sum();
+                    String parts = test.getAnswers().stream()
+                            .map(answer -> answer.getQuestion().getPart().getName().name().replace("_", " "))
+                            .distinct()
+                            .collect(Collectors.joining("\n"));
+                    return TestHistoryResponse.builder()
+                            .id(test.getId())
+                            .correctAnswers(test.getScore())
+                            .totalQuestions(totalQuestions)
+                            .parts(parts.isEmpty() ? "" : parts)
+                            .timeSpent(timeSpent)
+                            .doneAt(test.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                            .build();
+                });
+    }
+
+    @Override
     public List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest) {
         // Check if the request is for combine or separate parts
         if (testCountRequest.getType() == TestCountRequest.EType.COMBINE) {
@@ -44,111 +90,6 @@ public class TestServiceImpl implements ITestService {
         } else {
             return countBySeparatePartsAndPercent(testCountRequest);
         }
-    }
-
-    private List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest) {
-        List<Long> partIds = partService.getIdsByPartName(testCountRequest.getParts()); // Get part ids by EPart names
-
-        // Get tests that contains all parts in partIds
-        List<Test> tests = testPartService.findTestsByCombinePartNames(partIds);
-        if (tests.isEmpty()) {
-            return List.of(TestCountResponse.builder()
-                    .partName("No tests found for the specified parts")
-                    .tests(0)
-                    .build());
-        }
-
-        // Count correct answers for each test
-        int testCount = 0;
-        for (Test test : tests) {
-            // Get total questions in the test that belong to the specified parts
-            long totalQuestionsByPart = test.getAnswers() // Get all answers for the test
-                    .stream()
-                    // If the answer's question part is in partIds
-                    .filter(answer -> partIds.contains(answer.getQuestion().getPart().getId()))
-                    .count();
-
-            if (totalQuestionsByPart == 0) continue; // Skip if no questions in the specified parts
-
-            // Get total correct answers in the test that belong to the specified parts
-            long totalAnswersByPart = test.getAnswers() // Get all answers for the test
-                    .stream()
-                    // If the answer's question part is in partIds and the answer is correct
-                    .filter(answer -> partIds.contains(answer.getQuestion().getPart().getId()) && answerService.checkByStatus(answer.getId(), testCountRequest.getStatus()))
-                    .count();
-            // Check if the percentage of correct answers meets the requirement
-            if (checkPercentCondition(totalAnswersByPart, totalQuestionsByPart, testCountRequest.getPercentChoice(), testCountRequest.getLowerRange(), testCountRequest.getUpperRange())) {
-                testCount++;
-            }
-        }
-
-        StringBuilder partName = new StringBuilder();
-        for (EPart ePart : testCountRequest.getParts()) {
-            partName.append(ePart.name().replace("_", " ")).append(", ");
-        }
-        partName = new StringBuilder(partName.substring(0, partName.length() - 2));
-        return List.of(TestCountResponse.builder()
-                .partName(partName.toString())
-                .tests(testCount)
-                .build());
-    }
-
-    private List<TestCountResponse> countBySeparatePartsAndPercent(TestCountRequest testCountRequest) {
-        List<TestCountResponse> testCountResponses = new ArrayList<>();
-
-        for (EPart ePart : testCountRequest.getParts()) {
-            // Get part by EPart name
-            Part part = partService.findByName(ePart);
-            // Get tests that contains the part
-            List<Test> tests = testPartService.findTestsByPartId(part.getId());
-            // Count correct answers for each test
-            int testCount = 0;
-            for (Test test : tests) {
-                // Get total questions in the test that belong to the specified parts
-                long totalQuestionsByPart = test.getAnswers() // Get all answers for the test
-                        .stream()
-                        // If the answer's question part is equal to the specified part
-                        .filter(answer -> answer.getQuestion().getPart().equals(part))
-                        .count();
-
-                if (totalQuestionsByPart == 0) continue; // Skip if no questions in the specified parts
-
-                // Get total correct answers in the test that belong to the specified parts
-                long totalAnswersByPart = test.getAnswers() // Get all answers for the test
-                        .stream()
-                        // If the answer's question part is equal to the specified part and the answer is correct
-                        .filter(answer -> answer.getQuestion().getPart().equals(part) && answerService.checkByStatus(answer.getId(), testCountRequest.getStatus()))
-                        .count();
-
-                // Check if the percentage of correct answers meets the requirement
-                if (checkPercentCondition(totalAnswersByPart, totalQuestionsByPart, testCountRequest.getPercentChoice(), testCountRequest.getLowerRange(), testCountRequest.getUpperRange())) {
-                    testCount++;
-                }
-            }
-
-            // Create TestCountResponse for each part
-            testCountResponses.add(TestCountResponse.builder()
-                    .partId(part.getId())
-                    .partName(part.getName().name().replace("_", " "))
-                    .tests(testCount)
-                    .build());
-        }
-
-        return testCountResponses;
-    }
-
-    private boolean checkPercentCondition(long totalAnswers, long totalQuestions, TestCountRequest.EPercentChoice percentChoice, int lowerRange, int upperRange) {
-        if (totalQuestions == 0) return false; // Avoid division by zero
-        int percentage = (int) ((totalAnswers * 100) / totalQuestions);
-        return switch (percentChoice) {
-            case GREATER_THAN -> percentage > lowerRange;
-            case GREATER_THAN_OR_EQUAL -> percentage >= lowerRange;
-            case LESS_THAN -> percentage < lowerRange;
-            case LESS_THAN_OR_EQUAL -> percentage <= lowerRange;
-            case EQUAL_TO -> percentage == lowerRange;
-            case BETWEEN -> percentage >= lowerRange && percentage <= upperRange;
-            default -> false;
-        };
     }
 
     @Override
@@ -333,6 +274,111 @@ public class TestServiceImpl implements ITestService {
                 .highestScore(highestScore)
                 .totalTimeSpent(totalTimeMinutes)
                 .build();
+    }
+
+    private List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest) {
+        List<Long> partIds = partService.getIdsByPartName(testCountRequest.getParts()); // Get part ids by EPart names
+
+        // Get tests that contains all parts in partIds
+        List<Test> tests = testPartService.findTestsByCombinePartNames(partIds);
+        if (tests.isEmpty()) {
+            return List.of(TestCountResponse.builder()
+                    .partName("No tests found for the specified parts")
+                    .tests(0)
+                    .build());
+        }
+
+        // Count correct answers for each test
+        int testCount = 0;
+        for (Test test : tests) {
+            // Get total questions in the test that belong to the specified parts
+            long totalQuestionsByPart = test.getAnswers() // Get all answers for the test
+                    .stream()
+                    // If the answer's question part is in partIds
+                    .filter(answer -> partIds.contains(answer.getQuestion().getPart().getId()))
+                    .count();
+
+            if (totalQuestionsByPart == 0) continue; // Skip if no questions in the specified parts
+
+            // Get total correct answers in the test that belong to the specified parts
+            long totalAnswersByPart = test.getAnswers() // Get all answers for the test
+                    .stream()
+                    // If the answer's question part is in partIds and the answer is correct
+                    .filter(answer -> partIds.contains(answer.getQuestion().getPart().getId()) && answerService.checkByStatus(answer.getId(), testCountRequest.getStatus()))
+                    .count();
+            // Check if the percentage of correct answers meets the requirement
+            if (checkPercentCondition(totalAnswersByPart, totalQuestionsByPart, testCountRequest.getPercentChoice(), testCountRequest.getLowerRange(), testCountRequest.getUpperRange())) {
+                testCount++;
+            }
+        }
+
+        StringBuilder partName = new StringBuilder();
+        for (EPart ePart : testCountRequest.getParts()) {
+            partName.append(ePart.name().replace("_", " ")).append(", ");
+        }
+        partName = new StringBuilder(partName.substring(0, partName.length() - 2));
+        return List.of(TestCountResponse.builder()
+                .partName(partName.toString())
+                .tests(testCount)
+                .build());
+    }
+
+    private List<TestCountResponse> countBySeparatePartsAndPercent(TestCountRequest testCountRequest) {
+        List<TestCountResponse> testCountResponses = new ArrayList<>();
+
+        for (EPart ePart : testCountRequest.getParts()) {
+            // Get part by EPart name
+            Part part = partService.findByName(ePart);
+            // Get tests that contains the part
+            List<Test> tests = testPartService.findTestsByPartId(part.getId());
+            // Count correct answers for each test
+            int testCount = 0;
+            for (Test test : tests) {
+                // Get total questions in the test that belong to the specified parts
+                long totalQuestionsByPart = test.getAnswers() // Get all answers for the test
+                        .stream()
+                        // If the answer's question part is equal to the specified part
+                        .filter(answer -> answer.getQuestion().getPart().equals(part))
+                        .count();
+
+                if (totalQuestionsByPart == 0) continue; // Skip if no questions in the specified parts
+
+                // Get total correct answers in the test that belong to the specified parts
+                long totalAnswersByPart = test.getAnswers() // Get all answers for the test
+                        .stream()
+                        // If the answer's question part is equal to the specified part and the answer is correct
+                        .filter(answer -> answer.getQuestion().getPart().equals(part) && answerService.checkByStatus(answer.getId(), testCountRequest.getStatus()))
+                        .count();
+
+                // Check if the percentage of correct answers meets the requirement
+                if (checkPercentCondition(totalAnswersByPart, totalQuestionsByPart, testCountRequest.getPercentChoice(), testCountRequest.getLowerRange(), testCountRequest.getUpperRange())) {
+                    testCount++;
+                }
+            }
+
+            // Create TestCountResponse for each part
+            testCountResponses.add(TestCountResponse.builder()
+                    .partId(part.getId())
+                    .partName(part.getName().name().replace("_", " "))
+                    .tests(testCount)
+                    .build());
+        }
+
+        return testCountResponses;
+    }
+
+    private boolean checkPercentCondition(long totalAnswers, long totalQuestions, TestCountRequest.EPercentChoice percentChoice, int lowerRange, int upperRange) {
+        if (totalQuestions == 0) return false; // Avoid division by zero
+        int percentage = (int) ((totalAnswers * 100) / totalQuestions);
+        return switch (percentChoice) {
+            case GREATER_THAN -> percentage > lowerRange;
+            case GREATER_THAN_OR_EQUAL -> percentage >= lowerRange;
+            case LESS_THAN -> percentage < lowerRange;
+            case LESS_THAN_OR_EQUAL -> percentage <= lowerRange;
+            case EQUAL_TO -> percentage == lowerRange;
+            case BETWEEN -> percentage >= lowerRange && percentage <= upperRange;
+            default -> false;
+        };
     }
 
     private RecentTestResponse mapToRecentTestResponse(Test test) {
