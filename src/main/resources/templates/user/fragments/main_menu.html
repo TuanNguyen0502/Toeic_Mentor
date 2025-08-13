@@ -22,6 +22,16 @@
                                     <span class="sp-link-title">Chatbot</span>
                                 </a>
                             </li>
+                            <li class="menu-link" th:if="${#authentication.principal == 'anonymousUser'}">
+                                <a th:href="@{/login}" class="link-title">
+                                    <span class="sp-link-title">Test History</span>
+                                </a>
+                            </li>
+                            <li class="menu-link" th:unless="${#authentication.principal == 'anonymousUser'}">
+                                <a th:href="@{/test-histories}" class="link-title">
+                                    <span class="sp-link-title">Test History</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
