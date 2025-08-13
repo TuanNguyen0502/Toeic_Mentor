@@ -1,6 +1,8 @@
 package intern.nhhtuan.toeic_mentor.controller.user;
 
+import intern.nhhtuan.toeic_mentor.dto.response.TestHistoryDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestHistoryResponse;
+import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ITestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -9,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -43,5 +46,12 @@ public class TestHistoryController {
         }
         model.addAttribute("testHistories", testHistoryResponses);
         return "user/test/test-history-list";
+    }
+
+    @GetMapping("/{id}")
+    public String getTestHistoryDetail(@PathVariable("id") Long id, Model model) {
+        TestHistoryDetailResponse testHistoryDetailResponse = testService.getTestHistoryDetailResponseById(id);
+        model.addAttribute("testHistoryDetailResponse", testHistoryDetailResponse);
+        return "user/test/test-history-detail";
     }
 }
