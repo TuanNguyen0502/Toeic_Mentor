@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.controller.user;
 
+import intern.nhhtuan.toeic_mentor.dto.response.QuestionResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestHistoryDetailResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestHistoryResponse;
 import intern.nhhtuan.toeic_mentor.service.interfaces.ITestService;
@@ -9,12 +10,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequestMapping("/test-histories")
@@ -53,5 +52,13 @@ public class TestHistoryController {
         TestHistoryDetailResponse testHistoryDetailResponse = testService.getTestHistoryDetailResponseById(id);
         model.addAttribute("testHistoryDetailResponse", testHistoryDetailResponse);
         return "user/test/test-history-detail";
+    }
+
+    @GetMapping("/take-test/{testId}")
+    public String takeUncompletedTest(@PathVariable Long testId, Model model) {
+        List<QuestionResponse> questions = testService.getUncompletedTestQuestions(testId);
+        model.addAttribute("testId", testId);
+        model.addAttribute("questions", questions);
+        return "user/take-test";
     }
 }
