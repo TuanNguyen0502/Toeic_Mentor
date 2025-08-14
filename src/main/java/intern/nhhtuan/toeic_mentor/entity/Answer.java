@@ -23,7 +23,7 @@ public class Answer {
     @Column(length = 1)
     private String answer;
 
-    @Column(name = "is_correct", nullable = false)
+    @Column(name = "is_correct")
     private boolean isCorrect; // Indicates if the answer is correct
 
     @Column(name = "time_spent", nullable = false)
