@@ -400,6 +400,8 @@
     const questions = /*[[${questions}]]*/ [];
     // Set default test duration (2 hours) if not provided
     const testDuration = 120; // in minutes
+    // Get testId parameter (will be non-null when resuming an uncompleted test)
+    const uncompletedTestId = /*[[${testId}]]*/ null;
 </script>
 
 <script>
@@ -486,7 +488,7 @@
         }
     }
 
-    // Modified renderQuestions to include flag button
+    // Modified renderQuestions to include flag button and handle existing userAnswers and timeSpent
     function renderQuestions() {
         const container = document.getElementById('questionsContainer');
         container.innerHTML = '';
@@ -560,10 +562,13 @@
             // Create options
             let optionsHtml = '<div class="options-container">';
             question.options.forEach(option => {
+                // Check if this option matches the existing userAnswer
+                const isSelected = question.userAnswer !== null && question.userAnswer === option.key;
+
                 optionsHtml += `
                     <div class="mb-2">
                         <input type="radio" name="question-${index}" id="q${index}-${option.key}"
-                            value="${option.key}" class="option-input">
+                            value="${option.key}" class="option-input" ${isSelected ? 'checked' : ''}>
                         <label for="q${index}-${option.key}" class="option-label">
                             <span class="font-medium">${option.key}:</span> ${option.value}
                         </label>
@@ -601,8 +606,15 @@
                 });
             }
 
+            // Set timeSpent if it exists in the question
+            if (question.timeSpent !== null && question.timeSpent !== undefined) {
+                timeSpentOnQuestions[index] = question.timeSpent;
+            }
 
-
+            // If question has a userAnswer, add it to the userAnswers object for UI tracking
+            if (question.userAnswer !== null && question.userAnswer !== undefined) {
+                userAnswers[index] = question.userAnswer;
+            }
 
             // Initially hide the question
             questionElement.style.display = 'none';
