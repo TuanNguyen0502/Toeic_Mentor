@@ -36,6 +36,9 @@ public class Test {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt = LocalDateTime.now();
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

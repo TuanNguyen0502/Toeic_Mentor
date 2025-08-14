@@ -20,7 +20,7 @@ public class Answer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 1, nullable = false)
+    @Column(length = 1)
     private String answer;
 
     @Column(name = "is_correct", nullable = false)
