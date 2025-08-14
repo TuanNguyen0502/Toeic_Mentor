@@ -1,0 +1,2 @@
+ALTER TABLE tests
+    ADD COLUMN completed_at DATETIME NULL;
