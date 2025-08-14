@@ -13,6 +13,7 @@ public interface ITestService {
     Page<TestHistoryResponse> getTestHistoryResponses(String email,
                                                       LocalDateTime createdAtStart,
                                                       LocalDateTime createdAtEnd,
+                                                      Boolean completed,
                                                       int page,
                                                       int size,
                                                       String sortBy,
