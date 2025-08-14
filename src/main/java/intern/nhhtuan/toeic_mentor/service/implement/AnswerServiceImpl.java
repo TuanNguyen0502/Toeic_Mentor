@@ -6,6 +6,9 @@ import intern.nhhtuan.toeic_mentor.repository.AnswerRepository;
 import intern.nhhtuan.toeic_mentor.service.interfaces.IAnswerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,5 +33,17 @@ public class AnswerServiceImpl implements IAnswerService {
     @Override
     public void save(Answer answer) {
         answerRepository.save(answer);
+    }
+
+    @Override
+    @Transactional
+    public void saveAll(List<Answer> answers) {
+        answerRepository.saveAll(answers);
+    }
+
+    @Transactional
+    @Override
+    public void deleteAllByTestId(Long testId) {
+        answerRepository.deleteAllByTest_Id(testId);
     }
 }
