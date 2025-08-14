@@ -38,6 +38,8 @@ public interface ITestService {
 
     void saveTestById(Long testId, TestResultResponse testResultResponse);
 
+    void saveUncompletedTestById(Long testId, List<UncompletedAnswerRequest> uncompletedAnswerRequests);
+
     TestStatisticResponse calculateTestStatistic(String email);
 
 

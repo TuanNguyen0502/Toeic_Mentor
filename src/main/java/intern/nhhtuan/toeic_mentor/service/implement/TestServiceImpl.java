@@ -340,6 +340,53 @@ public class TestServiceImpl implements ITestService {
     }
 
     @Override
+    public void saveTestById(Long testId, TestResultResponse testResultResponse) {
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+        test.setScore(testResultResponse.getScore());
+        test.setRecommendations(testResultResponse.getRecommendations());
+        test.setPerformance(testResultResponse.getPerformance());
+        test.setReferenceUrls(testResultResponse.getReferenceUrls());
+        test.setCompletedAt(LocalDateTime.now()); // Set completed time for the test
+
+        // Lưu trước để có ID cho liên kết
+        testRepository.save(test);
+
+        // Xóa các Answer cũ nếu có
+        answerService.deleteAllByTestId(testId);
+
+        // Tạo danh sách Answer từ AnswerRequest
+        for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
+            Answer answer = new Answer();
+            answer.setAnswer(answerResponse.getUserAnswer());
+            answer.setCorrect(answerResponse.isCorrect());
+            answer.setAnswerExplanation(answerResponse.getOptionExplanation());
+            answer.setTimeSpent(answerResponse.getTimeSpent());
+            answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
+            answer.setTest(test);
+            // Lưu các Answer
+            answerService.save(answer);
+            answerResponse.setAnswerId(answer.getId());
+        }
+
+        // Set the testId in the response
+        testResultResponse.setTestId(test.getId());
+
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(test.getUser().getEmail());
+
+        // Update goals for the user
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = testResultResponse.getAnswerResponses()
+                .stream()
+                .map(answerResponse -> GoalProgressUpdateRequest.builder()
+                        .part(answerResponse.getPart())
+                        .timeSpent(answerResponse.getTimeSpent())
+                        .build())
+                .toList();
+        goalService.updateGoalProgressAfterTest(test.getUser().getEmail(), goalProgressUpdateRequests);
+    }
+
+    @Override
     public void saveUncompletedTest(String email, List<UncompletedAnswerRequest> uncompletedAnswerRequests) {
         Test test = new Test();
         test.setScore(0); // Set initial score to 0 for uncompleted tests
@@ -390,40 +437,31 @@ public class TestServiceImpl implements ITestService {
     }
 
     @Override
-    public void saveTestById(Long testId, TestResultResponse testResultResponse) {
+    public void saveUncompletedTestById(Long testId, List<UncompletedAnswerRequest> uncompletedAnswerRequests) {
         Test test = testRepository.findById(testId)
                 .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
-        test.setScore(testResultResponse.getScore());
-        test.setRecommendations(testResultResponse.getRecommendations());
-        test.setPerformance(testResultResponse.getPerformance());
-        test.setReferenceUrls(testResultResponse.getReferenceUrls());
-        test.setCompletedAt(LocalDateTime.now()); // Set completed time for the test
 
-        // Lưu trước để có ID cho liên kết
-        testRepository.save(test);
+        // Xóa các Answer cũ nếu có
+        answerService.deleteAllByTestId(testId);
 
-        // Tạo danh sách Answer từ AnswerRequest
-        for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
-            Answer answer = new Answer();
-            answer.setAnswer(answerResponse.getUserAnswer());
-            answer.setCorrect(answerResponse.isCorrect());
-            answer.setAnswerExplanation(answerResponse.getOptionExplanation());
-            answer.setTimeSpent(answerResponse.getTimeSpent());
-            answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
-            answer.setTest(test);
-            // Lưu các Answer
-            answerService.save(answer);
-            answerResponse.setAnswerId(answer.getId());
-        }
-
-        // Set the testId in the response
-        testResultResponse.setTestId(test.getId());
+        // Tạo danh sách Answer mới
+        List<Answer> newAnswers = uncompletedAnswerRequests.stream()
+                .map(req -> {
+                    Answer answer = new Answer();
+                    answer.setAnswer(req.getUserAnswer());
+                    answer.setTimeSpent(req.getTimeSpent());
+                    answer.setQuestion(questionService.findById(req.getQuestionId()).orElse(null));
+                    answer.setTest(test);
+                    return answer;
+                })
+                .toList();
+        answerService.saveAll(newAnswers);
 
         // Update study streak for the user
         studyStreakService.updateCurrentStreak(test.getUser().getEmail());
 
         // Update goals for the user
-        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = testResultResponse.getAnswerResponses()
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = uncompletedAnswerRequests
                 .stream()
                 .map(answerResponse -> GoalProgressUpdateRequest.builder()
                         .part(answerResponse.getPart())
