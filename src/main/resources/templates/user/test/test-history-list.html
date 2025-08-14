@@ -97,7 +97,8 @@
                                     <td th:text="${history.createdAt}"></td>
                                     <td th:text="${history.completedAt}"></td>
                                     <td>
-                                        <a th:href="@{'/test-histories/' + ${history.id}}" class="btn btn-sm btn-primary">View Details</a>
+                                        <a th:if="${history.completedAt != 'Not completed'}" th:href="@{'/test-histories/' + ${history.id}}" class="btn btn-sm btn-primary">View Details</a>
+                                        <a th:unless="${history.completedAt != 'Not completed'}" th:href="@{'/test-histories/take-test/' + ${history.id}}" class="btn btn-sm btn-primary">Continue Test</a>
                                     </td>
                                 </tr>
                             </tbody>
