@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -335,6 +336,15 @@ public class TestServiceImpl implements ITestService {
                 .highestScore(highestScore)
                 .totalTimeSpent(totalTimeMinutes)
                 .build();
+    }
+
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
+    private void deleteExpiredTests() {
+        List<Long> idsToDelete = testRepository.getUncompletedTestIdsCreatedWithinLast7Days();
+        if (!idsToDelete.isEmpty()) {
+            List<Test> testsToDelete = testRepository.findAllById(idsToDelete);
+            testRepository.deleteAll(testsToDelete);
+        }
     }
 
     private List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest) {
