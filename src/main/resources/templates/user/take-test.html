@@ -808,7 +808,7 @@
         document.getElementById('testForm').classList.add('hidden');
 
         // Send answers to backend
-        fetch('/tests/results', {
+        fetch('/tests/results' + (uncompletedTestId ? `/${uncompletedTestId}` : ''), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(answerRequests)
@@ -1091,7 +1091,7 @@
         });
 
         // Send the data to the server
-        fetch('/tests/uncompleted-test', {
+        fetch('/tests/uncompleted-test' + (uncompletedTestId ? `/${uncompletedTestId}` : ''), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
