@@ -23,8 +23,10 @@ public class QuestionResponse {
     private List<OptionResponse> options;
     private List<String> tags;
     private Integer difficulty; // Difficulty level of the question
+    private Integer timeSpent;
 
     @Data
+    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class OptionResponse {

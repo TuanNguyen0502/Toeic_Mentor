@@ -154,6 +154,116 @@ public class TestServiceImpl implements ITestService {
     }
 
     @Override
+    public int getTotalTests() {
+        return testRepository.findAll().size();
+    }
+
+    @Override
+    public TestResultResponse getTestResult(Long testId, String email) {
+        Optional<Test> testOpt = testRepository.findById(testId);
+        if (testOpt.isEmpty()) {
+            throw new RuntimeException("Test not found with ID: " + testId);
+        }
+
+        Test test = testOpt.get();
+
+        // Verify that the test belongs to the user
+        if (!test.getUser().getEmail().equals(email)) {
+            throw new RuntimeException("Access denied: Test does not belong to user: " + email);
+        }
+
+        // Convert Test entity to TestResultResponse
+        List<TestResultResponse.AnswerResponse> answerResponses = new ArrayList<>();
+
+        for (Answer answer : test.getAnswers()) {
+            Question question = answer.getQuestion();
+
+            // Convert options to OptionResponse format
+            List<TestResultResponse.OptionResponse> options = question.getOptions().stream()
+                    .map(opt -> TestResultResponse.OptionResponse.builder()
+                            .key(opt.getKey())
+                            .value(opt.getValue())
+                            .build())
+                    .collect(Collectors.toList());
+
+            TestResultResponse.AnswerResponse answerResponse = TestResultResponse.AnswerResponse.builder()
+                    .id(question.getId())
+                    .questionText(question.getQuestionText())
+                    .correctAnswer(question.getCorrectAnswer()) // Get correct answer from question
+                    .userAnswer(answer.getAnswer()) // Get user's answer from answer
+                    .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
+                    .options(options)
+                    .tags(question.getTags())
+                    .timeSpent(answer.getTimeSpent())
+                    .isCorrect(answer.isCorrect())
+                    .optionExplanation(answer.getAnswerExplanation())
+                    .build();
+
+            answerResponses.add(answerResponse);
+        }
+
+        return TestResultResponse.builder()
+                .testId(test.getId())
+                .score(test.getScore())
+                .correctPercent((int) ((test.getScore() * 100.0) / answerResponses.size()))
+                .answerResponses(answerResponses)
+                .recommendations(test.getRecommendations())
+                .performance(test.getPerformance())
+                .referenceUrls(test.getReferenceUrls())
+                .build();
+    }
+
+    @Override
+    public List<RecentTestResponse> getRecentTests(String email, int number) {
+        Pageable pageable = PageRequest.of(0, number);
+
+        // todo check email is valid
+        List<Test> tests = testRepository.findRecentTestsByUserEmail(email, pageable);
+
+        return tests.stream().map(this::mapToRecentTestResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<QuestionResponse> getUncompletedTestQuestions(Long testId) {
+        // Find the test by ID and user
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        // Convert Test entity to QuestionResponse
+        List<QuestionResponse> questionResponses = new ArrayList<>();
+        for (Answer answer : test.getAnswers()) {
+            Question question = answer.getQuestion();
+            List<String> questionImages = question.getPassageImageUrls().stream()
+                    .map(QuestionImage::getImage)
+                    .toList();
+
+            QuestionResponse questionResponse = QuestionResponse.builder()
+                    .id(question.getId())
+                    .questionText(question.getQuestionText())
+                    .correctAnswer(question.getCorrectAnswer())
+                    .answerExplanation(question.getAnswerExplanation())
+                    .userAnswer(answer.getAnswer())
+                    .passage(question.getPassage())
+                    .passageImageUrls(questionImages)
+                    .part(Integer.parseInt(question.getPart().getName().toString().replace("PART_", "")))
+                    .options(question.getOptions().stream()
+                            .map(opt -> QuestionResponse.OptionResponse.builder()
+                                    .key(opt.getKey())
+                                    .value(opt.getValue())
+                                    .build())
+                            .collect(Collectors.toList()))
+                    .tags(question.getTags())
+                    .difficulty(question.getDifficulty())
+                    .timeSpent(answer.getTimeSpent())
+                    .build();
+
+            questionResponses.add(questionResponse);
+        }
+
+        return questionResponses;
+    }
+
+    @Override
     public List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest) {
         // Check if the request is for combine or separate parts
         if (testCountRequest.getType() == TestCountRequest.EType.COMBINE) {
@@ -161,11 +271,6 @@ public class TestServiceImpl implements ITestService {
         } else {
             return countBySeparatePartsAndPercent(testCountRequest);
         }
-    }
-
-    @Override
-    public int getTotalTests() {
-        return testRepository.findAll().size();
     }
 
     @Transactional
@@ -245,16 +350,13 @@ public class TestServiceImpl implements ITestService {
         testRepository.save(test);
 
         // Tạo danh sách Answer từ AnswerRequest
-        List<Answer> answers = new ArrayList<>();
         List<Part> parts = new ArrayList<>();
         for (UncompletedAnswerRequest uncompletedAnswerRequest : uncompletedAnswerRequests) {
             Answer answer = new Answer();
             answer.setAnswer(uncompletedAnswerRequest.getUserAnswer());
-            answer.setCorrect(uncompletedAnswerRequest.isCorrect());
             answer.setTimeSpent(uncompletedAnswerRequest.getTimeSpent());
             answer.setQuestion(questionService.findById(uncompletedAnswerRequest.getQuestionId()).orElse(null));
             answer.setTest(test);
-            answers.add(answer); // Lưu Answer vào danh sách
             // Lưu các Answer
             answerService.save(answer);
 
@@ -264,9 +366,6 @@ public class TestServiceImpl implements ITestService {
                 parts.add(part);
             }
         }
-
-        test.setAnswers(answers);
-        testRepository.save(test); // Cập nhật Test với danh sách Answer
 
         // Lưu các Part liên kết với Test
         for (Part part : parts) {
@@ -291,68 +390,47 @@ public class TestServiceImpl implements ITestService {
     }
 
     @Override
-    public TestResultResponse getTestResult(Long testId, String email) {
-        Optional<Test> testOpt = testRepository.findById(testId);
-        if (testOpt.isEmpty()) {
-            throw new RuntimeException("Test not found with ID: " + testId);
+    public void saveTestById(Long testId, TestResultResponse testResultResponse) {
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+        test.setScore(testResultResponse.getScore());
+        test.setRecommendations(testResultResponse.getRecommendations());
+        test.setPerformance(testResultResponse.getPerformance());
+        test.setReferenceUrls(testResultResponse.getReferenceUrls());
+        test.setCompletedAt(LocalDateTime.now()); // Set completed time for the test
+
+        // Lưu trước để có ID cho liên kết
+        testRepository.save(test);
+
+        // Tạo danh sách Answer từ AnswerRequest
+        for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
+            Answer answer = new Answer();
+            answer.setAnswer(answerResponse.getUserAnswer());
+            answer.setCorrect(answerResponse.isCorrect());
+            answer.setAnswerExplanation(answerResponse.getOptionExplanation());
+            answer.setTimeSpent(answerResponse.getTimeSpent());
+            answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
+            answer.setTest(test);
+            // Lưu các Answer
+            answerService.save(answer);
+            answerResponse.setAnswerId(answer.getId());
         }
 
-        Test test = testOpt.get();
+        // Set the testId in the response
+        testResultResponse.setTestId(test.getId());
 
-        // Verify that the test belongs to the user
-        if (!test.getUser().getEmail().equals(email)) {
-            throw new RuntimeException("Access denied: Test does not belong to user: " + email);
-        }
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(test.getUser().getEmail());
 
-        // Convert Test entity to TestResultResponse
-        List<TestResultResponse.AnswerResponse> answerResponses = new ArrayList<>();
-
-        for (Answer answer : test.getAnswers()) {
-            Question question = answer.getQuestion();
-
-            // Convert options to OptionResponse format
-            List<TestResultResponse.OptionResponse> options = question.getOptions().stream()
-                    .map(opt -> TestResultResponse.OptionResponse.builder()
-                            .key(opt.getKey())
-                            .value(opt.getValue())
-                            .build())
-                    .collect(Collectors.toList());
-
-            TestResultResponse.AnswerResponse answerResponse = TestResultResponse.AnswerResponse.builder()
-                    .id(question.getId())
-                    .questionText(question.getQuestionText())
-                    .correctAnswer(question.getCorrectAnswer()) // Get correct answer from question
-                    .userAnswer(answer.getAnswer()) // Get user's answer from answer
-                    .part(Integer.valueOf(question.getPart().getName().toString().replace("PART_", "")))
-                    .options(options)
-                    .tags(question.getTags())
-                    .timeSpent(answer.getTimeSpent())
-                    .isCorrect(answer.isCorrect())
-                    .optionExplanation(answer.getAnswerExplanation())
-                    .build();
-
-            answerResponses.add(answerResponse);
-        }
-
-        return TestResultResponse.builder()
-                .testId(test.getId())
-                .score(test.getScore())
-                .correctPercent((int) ((test.getScore() * 100.0) / answerResponses.size()))
-                .answerResponses(answerResponses)
-                .recommendations(test.getRecommendations())
-                .performance(test.getPerformance())
-                .referenceUrls(test.getReferenceUrls())
-                .build();
-    }
-
-    @Override
-    public List<RecentTestResponse> getRecentTests(String email, int number) {
-        Pageable pageable = PageRequest.of(0, number);
-
-        // todo check email is valid
-        List<Test> tests = testRepository.findRecentTestsByUserEmail(email, pageable);
-
-        return tests.stream().map(this::mapToRecentTestResponse).collect(Collectors.toList());
+        // Update goals for the user
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = testResultResponse.getAnswerResponses()
+                .stream()
+                .map(answerResponse -> GoalProgressUpdateRequest.builder()
+                        .part(answerResponse.getPart())
+                        .timeSpent(answerResponse.getTimeSpent())
+                        .build())
+                .toList();
+        goalService.updateGoalProgressAfterTest(test.getUser().getEmail(), goalProgressUpdateRequests);
     }
 
     @Override

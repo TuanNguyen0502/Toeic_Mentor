@@ -21,6 +21,8 @@ public interface ITestService {
 
     TestHistoryDetailResponse getTestHistoryDetailResponseById(Long id);
 
+    List<QuestionResponse> getUncompletedTestQuestions(Long testId);
+
     List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest);
 
     int getTotalTests();
@@ -33,6 +35,8 @@ public interface ITestService {
     TestResultResponse getTestResult(Long testId, String email);
 
     List<RecentTestResponse> getRecentTests(String email, int number);
+
+    void saveTestById(Long testId, TestResultResponse testResultResponse);
 
     TestStatisticResponse calculateTestStatistic(String email);
 
