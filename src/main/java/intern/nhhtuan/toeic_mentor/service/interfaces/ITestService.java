@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.UncompletedAnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,8 @@ public interface ITestService {
 
     @Transactional
     void saveTest(String email, TestResultResponse testResultResponse);
+
+    void saveUncompletedTest(String email, List<UncompletedAnswerRequest> uncompletedAnswerRequests);
 
     TestResultResponse getTestResult(Long testId, String email);
 

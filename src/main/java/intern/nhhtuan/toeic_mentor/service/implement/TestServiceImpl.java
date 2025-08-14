@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.GoalProgressUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.UncompletedAnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.*;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
@@ -170,6 +171,7 @@ public class TestServiceImpl implements ITestService {
         test.setReferenceUrls(testResultResponse.getReferenceUrls());
         test.setUser(userService.findByEmail(email));
         test.setCreatedAt(LocalDateTime.now());
+        test.setCompletedAt(LocalDateTime.now()); // Set completed time for the test
 
         // Lưu trước để có ID cho liên kết
         testRepository.save(test);
@@ -216,6 +218,62 @@ public class TestServiceImpl implements ITestService {
 
         // Update goals for the user
         List<GoalProgressUpdateRequest> goalProgressUpdateRequests = testResultResponse.getAnswerResponses()
+                .stream()
+                .map(answerResponse -> GoalProgressUpdateRequest.builder()
+                        .part(answerResponse.getPart())
+                        .timeSpent(answerResponse.getTimeSpent())
+                        .build())
+                .toList();
+        goalService.updateGoalProgressAfterTest(email, goalProgressUpdateRequests);
+    }
+
+    @Override
+    public void saveUncompletedTest(String email, List<UncompletedAnswerRequest> uncompletedAnswerRequests) {
+        Test test = new Test();
+        test.setScore(0); // Set initial score to 0 for uncompleted tests
+        test.setUser(userService.findByEmail(email));
+        test.setCreatedAt(LocalDateTime.now());
+
+        // Lưu trước để có ID cho liên kết
+        testRepository.save(test);
+
+        // Tạo danh sách Answer từ AnswerRequest
+        List<Answer> answers = new ArrayList<>();
+        List<Part> parts = new ArrayList<>();
+        for (UncompletedAnswerRequest uncompletedAnswerRequest : uncompletedAnswerRequests) {
+            Answer answer = new Answer();
+            answer.setAnswer(uncompletedAnswerRequest.getUserAnswer());
+            answer.setCorrect(uncompletedAnswerRequest.isCorrect());
+            answer.setTimeSpent(uncompletedAnswerRequest.getTimeSpent());
+            answer.setQuestion(questionService.findById(uncompletedAnswerRequest.getQuestionId()).orElse(null));
+            answer.setTest(test);
+            answers.add(answer); // Lưu Answer vào danh sách
+            // Lưu các Answer
+            answerService.save(answer);
+
+            // Lưu Part nếu chưa có
+            Part part = partService.findByName(uncompletedAnswerRequest.getPart());
+            if (part != null && !parts.contains(part)) {
+                parts.add(part);
+            }
+        }
+
+        test.setAnswers(answers);
+        testRepository.save(test); // Cập nhật Test với danh sách Answer
+
+        // Lưu các Part liên kết với Test
+        for (Part part : parts) {
+            TestPart testPart = new TestPart();
+            testPart.setTest(test);
+            testPart.setPart(part);
+            testPartService.save(testPart);
+        }
+
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(email);
+
+        // Update goals for the user
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = uncompletedAnswerRequests
                 .stream()
                 .map(answerResponse -> GoalProgressUpdateRequest.builder()
                         .part(answerResponse.getPart())
@@ -347,8 +405,8 @@ public class TestServiceImpl implements ITestService {
     }
 
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
-    private void deleteExpiredTests() {
-        List<Long> idsToDelete = testRepository.getUncompletedTestIdsCreatedWithinLast7Days();
+    public void deleteExpiredTests() {
+        List<Long> idsToDelete = testRepository.getUncompletedTestIdsCreatedWithinLast7Days(LocalDateTime.now().minusDays(7));
         if (!idsToDelete.isEmpty()) {
             List<Test> testsToDelete = testRepository.findAllById(idsToDelete);
             testRepository.deleteAll(testsToDelete);
