@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.controller.user;
 
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerExplanationRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.AnswerRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.UncompletedAnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.AnswerExplanationResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.RecentTestResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
@@ -92,5 +93,13 @@ public class TestController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
         return ResponseEntity.ok(testService.calculateTestStatistic(email));
+    }
+
+    @PostMapping("/uncompleted-test")
+    public ResponseEntity<Void> saveUncompletedTest(@RequestBody List<UncompletedAnswerRequest> uncompletedAnswerRequests) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+        testService.saveUncompletedTest(email, uncompletedAnswerRequests);
+        return ResponseEntity.ok().build();
     }
 }
