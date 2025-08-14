@@ -1,6 +1,5 @@
 package intern.nhhtuan.toeic_mentor.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import lombok.*;
 
@@ -14,8 +13,6 @@ public class UncompletedAnswerRequest {
     private Integer part;
     private List<TestResultResponse.OptionResponse> options;
     private int timeSpent; // Time spent on the question in seconds
-    @JsonProperty("isCorrect")
-    private boolean isCorrect;
 
     @Data
     @AllArgsConstructor
