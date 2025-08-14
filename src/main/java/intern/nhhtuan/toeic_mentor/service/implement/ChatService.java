@@ -395,8 +395,13 @@ public class ChatService implements IChatService {
                 .call()
                 .entity(TestResultResponse.class);
         assert testResultResponse != null;
+        testResultResponse.setScore(0); // Initialize score to 0
         for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
             answerResponse.setCorrect(Objects.equals(answerResponse.getUserAnswer(), answerResponse.getCorrectAnswer()));
+            if (answerResponse.isCorrect()) {
+                // If the answer is correct, increment the score
+                testResultResponse.setScore(testResultResponse.getScore() + 1);
+            }
         }
         return testResultResponse;
     }
