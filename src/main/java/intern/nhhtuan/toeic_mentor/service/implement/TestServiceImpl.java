@@ -47,6 +47,7 @@ public class TestServiceImpl implements ITestService {
     public Page<TestHistoryResponse> getTestHistoryResponses(String email,
                                                              LocalDateTime createdAtStart,
                                                              LocalDateTime createdAtEnd,
+                                                             Boolean completed,
                                                              int page,
                                                              int size,
                                                              String sortBy,
@@ -60,6 +61,9 @@ public class TestServiceImpl implements ITestService {
         }
         if (createdAtStart != null || createdAtEnd != null) {
             specification = specification.and(TestSpecification.createdAtBetween(createdAtStart, createdAtEnd));
+        }
+        if (completed != null) {
+            specification = specification.and(TestSpecification.completed(completed));
         }
 
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
@@ -81,7 +85,10 @@ public class TestServiceImpl implements ITestService {
                             .totalQuestions(totalQuestions)
                             .parts(parts.isEmpty() ? "" : parts)
                             .timeSpent(timeSpent)
-                            .doneAt(test.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                            .completedAt(test.getCompletedAt() != null
+                                    ? test.getCompletedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                    : "Not completed")
+                            .createdAt(test.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                             .build();
                 });
     }
