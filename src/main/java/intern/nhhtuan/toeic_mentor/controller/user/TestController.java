@@ -52,6 +52,19 @@ public class TestController {
         return testResultResponse;
     }
 
+    @PostMapping("/results/{testId}")
+    public TestResultResponse submitTest(@PathVariable Long testId, @RequestBody List<AnswerRequest> answerRequests) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Determine the email of the authenticated user or use "anonymous" if not authenticated
+        String email = authentication != null && authentication.isAuthenticated() ? authentication.getName() : "anonymous";
+
+        TestResultResponse testResultResponse = chatService.analyzeTestResult(answerRequests);
+        // Save the test results to the database with the existing testId
+        testService.saveTestById(testId, testResultResponse);
+
+        return testResultResponse;
+    }
+
     @GetMapping("/{testId}/pdf")
     public ResponseEntity<byte[]> downloadTestResultPdf(@PathVariable Long testId) {
         try {
