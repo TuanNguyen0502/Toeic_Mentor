@@ -1,5 +1,6 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
+import intern.nhhtuan.toeic_mentor.dto.request.GoalProgressUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.*;
 import intern.nhhtuan.toeic_mentor.entity.*;
@@ -214,7 +215,14 @@ public class TestServiceImpl implements ITestService {
         studyStreakService.updateCurrentStreak(email);
 
         // Update goals for the user
-        goalService.updateGoalProgressAfterTest(email, testResultResponse);
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = testResultResponse.getAnswerResponses()
+                .stream()
+                .map(answerResponse -> GoalProgressUpdateRequest.builder()
+                        .part(answerResponse.getPart())
+                        .timeSpent(answerResponse.getTimeSpent())
+                        .build())
+                .toList();
+        goalService.updateGoalProgressAfterTest(email, goalProgressUpdateRequests);
     }
 
     @Override
