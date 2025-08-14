@@ -1031,11 +1031,61 @@
 
     // Warn user before leaving/reloading the page during the test
     window.addEventListener('beforeunload', function (e) {
-        const message = 'Are you sure you want to leave? Your test progress will be lost!';
-        e.preventDefault();
-        e.returnValue = message;
-        return message;
+        // Update time spent on current question before leaving
+        updateTimeSpentOnCurrentQuestion();
+
+        // Only show prompt and save data if test is in progress (not completed)
+        if (document.getElementById('testForm').style.display !== 'none') {
+            const message = 'Are you sure you want to leave?';
+            e.preventDefault();
+            e.returnValue = message;
+
+            // Collect uncompleted test data
+            saveUncompletedTest();
+
+            return message;
+        }
     });
+
+    // Function to save uncompleted test data
+    function saveUncompletedTest() {
+        // Create array to hold all uncompleted answer requests
+        const uncompletedAnswers = [];
+
+        // Iterate through all questions
+        questions.forEach((question, index) => {
+            // Get user's answer for this question (or empty string if not answered)
+            const userAnswer = userAnswers[index] || '';
+
+            // Prepare the request object
+            const answerRequest = {
+                questionId: question.id,
+                userAnswer: userAnswer,
+                part: question.part,
+                options: question.options ? question.options.map(opt => ({
+                    key: opt.key,
+                    value: opt.value
+                })) : [],
+                timeSpent: timeSpentOnQuestions[index] || 0,
+                isCorrect: false // We don't know if it's correct yet
+            };
+
+            uncompletedAnswers.push(answerRequest);
+        });
+
+        // Send the data to the server
+        fetch('/tests/uncompleted-test', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(uncompletedAnswers),
+            // Use keepalive to ensure the request completes even if the page is unloading
+            keepalive: true
+        }).catch(err => {
+            console.error('Failed to save uncompleted test:', err);
+        });
+    }
 
     // Modal logic
     (function () {
