@@ -22,10 +22,11 @@ public interface TestRepository extends JpaRepository<Test, Long> {
     Page<Test> findAll(Specification<Test> spec, Pageable pageable);
 
     @Query("""
-            SELECT t.id
-            FROM Test t
-            WHERE t.completedAt IS NULL
-              AND t.createdAt >= CURRENT_TIMESTAMP - 7
-            """)
-    List<Long> getUncompletedTestIdsCreatedWithinLast7Days();
+       SELECT t.id
+       FROM Test t
+       WHERE t.completedAt IS NULL
+         AND t.createdAt >= :sevenDaysAgo
+       """)
+    List<Long> getUncompletedTestIdsCreatedWithinLast7Days(@Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
+
 }
