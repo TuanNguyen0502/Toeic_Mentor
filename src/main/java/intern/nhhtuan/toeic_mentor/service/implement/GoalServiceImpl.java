@@ -1,9 +1,9 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
 import intern.nhhtuan.toeic_mentor.dto.request.GoalCreateRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.GoalProgressUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.GoalUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.GoalResponse;
-import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
 import intern.nhhtuan.toeic_mentor.entity.Goal;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGoalStatus;
 import intern.nhhtuan.toeic_mentor.entity.enums.EGoalType;
@@ -208,7 +208,7 @@ public class GoalServiceImpl implements IGoalService {
 
     @Async
     @Override
-    public void updateGoalProgressAfterTest(String email, TestResultResponse testResultResponse) {
+    public void updateGoalProgressAfterTest(String email, List<GoalProgressUpdateRequest> goalProgressUpdateRequests) {
         // This method updates the goal progress after a test result is submitted
         // It will find the goal for the specific part and update its actual value accordingly
 
@@ -242,18 +242,18 @@ public class GoalServiceImpl implements IGoalService {
                 .toList();
 
         // Get distinct parts from the test result
-        List<Integer> parts = testResultResponse.getAnswerResponses()
+        List<Integer> parts = goalProgressUpdateRequests
                 .stream()
-                .map(TestResultResponse.AnswerResponse::getPart)
+                .map(GoalProgressUpdateRequest::getPart)
                 .distinct()
                 .toList();
 
         // Update minute goals
         for (Goal goal : minuteGoals) {
             int minutesSpent = 0;
-            for (TestResultResponse.AnswerResponse answer : testResultResponse.getAnswerResponses()) {
+            for (GoalProgressUpdateRequest goalProgressUpdateRequest : goalProgressUpdateRequests) {
                 // Calculate the total time spent in seconds for each answer
-                minutesSpent += answer.getTimeSpent();
+                minutesSpent += goalProgressUpdateRequest.getTimeSpent();
             }
             // Increment the actual value by the total time spent in minutes
             goal.setActualValue(goal.getActualValue() + minutesSpent / 60);
@@ -280,7 +280,7 @@ public class GoalServiceImpl implements IGoalService {
                 // Check if the goal's part is in the list of parts from the test result
                 if (parts.contains(goal.getPart())) {
                     // Count the number of answers for the specific part
-                    long questionCount = testResultResponse.getAnswerResponses()
+                    long questionCount = goalProgressUpdateRequests
                             .stream()
                             .filter(answer -> answer.getPart().equals(goal.getPart()))
                             .count();

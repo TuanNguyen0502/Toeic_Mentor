@@ -143,7 +143,7 @@ public class RatingEnabledChatMemoryRepository implements ChatMemoryRepository {
         );
     }
 
-    private void saveMessage(String conversationId, Message message) {
+    public void saveMessage(String conversationId, Message message) {
         String messageId;
 
         if (message instanceof RatableMessage ratableMessage) {

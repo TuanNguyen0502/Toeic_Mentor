@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import intern.nhhtuan.toeic_mentor.dto.request.GoalCreateRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.GoalProgressUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.GoalUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.GoalResponse;
 import intern.nhhtuan.toeic_mentor.dto.response.TestResultResponse;
@@ -22,5 +23,5 @@ public interface IGoalService {
     boolean deleteGoal(Long id);
 
     @Async
-    void updateGoalProgressAfterTest(String email, TestResultResponse testResultResponse);
+    void updateGoalProgressAfterTest(String email, List<GoalProgressUpdateRequest> goalProgressUpdateRequests);
 }

@@ -37,7 +37,7 @@ public class Test {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "completed_at")
-    private LocalDateTime completedAt = LocalDateTime.now();
+    private LocalDateTime completedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

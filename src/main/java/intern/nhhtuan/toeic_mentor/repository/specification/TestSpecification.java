@@ -1,6 +1,5 @@
 package intern.nhhtuan.toeic_mentor.repository.specification;
 
-import intern.nhhtuan.toeic_mentor.entity.ChatbotRating;
 import intern.nhhtuan.toeic_mentor.entity.Test;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -24,5 +23,14 @@ public class TestSpecification {
     public static Specification<Test> belongsToUser(Long userId) {
         return (root, query, criteriaBuilder) ->
                 userId == null ? null : criteriaBuilder.equal(root.get("user").get("id"), userId);
+    }
+
+    public static Specification<Test> completed(Boolean completed) {
+        return (root, query, criteriaBuilder) -> {
+            if (completed == null) {
+                return null; // No filter applied
+            }
+            return completed ? criteriaBuilder.isNotNull(root.get("completedAt")) : criteriaBuilder.isNull(root.get("completedAt"));
+        };
     }
 }

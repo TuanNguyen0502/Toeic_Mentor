@@ -1,6 +1,8 @@
 package intern.nhhtuan.toeic_mentor.service.implement;
 
+import intern.nhhtuan.toeic_mentor.dto.request.GoalProgressUpdateRequest;
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.UncompletedAnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.*;
 import intern.nhhtuan.toeic_mentor.entity.*;
 import intern.nhhtuan.toeic_mentor.entity.enums.EPart;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +47,7 @@ public class TestServiceImpl implements ITestService {
     public Page<TestHistoryResponse> getTestHistoryResponses(String email,
                                                              LocalDateTime createdAtStart,
                                                              LocalDateTime createdAtEnd,
+                                                             Boolean completed,
                                                              int page,
                                                              int size,
                                                              String sortBy,
@@ -57,6 +61,9 @@ public class TestServiceImpl implements ITestService {
         }
         if (createdAtStart != null || createdAtEnd != null) {
             specification = specification.and(TestSpecification.createdAtBetween(createdAtStart, createdAtEnd));
+        }
+        if (completed != null) {
+            specification = specification.and(TestSpecification.completed(completed));
         }
 
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
@@ -78,7 +85,10 @@ public class TestServiceImpl implements ITestService {
                             .totalQuestions(totalQuestions)
                             .parts(parts.isEmpty() ? "" : parts)
                             .timeSpent(timeSpent)
-                            .doneAt(test.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                            .completedAt(test.getCompletedAt() != null
+                                    ? test.getCompletedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                    : "Not completed")
+                            .createdAt(test.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                             .build();
                 });
     }
@@ -144,76 +154,8 @@ public class TestServiceImpl implements ITestService {
     }
 
     @Override
-    public List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest) {
-        // Check if the request is for combine or separate parts
-        if (testCountRequest.getType() == TestCountRequest.EType.COMBINE) {
-            return countByCombinePartsAndPercent(testCountRequest);
-        } else {
-            return countBySeparatePartsAndPercent(testCountRequest);
-        }
-    }
-
-    @Override
     public int getTotalTests() {
         return testRepository.findAll().size();
-    }
-
-    @Transactional
-    @Override
-    public void saveTest(String email, TestResultResponse testResultResponse) {
-        Test test = new Test();
-        test.setScore(testResultResponse.getScore());
-        test.setRecommendations(testResultResponse.getRecommendations());
-        test.setPerformance(testResultResponse.getPerformance());
-        test.setReferenceUrls(testResultResponse.getReferenceUrls());
-        test.setUser(userService.findByEmail(email));
-        test.setCreatedAt(LocalDateTime.now());
-
-        // Lưu trước để có ID cho liên kết
-        testRepository.save(test);
-
-        // Tạo danh sách Answer từ AnswerRequest
-        List<Answer> answers = new ArrayList<>();
-        List<Part> parts = new ArrayList<>();
-        for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
-            Answer answer = new Answer();
-            answer.setAnswer(answerResponse.getUserAnswer());
-            answer.setCorrect(answerResponse.isCorrect());
-            answer.setAnswerExplanation(answerResponse.getOptionExplanation());
-            answer.setTimeSpent(answerResponse.getTimeSpent());
-            answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
-            answer.setTest(test);
-            answers.add(answer); // Lưu Answer vào danh sách
-            // Lưu các Answer
-            answerService.save(answer);
-            answerResponse.setAnswerId(answer.getId());
-
-            // Lưu Part nếu chưa có
-            Part part = partService.findByName(answerResponse.getPart());
-            if (part != null && !parts.contains(part)) {
-                parts.add(part);
-            }
-        }
-
-        test.setAnswers(answers);
-        testRepository.save(test); // Cập nhật Test với danh sách Answer
-
-        // Lưu các Part liên kết với Test
-        for (Part part : parts) {
-            TestPart testPart = new TestPart();
-            testPart.setTest(test);
-            testPart.setPart(part);
-            testPartService.save(testPart);
-        }
-
-        // Set the testId in the response
-        testResultResponse.setTestId(test.getId());
-
-        // Update study streak for the user
-        studyStreakService.updateCurrentStreak(email);
-
-        // Update goals for the user
-        goalService.updateGoalProgressAfterTest(email, testResultResponse);
     }
 
     @Override
@@ -282,6 +224,254 @@ public class TestServiceImpl implements ITestService {
     }
 
     @Override
+    public List<QuestionResponse> getUncompletedTestQuestions(Long testId) {
+        // Find the test by ID and user
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        // Convert Test entity to QuestionResponse
+        List<QuestionResponse> questionResponses = new ArrayList<>();
+        for (Answer answer : test.getAnswers()) {
+            Question question = answer.getQuestion();
+            List<String> questionImages = question.getPassageImageUrls().stream()
+                    .map(QuestionImage::getImage)
+                    .toList();
+
+            QuestionResponse questionResponse = QuestionResponse.builder()
+                    .id(question.getId())
+                    .questionText(question.getQuestionText())
+                    .correctAnswer(question.getCorrectAnswer())
+                    .answerExplanation(question.getAnswerExplanation())
+                    .userAnswer(answer.getAnswer())
+                    .passage(question.getPassage())
+                    .passageImageUrls(questionImages)
+                    .part(Integer.parseInt(question.getPart().getName().toString().replace("PART_", "")))
+                    .options(question.getOptions().stream()
+                            .map(opt -> QuestionResponse.OptionResponse.builder()
+                                    .key(opt.getKey())
+                                    .value(opt.getValue())
+                                    .build())
+                            .collect(Collectors.toList()))
+                    .tags(question.getTags())
+                    .difficulty(question.getDifficulty())
+                    .timeSpent(answer.getTimeSpent())
+                    .build();
+
+            questionResponses.add(questionResponse);
+        }
+
+        return questionResponses;
+    }
+
+    @Override
+    public List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest) {
+        // Check if the request is for combine or separate parts
+        if (testCountRequest.getType() == TestCountRequest.EType.COMBINE) {
+            return countByCombinePartsAndPercent(testCountRequest);
+        } else {
+            return countBySeparatePartsAndPercent(testCountRequest);
+        }
+    }
+
+    @Transactional
+    @Override
+    public void saveTest(String email, TestResultResponse testResultResponse) {
+        Test test = new Test();
+        test.setScore(testResultResponse.getScore());
+        test.setRecommendations(testResultResponse.getRecommendations());
+        test.setPerformance(testResultResponse.getPerformance());
+        test.setReferenceUrls(testResultResponse.getReferenceUrls());
+        test.setUser(userService.findByEmail(email));
+        test.setCreatedAt(LocalDateTime.now());
+        test.setCompletedAt(LocalDateTime.now()); // Set completed time for the test
+
+        // Lưu trước để có ID cho liên kết
+        testRepository.save(test);
+
+        // Tạo danh sách Answer từ AnswerRequest
+        List<Answer> answers = new ArrayList<>();
+        List<Part> parts = new ArrayList<>();
+        for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
+            Answer answer = new Answer();
+            answer.setAnswer(answerResponse.getUserAnswer());
+            answer.setCorrect(answerResponse.isCorrect());
+            answer.setAnswerExplanation(answerResponse.getOptionExplanation());
+            answer.setTimeSpent(answerResponse.getTimeSpent());
+            answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
+            answer.setTest(test);
+            answers.add(answer); // Lưu Answer vào danh sách
+            // Lưu các Answer
+            answerService.save(answer);
+            answerResponse.setAnswerId(answer.getId());
+
+            // Lưu Part nếu chưa có
+            Part part = partService.findByName(answerResponse.getPart());
+            if (part != null && !parts.contains(part)) {
+                parts.add(part);
+            }
+        }
+
+        test.setAnswers(answers);
+        testRepository.save(test); // Cập nhật Test với danh sách Answer
+
+        // Lưu các Part liên kết với Test
+        for (Part part : parts) {
+            TestPart testPart = new TestPart();
+            testPart.setTest(test);
+            testPart.setPart(part);
+            testPartService.save(testPart);
+        }
+
+        // Set the testId in the response
+        testResultResponse.setTestId(test.getId());
+
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(email);
+
+        // Update goals for the user
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = testResultResponse.getAnswerResponses()
+                .stream()
+                .map(answerResponse -> GoalProgressUpdateRequest.builder()
+                        .part(answerResponse.getPart())
+                        .timeSpent(answerResponse.getTimeSpent())
+                        .build())
+                .toList();
+        goalService.updateGoalProgressAfterTest(email, goalProgressUpdateRequests);
+    }
+
+    @Override
+    public void saveTestById(Long testId, TestResultResponse testResultResponse) {
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+        test.setScore(testResultResponse.getScore());
+        test.setRecommendations(testResultResponse.getRecommendations());
+        test.setPerformance(testResultResponse.getPerformance());
+        test.setReferenceUrls(testResultResponse.getReferenceUrls());
+        test.setCompletedAt(LocalDateTime.now()); // Set completed time for the test
+
+        // Lưu trước để có ID cho liên kết
+        testRepository.save(test);
+
+        // Xóa các Answer cũ nếu có
+        answerService.deleteAllByTestId(testId);
+
+        // Tạo danh sách Answer từ AnswerRequest
+        for (TestResultResponse.AnswerResponse answerResponse : testResultResponse.getAnswerResponses()) {
+            Answer answer = new Answer();
+            answer.setAnswer(answerResponse.getUserAnswer());
+            answer.setCorrect(answerResponse.isCorrect());
+            answer.setAnswerExplanation(answerResponse.getOptionExplanation());
+            answer.setTimeSpent(answerResponse.getTimeSpent());
+            answer.setQuestion(questionService.findById(answerResponse.getId()).orElse(null));
+            answer.setTest(test);
+            // Lưu các Answer
+            answerService.save(answer);
+            answerResponse.setAnswerId(answer.getId());
+        }
+
+        // Set the testId in the response
+        testResultResponse.setTestId(test.getId());
+
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(test.getUser().getEmail());
+
+        // Update goals for the user
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = testResultResponse.getAnswerResponses()
+                .stream()
+                .map(answerResponse -> GoalProgressUpdateRequest.builder()
+                        .part(answerResponse.getPart())
+                        .timeSpent(answerResponse.getTimeSpent())
+                        .build())
+                .toList();
+        goalService.updateGoalProgressAfterTest(test.getUser().getEmail(), goalProgressUpdateRequests);
+    }
+
+    @Override
+    public void saveUncompletedTest(String email, List<UncompletedAnswerRequest> uncompletedAnswerRequests) {
+        Test test = new Test();
+        test.setScore(0); // Set initial score to 0 for uncompleted tests
+        test.setUser(userService.findByEmail(email));
+        test.setCreatedAt(LocalDateTime.now());
+
+        // Lưu trước để có ID cho liên kết
+        testRepository.save(test);
+
+        // Tạo danh sách Answer từ AnswerRequest
+        List<Part> parts = new ArrayList<>();
+        for (UncompletedAnswerRequest uncompletedAnswerRequest : uncompletedAnswerRequests) {
+            Answer answer = new Answer();
+            answer.setAnswer(uncompletedAnswerRequest.getUserAnswer());
+            answer.setTimeSpent(uncompletedAnswerRequest.getTimeSpent());
+            answer.setQuestion(questionService.findById(uncompletedAnswerRequest.getQuestionId()).orElse(null));
+            answer.setTest(test);
+            // Lưu các Answer
+            answerService.save(answer);
+
+            // Lưu Part nếu chưa có
+            Part part = partService.findByName(uncompletedAnswerRequest.getPart());
+            if (part != null && !parts.contains(part)) {
+                parts.add(part);
+            }
+        }
+
+        // Lưu các Part liên kết với Test
+        for (Part part : parts) {
+            TestPart testPart = new TestPart();
+            testPart.setTest(test);
+            testPart.setPart(part);
+            testPartService.save(testPart);
+        }
+
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(email);
+
+        // Update goals for the user
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = uncompletedAnswerRequests
+                .stream()
+                .map(answerResponse -> GoalProgressUpdateRequest.builder()
+                        .part(answerResponse.getPart())
+                        .timeSpent(answerResponse.getTimeSpent())
+                        .build())
+                .toList();
+        goalService.updateGoalProgressAfterTest(email, goalProgressUpdateRequests);
+    }
+
+    @Override
+    public void saveUncompletedTestById(Long testId, List<UncompletedAnswerRequest> uncompletedAnswerRequests) {
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        // Xóa các Answer cũ nếu có
+        answerService.deleteAllByTestId(testId);
+
+        // Tạo danh sách Answer mới
+        List<Answer> newAnswers = uncompletedAnswerRequests.stream()
+                .map(req -> {
+                    Answer answer = new Answer();
+                    answer.setAnswer(req.getUserAnswer());
+                    answer.setTimeSpent(req.getTimeSpent());
+                    answer.setQuestion(questionService.findById(req.getQuestionId()).orElse(null));
+                    answer.setTest(test);
+                    return answer;
+                })
+                .toList();
+        answerService.saveAll(newAnswers);
+
+        // Update study streak for the user
+        studyStreakService.updateCurrentStreak(test.getUser().getEmail());
+
+        // Update goals for the user
+        List<GoalProgressUpdateRequest> goalProgressUpdateRequests = uncompletedAnswerRequests
+                .stream()
+                .map(answerResponse -> GoalProgressUpdateRequest.builder()
+                        .part(answerResponse.getPart())
+                        .timeSpent(answerResponse.getTimeSpent())
+                        .build())
+                .toList();
+        goalService.updateGoalProgressAfterTest(test.getUser().getEmail(), goalProgressUpdateRequests);
+    }
+
+    @Override
     public TestStatisticResponse calculateTestStatistic(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
@@ -335,6 +525,22 @@ public class TestServiceImpl implements ITestService {
                 .highestScore(highestScore)
                 .totalTimeSpent(totalTimeMinutes)
                 .build();
+    }
+
+    @Override
+    public void deleteTestById(Long testId) {
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+        testRepository.delete(test);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
+    public void deleteExpiredTests() {
+        List<Long> idsToDelete = testRepository.getUncompletedTestIdsCreatedWithinLast7Days(LocalDateTime.now().minusDays(7));
+        if (!idsToDelete.isEmpty()) {
+            List<Test> testsToDelete = testRepository.findAllById(idsToDelete);
+            testRepository.deleteAll(testsToDelete);
+        }
     }
 
     private List<TestCountResponse> countByCombinePartsAndPercent(TestCountRequest testCountRequest) {

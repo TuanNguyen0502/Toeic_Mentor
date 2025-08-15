@@ -18,15 +18,23 @@
         <div class="card mb-4">
             <div class="card-body">
                 <form th:action="@{/test-histories}" method="get" class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="createdAtStart" class="form-label">From Date</label>
                         <input type="datetime-local" class="form-control" id="createdAtStart" name="createdAtStart"
                                th:value="${param.createdAtStart}">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="createdAtEnd" class="form-label">To Date</label>
                         <input type="datetime-local" class="form-control" id="createdAtEnd" name="createdAtEnd"
                                th:value="${param.createdAtEnd}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="completed" class="form-label">Status</label>
+                        <select class="form-select" id="completed" name="completed">
+                            <option value="" th:selected="${param.completed == null}">All</option>
+                            <option value="true" th:selected="${param.completed != null && param.completed[0] == 'true'}">Completed</option>
+                            <option value="false" th:selected="${param.completed != null && param.completed[0] == 'false'}">Uncompleted</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label for="sortBy" class="form-label">Sort By</label>
@@ -67,6 +75,7 @@
                                     <th>Score</th>
                                     <th>Parts</th>
                                     <th>Time Spent</th>
+                                    <th>Date Taken</th>
                                     <th>Date Completed</th>
                                     <th>Actions</th>
                                 </tr>
@@ -85,9 +94,14 @@
                                     </td>
                                     <td th:text="${history.parts}"></td>
                                     <td th:text="${history.timeSpent + ' sec'}"></td>
-                                    <td th:text="${history.doneAt}"></td>
+                                    <td th:text="${history.createdAt}"></td>
+                                    <td th:text="${history.completedAt}"></td>
                                     <td>
-                                        <a th:href="@{'/test-histories/' + ${history.id}}" class="btn btn-sm btn-primary">View Details</a>
+                                        <a th:if="${history.completedAt != 'Not completed'}" th:href="@{'/test-histories/' + ${history.id}}" class="btn btn-sm btn-primary">View Details</a>
+                                        <a th:unless="${history.completedAt != 'Not completed'}" th:href="@{'/test-histories/take-test/' + ${history.id}}" class="btn btn-sm btn-primary">Continue Test</a>
+                                        <button class="btn btn-sm btn-danger"
+                                                onclick="confirmDelete(this)"
+                                                th:attr="data-test-id=${history.id}">Delete</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -99,13 +113,13 @@
                         <ul class="pagination justify-content-center">
                             <li class="page-item" th:classappend="${testHistories.number == 0 ? 'disabled' : ''}">
                                 <a class="page-link"
-                                   th:href="@{/test-histories(page=0, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}">
+                                   th:href="@{/test-histories(page=0, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}">
                                    First
                                 </a>
                             </li>
                             <li class="page-item" th:classappend="${testHistories.number == 0 ? 'disabled' : ''}">
                                 <a class="page-link"
-                                   th:href="@{/test-histories(page=${testHistories.number - 1}, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}">
+                                   th:href="@{/test-histories(page=${testHistories.number - 1}, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}">
                                    Previous
                                 </a>
                             </li>
@@ -114,19 +128,19 @@
                                 th:if="${i >= testHistories.number - 2 && i <= testHistories.number + 2}"
                                 th:classappend="${i == testHistories.number ? 'active' : ''}">
                                 <a class="page-link"
-                                   th:href="@{/test-histories(page=${i}, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}"
+                                   th:href="@{/test-histories(page=${i}, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}"
                                    th:text="${i + 1}"></a>
                             </li>
 
                             <li class="page-item" th:classappend="${testHistories.number == testHistories.totalPages - 1 ? 'disabled' : ''}">
                                 <a class="page-link"
-                                   th:href="@{/test-histories(page=${testHistories.number + 1}, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}">
+                                   th:href="@{/test-histories(page=${testHistories.number + 1}, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}">
                                    Next
                                 </a>
                             </li>
                             <li class="page-item" th:classappend="${testHistories.number == testHistories.totalPages - 1 ? 'disabled' : ''}">
                                 <a class="page-link"
-                                   th:href="@{/test-histories(page=${testHistories.totalPages - 1}, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}">
+                                   th:href="@{/test-histories(page=${testHistories.totalPages - 1}, size=${testHistories.size}, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}">
                                    Last
                                 </a>
                             </li>
@@ -140,10 +154,10 @@
                                 Show <span th:text="${testHistories.size}"></span> per page
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <li><a class="dropdown-item" th:href="@{/test-histories(page=0, size=5, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}">5</a></li>
-                                <li><a class="dropdown-item" th:href="@{/test-histories(page=0, size=10, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}">10</a></li>
-                                <li><a class="dropdown-item" th:href="@{/test-histories(page=0, size=20, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}">20</a></li>
-                                <li><a class="dropdown-item" th:href="@{/test-histories(page=0, size=50, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd})}">50</a></li>
+                                <li><a class="dropdown-item" th:href="@{/test-histories(page=0, size=5, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}">5</a></li>
+                                <li><a class="dropdown-item" th:href="@{/test-histories(page=0, size=10, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}">10</a></li>
+                                <li><a class="dropdown-item" th:href="@{/test-histories(page=0, size=20, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}">20</a></li>
+                                <li><a class="dropdown-item" th:href="@{/test-histories(page=0, size=50, sortBy=${param.sortBy}, direction=${param.direction}, createdAtStart=${param.createdAtStart}, createdAtEnd=${param.createdAtEnd}, completed=${param.completed})}">50</a></li>
                             </ul>
                         </div>
                     </div>
@@ -165,4 +179,15 @@
 <!-- Javascript -->
 <div th:insert="~{user/fragments/script::script}"></div>
 
+<!-- Custom JavaScript for Test History -->
+<script>
+    function confirmDelete(button) {
+        const testId = button.getAttribute('data-test-id');
+        if (confirm('Are you sure you want to delete this test history? This action cannot be undone.')) {
+            // Redirect to the delete endpoint
+            window.location.href = `/test-histories/delete/${testId}`;
+        }
+    }
+</script>
+</body>
 </html>

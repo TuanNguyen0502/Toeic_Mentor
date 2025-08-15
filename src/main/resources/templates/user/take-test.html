@@ -400,6 +400,8 @@
     const questions = /*[[${questions}]]*/ [];
     // Set default test duration (2 hours) if not provided
     const testDuration = 120; // in minutes
+    // Get testId parameter (will be non-null when resuming an uncompleted test)
+    const uncompletedTestId = /*[[${testId}]]*/ null;
 </script>
 
 <script>
@@ -486,7 +488,7 @@
         }
     }
 
-    // Modified renderQuestions to include flag button
+    // Modified renderQuestions to include flag button and handle existing userAnswers and timeSpent
     function renderQuestions() {
         const container = document.getElementById('questionsContainer');
         container.innerHTML = '';
@@ -560,10 +562,13 @@
             // Create options
             let optionsHtml = '<div class="options-container">';
             question.options.forEach(option => {
+                // Check if this option matches the existing userAnswer
+                const isSelected = question.userAnswer !== null && question.userAnswer === option.key;
+
                 optionsHtml += `
                     <div class="mb-2">
                         <input type="radio" name="question-${index}" id="q${index}-${option.key}"
-                            value="${option.key}" class="option-input">
+                            value="${option.key}" class="option-input" ${isSelected ? 'checked' : ''}>
                         <label for="q${index}-${option.key}" class="option-label">
                             <span class="font-medium">${option.key}:</span> ${option.value}
                         </label>
@@ -601,8 +606,15 @@
                 });
             }
 
+            // Set timeSpent if it exists in the question
+            if (question.timeSpent !== null && question.timeSpent !== undefined) {
+                timeSpentOnQuestions[index] = question.timeSpent;
+            }
 
-
+            // If question has a userAnswer, add it to the userAnswers object for UI tracking
+            if (question.userAnswer !== null && question.userAnswer !== undefined) {
+                userAnswers[index] = question.userAnswer;
+            }
 
             // Initially hide the question
             questionElement.style.display = 'none';
@@ -751,6 +763,9 @@
 
     // Submit test function
     function submitTest() {
+        // Set testSubmitted flag to true
+        testSubmitted = true;
+
         updateTimeSpentOnCurrentQuestion(); // Record time spent on final question
         // Check if all questions are answered
         const unanswered = Array.from(document.querySelectorAll('.question-container')).some(qBlock => {
@@ -793,7 +808,7 @@
         document.getElementById('testForm').classList.add('hidden');
 
         // Send answers to backend
-        fetch('/tests/results', {
+        fetch('/tests/results' + (uncompletedTestId ? `/${uncompletedTestId}` : ''), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(answerRequests)
@@ -1029,13 +1044,61 @@
         window.location.href = '/chat';
     }
 
+    // Flag to track if test has been submitted
+    let testSubmitted = false;
+
     // Warn user before leaving/reloading the page during the test
     window.addEventListener('beforeunload', function (e) {
-        const message = 'Are you sure you want to leave? Your test progress will be lost!';
-        e.preventDefault();
-        e.returnValue = message;
-        return message;
+        // Update time spent on current question before leaving
+        updateTimeSpentOnCurrentQuestion();
+
+        // Only show prompt and save data if test is in progress (not completed and not submitted)
+        if (document.getElementById('testForm').style.display !== 'none' && !testSubmitted) {
+            const message = 'Are you sure you want to leave?';
+            e.preventDefault();
+            e.returnValue = message;
+
+            // Collect uncompleted test data
+            saveUncompletedTest();
+
+            return message;
+        }
     });
+
+    // Function to save uncompleted test data
+    function saveUncompletedTest() {
+        // Create array to hold all uncompleted answer requests
+        const uncompletedAnswers = [];
+
+        // Iterate through all questions
+        questions.forEach((question, index) => {
+            // Get user's answer for this question (or empty string if not answered)
+            const userAnswer = userAnswers[index] || '';
+
+            // Prepare the request object
+            const answerRequest = {
+                questionId: question.id,
+                userAnswer: userAnswer,
+                part: question.part,
+                timeSpent: timeSpentOnQuestions[index] || 0,
+            };
+
+            uncompletedAnswers.push(answerRequest);
+        });
+
+        // Send the data to the server
+        fetch('/tests/uncompleted-test' + (uncompletedTestId ? `/${uncompletedTestId}` : ''), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(uncompletedAnswers),
+            // Use keepalive to ensure the request completes even if the page is unloading
+            keepalive: true
+        }).catch(err => {
+            console.error('Failed to save uncompleted test:', err);
+        });
+    }
 
     // Modal logic
     (function () {

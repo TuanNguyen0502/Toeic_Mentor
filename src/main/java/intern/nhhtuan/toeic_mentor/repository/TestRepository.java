@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -19,4 +20,13 @@ public interface TestRepository extends JpaRepository<Test, Long> {
     List<Test> findAllByUser(User user);
 
     Page<Test> findAll(Specification<Test> spec, Pageable pageable);
+
+    @Query("""
+       SELECT t.id
+       FROM Test t
+       WHERE t.completedAt IS NULL
+         AND t.createdAt >= :sevenDaysAgo
+       """)
+    List<Long> getUncompletedTestIdsCreatedWithinLast7Days(@Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
+
 }

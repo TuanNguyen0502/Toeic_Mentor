@@ -2,6 +2,7 @@ package intern.nhhtuan.toeic_mentor.repository;
 
 import intern.nhhtuan.toeic_mentor.dto.QuestionAnswerStats;
 import intern.nhhtuan.toeic_mentor.entity.Answer;
+import intern.nhhtuan.toeic_mentor.entity.Test;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -16,4 +17,6 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
             "FROM Answer a " +
             "GROUP BY a.question.id")
     List<QuestionAnswerStats> getAnswerStatistics();
+
+    void deleteAllByTest_Id(Long testId);
 }

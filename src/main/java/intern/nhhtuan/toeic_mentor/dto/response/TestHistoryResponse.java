@@ -11,5 +11,6 @@ public class TestHistoryResponse {
     private int totalQuestions;
     private String parts;
     private int timeSpent;
-    private String doneAt;
+    private String completedAt;
+    private String createdAt;
 }

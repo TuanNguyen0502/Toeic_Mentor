@@ -1,6 +1,7 @@
 package intern.nhhtuan.toeic_mentor.service.interfaces;
 
 import intern.nhhtuan.toeic_mentor.dto.request.TestCountRequest;
+import intern.nhhtuan.toeic_mentor.dto.request.UncompletedAnswerRequest;
 import intern.nhhtuan.toeic_mentor.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,12 +13,15 @@ public interface ITestService {
     Page<TestHistoryResponse> getTestHistoryResponses(String email,
                                                       LocalDateTime createdAtStart,
                                                       LocalDateTime createdAtEnd,
+                                                      Boolean completed,
                                                       int page,
                                                       int size,
                                                       String sortBy,
                                                       String direction);
 
     TestHistoryDetailResponse getTestHistoryDetailResponseById(Long id);
+
+    List<QuestionResponse> getUncompletedTestQuestions(Long testId);
 
     List<TestCountResponse> countByPartsAndPercent(TestCountRequest testCountRequest);
 
@@ -26,11 +30,18 @@ public interface ITestService {
     @Transactional
     void saveTest(String email, TestResultResponse testResultResponse);
 
+    void saveUncompletedTest(String email, List<UncompletedAnswerRequest> uncompletedAnswerRequests);
+
     TestResultResponse getTestResult(Long testId, String email);
 
     List<RecentTestResponse> getRecentTests(String email, int number);
 
+    void saveTestById(Long testId, TestResultResponse testResultResponse);
+
+    void saveUncompletedTestById(Long testId, List<UncompletedAnswerRequest> uncompletedAnswerRequests);
+
     TestStatisticResponse calculateTestStatistic(String email);
 
 
+    void deleteTestById(Long testId);
 }
