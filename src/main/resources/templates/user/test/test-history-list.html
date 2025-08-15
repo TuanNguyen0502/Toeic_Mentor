@@ -99,6 +99,9 @@
                                     <td>
                                         <a th:if="${history.completedAt != 'Not completed'}" th:href="@{'/test-histories/' + ${history.id}}" class="btn btn-sm btn-primary">View Details</a>
                                         <a th:unless="${history.completedAt != 'Not completed'}" th:href="@{'/test-histories/take-test/' + ${history.id}}" class="btn btn-sm btn-primary">Continue Test</a>
+                                        <button class="btn btn-sm btn-danger"
+                                                onclick="confirmDelete(this)"
+                                                th:attr="data-test-id=${history.id}">Delete</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -176,4 +179,15 @@
 <!-- Javascript -->
 <div th:insert="~{user/fragments/script::script}"></div>
 
+<!-- Custom JavaScript for Test History -->
+<script>
+    function confirmDelete(button) {
+        const testId = button.getAttribute('data-test-id');
+        if (confirm('Are you sure you want to delete this test history? This action cannot be undone.')) {
+            // Redirect to the delete endpoint
+            window.location.href = `/test-histories/delete/${testId}`;
+        }
+    }
+</script>
+</body>
 </html>
