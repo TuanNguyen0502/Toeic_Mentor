@@ -17,10 +17,7 @@ import intern.nhhtuan.toeic_mentor.service.interfaces.IChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.MessageType;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +38,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -95,6 +93,10 @@ public class ChatService implements IChatService {
 
     @Override
     public Flux<ChatbotResponse> getChatResponse(String message, String conversationId, InputStream imageInputStream, String contentType) {
+        // Save user message first
+        Message userMessage = new UserMessage(message);
+        ratingEnabledChatMemoryRepository.saveMessage(conversationId, userMessage);
+
         Flux<String> content = ChatClient.create(chatModel).prompt()
                 .system(systemMessageResource)
                 .user(user -> user
@@ -104,11 +106,23 @@ public class ChatService implements IChatService {
                 .stream()
                 .content();
 
-        String messageId = getLatestAssistantMessageId(conversationId);
+        // Collect the streaming content and save when complete
+        AtomicReference<String> fullResponse = new AtomicReference<>("");
 
-//        ChatbotResponse chatbotResponse = new ChatbotResponse(content, messageId, conversationId, MessageType.ASSISTANT.name());
-
-        return content.map(contentText -> new ChatbotResponse(contentText, messageId, conversationId, MessageType.ASSISTANT.name()));
+        return content
+                .doOnNext(chunk -> {
+                    // Accumulate the response
+                    fullResponse.updateAndGet(current -> current + chunk);
+                })
+                .doOnComplete(() -> {
+                    // Save the complete assistant message when streaming is done
+                    Message assistantMessage = new AssistantMessage(fullResponse.get());
+                    ratingEnabledChatMemoryRepository.saveMessage(conversationId, assistantMessage);
+                })
+                .map(contentChunk -> {
+                    String messageId = getLatestAssistantMessageId(conversationId);
+                    return new ChatbotResponse(contentChunk, messageId, conversationId, MessageType.ASSISTANT.name());
+                });
     }
 
     @Override
