@@ -88,7 +88,7 @@ public class StudyStreakServiceImpl implements IStudyStreakService {
 
         // Update streak history
         StreakHistory streakHistory = streakHistoryRepository.findFirstByUser_EmailOrderByStartStreakDesc(email);
-        if (streakHistory == null || streakHistory.getEndStreak().isBefore(now)) {
+        if (streakHistory == null || streakHistory.getEndStreak() != null) {
             // Create a new streak history entry if no current streak history exists or if the last entry is from a previous day
             streakHistory = new StreakHistory();
             streakHistory.setUser(studyStreak.getUser());
