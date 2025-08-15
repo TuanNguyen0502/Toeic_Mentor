@@ -1080,10 +1080,6 @@
                 questionId: question.id,
                 userAnswer: userAnswer,
                 part: question.part,
-                options: question.options ? question.options.map(opt => ({
-                    key: opt.key,
-                    value: opt.value
-                })) : [],
                 timeSpent: timeSpentOnQuestions[index] || 0,
             };
 
