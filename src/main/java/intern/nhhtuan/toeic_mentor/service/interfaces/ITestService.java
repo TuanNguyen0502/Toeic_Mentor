@@ -43,4 +43,5 @@ public interface ITestService {
     TestStatisticResponse calculateTestStatistic(String email);
 
 
+    void deleteTestById(Long testId);
 }

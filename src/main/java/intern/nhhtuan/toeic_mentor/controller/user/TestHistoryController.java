@@ -61,4 +61,10 @@ public class TestHistoryController {
         model.addAttribute("questions", questions);
         return "user/take-test";
     }
+
+    @GetMapping("/delete/{id}")
+    public String deleteTestHistory(@PathVariable("id") Long id) {
+        testService.deleteTestById(id);
+        return "redirect:/test-histories";
+    }
 }

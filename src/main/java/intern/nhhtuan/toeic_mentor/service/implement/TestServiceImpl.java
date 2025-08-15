@@ -527,6 +527,13 @@ public class TestServiceImpl implements ITestService {
                 .build();
     }
 
+    @Override
+    public void deleteTestById(Long testId) {
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+        testRepository.delete(test);
+    }
+
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
     public void deleteExpiredTests() {
         List<Long> idsToDelete = testRepository.getUncompletedTestIdsCreatedWithinLast7Days(LocalDateTime.now().minusDays(7));
