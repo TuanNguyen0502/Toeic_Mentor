@@ -753,6 +753,21 @@
                 const json = JSON.parse(jsonMatch[1]);
                 console.log("✅ JSON extracted:", json);
 
+                // Remove the JSON block from the message display
+                const contentElement = document.querySelector('.bot-message:last-child .message-content');
+                if (contentElement) {
+                    // Replace the JSON code block with an empty string
+                    const cleanedContent = contentElement.innerHTML.replace(/```json[\s\S]*?```/, '');
+
+                    // Trim any extra whitespace that might be left after removing the JSON block
+                    contentElement.innerHTML = cleanedContent.trim();
+
+                    // If the content is now empty or just whitespace, add a placeholder message
+                    if (!contentElement.innerHTML.trim()) {
+                        contentElement.innerHTML = "I've prepared a TOEIC test based on our conversation.";
+                    }
+                }
+
                 // Create a generate test button
                 const generateButtonDiv = document.createElement('div');
                 generateButtonDiv.className = 'mt-4 flex justify-center';
