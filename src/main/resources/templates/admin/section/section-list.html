@@ -102,38 +102,34 @@
                                         </li>
                                     </ul>
                                     <ul class="list">
-                                        <li class="roles-item gap20" th:each="sectionResponse : ${sectionResponses}">
-                                            <div class="flex items-center justify-between gap6 mb-5 flex-grow">
-                                                <div class="body-text" th:text="${sectionResponse.getId()}"></div>
-                                                <div class="body-text" th:text="${sectionResponse.getTitle()}"></div>
-                                                <div class="body-text" th:switch="${sectionResponse.getStatus()}">
-                                                    <div class="flex-center status-pending"
-                                                         th:case="'DRAFT'"
-                                                         th:text="${sectionResponse.getStatus()}">
-                                                    </div>
-                                                    <div class="flex-center status-pickup"
-                                                         th:case="'PENDING_REVIEW'"
-                                                         th:text="${sectionResponse.getStatus()}">
-                                                    </div>
-                                                    <div class="flex-center status-delivered"
-                                                         th:case="'APPROVED'"
-                                                         th:text="${sectionResponse.getStatus()}">
-                                                    </div>
-                                                    <div class="flex-center status-cancelled"
-                                                         th:case="'REJECTED'"
-                                                         th:text="${sectionResponse.getStatus()}">
-                                                    </div>
-                                                    <div class="flex-center"
-                                                         th:case="*"
-                                                         th:text="${sectionResponse.getStatus()}">
-                                                    </div>
+                                        <li class="roles-item flex gap20" th:each="sectionResponse : ${sectionResponses}">
+                                            <div class="body-text" th:text="${sectionResponse.getId()}"></div>
+                                            <div class="body-text" th:text="${sectionResponse.getTitle()}"></div>
+                                            <div class="body-text" th:switch="${sectionResponse.getStatus()}">
+                                                <div class="flex-center status-pending"
+                                                     th:case="'DRAFT'"
+                                                     th:text="${sectionResponse.getStatus()}">
                                                 </div>
-                                                <div class="body-text"
-                                                     th:text="${sectionResponse.getUpdatedAt()}"></div>
-                                                <div class="body-text" th:text="${sectionResponse.getParts()}"></div>
-                                                <div class="body-text"
-                                                     th:text="${sectionResponse.getQuestionCount()}"></div>
+                                                <div class="flex-center status-pickup"
+                                                     th:case="'PENDING_REVIEW'"
+                                                     th:text="${sectionResponse.getStatus()}">
+                                                </div>
+                                                <div class="flex-center status-delivered"
+                                                     th:case="'APPROVED'"
+                                                     th:text="${sectionResponse.getStatus()}">
+                                                </div>
+                                                <div class="flex-center status-cancelled"
+                                                     th:case="'REJECTED'"
+                                                     th:text="${sectionResponse.getStatus()}">
+                                                </div>
+                                                <div class="flex-center"
+                                                     th:case="*"
+                                                     th:text="${sectionResponse.getStatus()}">
+                                                </div>
                                             </div>
+                                            <div class="body-text" th:text="${sectionResponse.getUpdatedAt()}"></div>
+                                            <div class="body-text" th:text="${sectionResponse.getParts()}"></div>
+                                            <div class="body-text" th:text="${sectionResponse.getQuestionCount()}"></div>
                                             <div class="list-icon-function">
 <!--                                                <div class="item eye">-->
 <!--                                                    <a class="icon-eye"-->
