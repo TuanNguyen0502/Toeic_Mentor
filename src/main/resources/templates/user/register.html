@@ -59,14 +59,14 @@
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Email</label>
                                         <input type="email" th:field="*{email}"
-                                               placeholder="Example: example@gmail.com">
+                                               placeholder="Example: example@gmail.com" required>
                                         <span class="text-danger" th:if="${#fields.hasErrors('email')}"
                                               th:errors="*{email}"></span>
                                     </li>
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Password</label>
                                         <input type="password" th:field="*{password}"
-                                               placeholder="Please enter your password!">
+                                               placeholder="Please enter your password!" required>
                                         <label class="password-requirements">Password must contain at least 1 uppercase
                                             letter, 1 lowercase letter, 1 special character and be 8-20 characters
                                             long.</label>
@@ -76,13 +76,13 @@
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Confirm Password</label>
                                         <input type="password" th:field="*{confirmPassword}"
-                                               placeholder="Please enter your re-password!">
+                                               placeholder="Please enter your re-password!" required>
                                         <span class="text-danger" th:if="${#fields.hasErrors('confirmPassword')}"
                                               th:errors="*{confirmPassword}"></span>
                                     </li>
                                     <li class="form-fill-li" data-animate="animate__fadeInUp">
                                         <label>Full Name</label>
-                                        <input type="text" th:field="*{fullName}" placeholder="Nguyễn Văn A">
+                                        <input type="text" th:field="*{fullName}" placeholder="Nguyễn Văn A" required>
                                         <span class="text-danger" th:if="${#fields.hasErrors('fullName')}"
                                               th:errors="*{fullName}"></span>
                                     </li>
@@ -105,17 +105,8 @@
                                     </li>
                                 </ul>
                                 <div class="register-action" data-animate="animate__fadeInUp">
-                                    <label class="cust-checkbox-label login-read-text">
-                                        <span class="login-read">
-                                            Tôi đã đọc và đồng ý với <a
-                                                href="../../../../../../../TechStore-master/src/main/resources/templates/user/terms-condition.html">điều khoản & điều kiện.</a>
-                                        </span>
-                                        <input type="checkbox" id="login-terms" name="login-terms"
-                                               class="cust-checkbox login-checkbox">
-                                        <span class="cust-check"></span>
-                                    </label>
-                                    <button type="submit" class="btn-style2 register-btn" id="registerBtn"
-                                            disabled="disabled">Register
+                                    <button type="submit" class="btn-style2 register-btn" id="registerBtn">
+                                        Register
                                     </button>
                                 </div>
                             </form>
@@ -141,17 +132,6 @@
 <!-- footer end -->
 <!-- back-to-top start -->
 <a href="javascript:void(0)" id="top" class="scroll"><span><i class="feather-arrow-up"></i></span></a>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const checkbox = document.getElementById("login-terms");
-        const registerBtn = document.getElementById("registerBtn");
-
-        checkbox.addEventListener("change", function () {
-            registerBtn.disabled = !checkbox.checked;
-        });
-    });
-</script>
 
 <!-- back-to-top end -->
 <!-- plugin js -->
