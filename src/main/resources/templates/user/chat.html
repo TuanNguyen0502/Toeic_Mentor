@@ -174,9 +174,12 @@
             <div class="max-w-4xl mx-auto p-4">
                 <div id="image-preview" class="mb-3 hidden rounded-lg overflow-hidden relative">
                     <img id="preview-image" src="" alt="Preview" class="max-h-48 max-w-full mx-auto object-contain">
-                    <button id="remove-image-btn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none">
+                    <button id="remove-image-btn"
+                            class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd"
+                                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                  clip-rule="evenodd"/>
                         </svg>
                     </button>
                 </div>
@@ -248,9 +251,14 @@
                 const history = await response.json();
                 // Display each message - they are now ChatbotResponse objects with messageType
                 history.forEach(msg => {
-                    // Pass the entire ChatbotResponse object to addMessageToChat
-                    // The function will handle extracting content and determining sender
-                    addMessageToChat(null, msg);
+                    // Process any JSON in bot messages
+                    if (msg.messageType !== 'USER' && msg.content && msg.content.includes('```json')) {
+                        extractAndSendJSON(msg.content);
+                    } else {
+                        // Pass the entire ChatbotResponse object to addMessageToChat
+                        // The function will handle extracting content and determining sender
+                        addMessageToChat(null, msg);
+                    }
                 });
             }
         } catch (e) {
@@ -296,7 +304,14 @@
                                         const history = await response.json();
                                         history.forEach((msg, idx) => {
                                             const sender = idx % 2 === 0 ? 'User' : 'Bot';
-                                            addMessageToChat(sender, msg);
+                                            // Process any JSON in bot messages
+                                            if (msg.messageType !== 'USER' && msg.content && msg.content.includes('```json')) {
+                                                extractAndSendJSON(msg.content);
+                                            } else {
+                                                // Pass the entire ChatbotResponse object to addMessageToChat
+                                                // The function will handle extracting content and determining sender
+                                                addMessageToChat(null, msg);
+                                            }
                                         });
                                     }
                                 } catch (e) {
@@ -478,7 +493,14 @@
                             if (response.ok) {
                                 const history = await response.json();
                                 history.forEach(msg => {
-                                    addMessageToChat(null, msg);
+                                    // Process any JSON in bot messages
+                                    if (msg.messageType !== 'USER' && msg.content && msg.content.includes('```json')) {
+                                        extractAndSendJSON(msg.content);
+                                    } else {
+                                        // Pass the entire ChatbotResponse object to addMessageToChat
+                                        // The function will handle extracting content and determining sender
+                                        addMessageToChat(null, msg);
+                                    }
                                 });
                             }
                         } catch (e) {
@@ -768,11 +790,12 @@
                     }
                 }
 
-                // Create a generate test button
+                // Create a generate test button with a unique ID
+                const buttonId = 'generate-test-btn-' + Date.now();
                 const generateButtonDiv = document.createElement('div');
                 generateButtonDiv.className = 'mt-4 flex justify-center';
                 generateButtonDiv.innerHTML = `
-                    <button id="generate-test-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <button id="${buttonId}" class="generate-test-btn bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
                         Generate TOEIC Test
                     </button>
                 `;
@@ -781,46 +804,51 @@
                 chatMessages.appendChild(generateButtonDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
-                // Add click event listener to the button
-                document.getElementById('generate-test-btn').addEventListener('click', function () {
-                    // Display loading state
-                    this.disabled = true;
-                    this.innerHTML = 'Generating...';
+                // Get the button element and add click event listener directly
+                const generateButton = document.getElementById(buttonId);
+                if (generateButton) {
+                    generateButton.addEventListener('click', function () {
+                        // Display loading state
+                        this.disabled = true;
+                        this.innerHTML = 'Generating...';
 
-                    // Send JSON to backend
-                    fetch('/chat/generate-test', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(json),
-                        redirect: 'follow'
-                    }).then(response => {
-                        if (response.redirected) {
-                            // If server returned a redirect, follow it
-                            window.location.href = response.url;
-                        } else if (response.ok) {
-                            // If we get HTML content directly, load it
-                            return response.text().then(html => {
-                                document.open();
-                                document.write(html);
-                                document.close();
-                            });
-                        } else {
-                            console.error("❌ Failed to generate test");
-                            addMessageToChat('System', 'Failed to generate test. Please try again.');
+                        // Send JSON to backend
+                        fetch('/chat/generate-test', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(json),
+                            redirect: 'follow'
+                        }).then(response => {
+                            if (response.redirected) {
+                                // If server returned a redirect, follow it
+                                window.location.href = response.url;
+                            } else if (response.ok) {
+                                // If we get HTML content directly, load it
+                                return response.text().then(html => {
+                                    document.open();
+                                    document.write(html);
+                                    document.close();
+                                });
+                            } else {
+                                console.error("❌ Failed to generate test");
+                                addMessageToChat('System', 'Failed to generate test. Please try again.');
+                                // Re-enable the button
+                                this.disabled = false;
+                                this.innerHTML = 'Generate TOEIC Test';
+                            }
+                        }).catch(err => {
+                            console.error("❌ Error generating test:", err);
+                            addMessageToChat('System', 'An error occurred while generating the test.');
                             // Re-enable the button
                             this.disabled = false;
                             this.innerHTML = 'Generate TOEIC Test';
-                        }
-                    }).catch(err => {
-                        console.error("❌ Error generating test:", err);
-                        addMessageToChat('System', 'An error occurred while generating the test.');
-                        // Re-enable the button
-                        this.disabled = false;
-                        this.innerHTML = 'Generate TOEIC Test';
+                        });
                     });
-                });
+                } else {
+                    console.error("Button element not found after creation");
+                }
             } catch (e) {
                 console.error("❌ JSON parse error:", e);
             }
