@@ -4,6 +4,58 @@
 <!-- Mirrored from themesflat.co/html/remos/add-attributes.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 02 Apr 2025 06:41:48 GMT -->
 <head th:insert="~{admin/fragments/head::head}"></head>
 
+<style>
+    /* Custom styles for the question list table */
+    .table-title li:nth-child(1) {
+        width: 50px; /* ID column - small */
+    }
+    .table-title li:nth-child(2) {
+        width: 50px; /* Part column - small */
+    }
+    .table-title li:nth-child(3) {
+        width: 80px; /* Status column - shorter */
+    }
+    .table-title li:nth-child(4) {
+        width: 350px; /* Text column - wider */
+    }
+    .table-title li:nth-child(5) {
+        width: 100px; /* Answer column */
+    }
+    .table-title li:nth-child(6) {
+        width: 100px; /* Tags column */
+    }
+    .table-title li:nth-child(7) {
+        width: 80px; /* Action column */
+    }
+
+    /* Matching widths for the data rows */
+    .roles-item > div:nth-child(1) {
+        width: 50px; /* ID column */
+    }
+    .roles-item > div:nth-child(2) {
+        width: 50px; /* Part column */
+    }
+    .roles-item > div:nth-child(3) {
+        width: 80px; /* Status column */
+    }
+    .roles-item > div:nth-child(4) {
+        width: 350px; /* Text column */
+        max-width: 350px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .roles-item > div:nth-child(5) {
+        width: 100px; /* Answer column */
+    }
+    .roles-item > div:nth-child(6) {
+        width: 100px; /* Tags column */
+    }
+    .roles-item > div:nth-child(7) {
+        width: 80px; /* Action column */
+    }
+</style>
+
 <body class="body">
 
 <!-- #wrapper -->
@@ -109,49 +161,82 @@
                                        th:href="@{/admin/sections/add-questions/{id}(id=${sectionUpdateDTO.getId()})}">
                                         <i class="icon-plus"></i>Add Question</a>
                                 </div>
-                                <div class="flex items-center justify-between gap10 flex-wrap">
-                                    <div class="wg-filter flex-grow">
-                                        <form class="form-search">
-                                            <fieldset class="name">
-                                                <input type="text" placeholder="Search here..." class="search-input"
-                                                       name="name" tabindex="2" value="" aria-required="true"
-                                                       required="">
-                                            </fieldset>
-                                            <div class="button-submit">
-                                                <button class="" type="submit"><i class="icon-search"></i></button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
                                 <div class="wg-table table-all-roles">
-                                    <ul class="table-title flex gap20 mb-14">
-                                        <li>
-                                            <div class="body-title">ID</div>
-                                        </li>
-                                        <li>
-                                            <div class="body-title">Part</div>
-                                        </li>
-                                        <li>
-                                            <div class="body-title">Status</div>
-                                        </li>
-                                        <li>
-                                            <div class="body-title">Text</div>
-                                        </li>
-                                        <li>
-                                            <div class="body-title">Answer</div>
-                                        </li>
-                                        <li>
-                                            <div class="body-title">Tags</div>
-                                        </li>
-                                        <li>
-                                            <div class="body-title">Action</div>
-                                        </li>
-                                    </ul>
-                                    <ul class="list">
-                                        <li class="roles-item gap20" th:each="questionResponse : ${questionResponse}">
-                                            <div class="flex items-center justify-between gap6 mb-5 flex-grow">
+                                    <style>
+                                        /* Fix alignment issues in the table */
+                                        .custom-table {
+                                            display: table;
+                                            width: 100%;
+                                            border-collapse: collapse;
+                                        }
+                                        .custom-table-header, .custom-table-row {
+                                            display: table-row;
+                                        }
+                                        .custom-table-header > div, .custom-table-row > div {
+                                            display: table-cell;
+                                            padding: 8px;
+                                            vertical-align: middle;
+                                        }
+                                        .custom-table-cell-id {
+                                            width: 50px;
+                                        }
+                                        .custom-table-cell-part {
+                                            width: 50px;
+                                        }
+                                        .custom-table-cell-status {
+                                            width: 80px;
+                                        }
+                                        .custom-table-cell-text {
+                                            width: 350px;
+                                            max-width: 350px;
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                            white-space: nowrap;
+                                        }
+                                        .custom-table-cell-answer {
+                                            width: 100px;
+                                        }
+                                        .custom-table-cell-tags {
+                                            width: 100px;
+                                        }
+                                        .custom-table-cell-action {
+                                            width: 80px;
+                                        }
+                                    </style>
+
+                                    <div class="custom-table mb-14">
+                                        <div class="custom-table-header">
+                                            <div class="custom-table-cell-id">
+                                                <div class="body-title">ID</div>
+                                            </div>
+                                            <div class="custom-table-cell-part">
+                                                <div class="body-title">Part</div>
+                                            </div>
+                                            <div class="custom-table-cell-status">
+                                                <div class="body-title">Status</div>
+                                            </div>
+                                            <div class="custom-table-cell-text">
+                                                <div class="body-title">Text</div>
+                                            </div>
+                                            <div class="custom-table-cell-answer">
+                                                <div class="body-title">Answer</div>
+                                            </div>
+                                            <div class="custom-table-cell-tags">
+                                                <div class="body-title">Tags</div>
+                                            </div>
+                                            <div class="custom-table-cell-action">
+                                                <div class="body-title">Action</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="custom-table-row" th:each="questionResponse : ${questionResponse}">
+                                            <div class="custom-table-cell-id">
                                                 <div class="body-text" th:text="${questionResponse.getId()}"></div>
+                                            </div>
+                                            <div class="custom-table-cell-part">
                                                 <div class="body-text" th:text="${questionResponse.getPart()}"></div>
+                                            </div>
+                                            <div class="custom-table-cell-status">
                                                 <div class="body-text" th:switch="${questionResponse.getStatus()}">
                                                     <div class="flex-center status-pending"
                                                          th:case="'IN_SECTION'"
@@ -170,22 +255,30 @@
                                                          th:text="${questionResponse.getStatus()}">
                                                     </div>
                                                 </div>
+                                            </div>
+                                            <div class="custom-table-cell-text">
                                                 <div class="body-text" th:text="${questionResponse.getText()}"></div>
+                                            </div>
+                                            <div class="custom-table-cell-answer">
                                                 <div class="body-text" th:text="${questionResponse.getCorrectAnswer()}"></div>
+                                            </div>
+                                            <div class="custom-table-cell-tags">
                                                 <div class="body-text" th:text="${questionResponse.getTags()}"></div>
                                             </div>
-                                            <div class="list-icon-function">
-<!--                                                <div class="item eye">-->
-<!--                                                    <a class="icon-eye"-->
-<!--                                                       th:href="@{/admin/sections/{id}(id=${questionResponse.getId()})}"></a>-->
-<!--                                                </div>-->
-                                                <div class="item edit">
-                                                    <a class="icon-edit"
-                                                       th:href="@{/admin/sections/{sectionId}/questions/{questionId}(sectionId=${sectionUpdateDTO.getId()},questionId=${questionResponse.getId()})}"></a>
+                                            <div class="custom-table-cell-action">
+                                                <div class="list-icon-function">
+<!--                                                    <div class="item eye">-->
+<!--                                                        <a class="icon-eye"-->
+<!--                                                           th:href="@{/admin/sections/{id}(id=${questionResponse.getId()})}"></a>-->
+<!--                                                    </div>-->
+                                                    <div class="item edit">
+                                                        <a class="icon-edit"
+                                                           th:href="@{/admin/sections/{sectionId}/questions/{questionId}(sectionId=${sectionUpdateDTO.getId()},questionId=${questionResponse.getId()})}"></a>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </li>
-                                    </ul>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="divider"></div>
                                 <div class="flex items-center justify-between flex-wrap gap10">
