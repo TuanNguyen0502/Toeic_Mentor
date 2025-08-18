@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -86,8 +87,8 @@ public class StreakMilestoneServiceImpl implements IStreakMilestoneService {
                 .dayTarget(milestone.getDayTarget())
                 .title(milestone.getTitle())
                 .description(milestone.getDescription())
-                .createdAt(milestone.getCreatedAt().toString())
-                .updatedAt(milestone.getUpdatedAt().toString())
+                .createdAt(milestone.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
+                .updatedAt(milestone.getUpdatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
                 .build());
     }
 
