@@ -105,7 +105,6 @@
                                             <li class="billing-li" data-animate="animate__fadeInUp">
                                                 <label>Gender</label>
                                                 <select th:field="*{gender}" class="form-control">
-                                                    <option value="">Select gender</option>
                                                     <option th:each="gender : ${eGender}"
                                                             th:value="${gender}"
                                                             th:text="${gender.name()}"></option>
