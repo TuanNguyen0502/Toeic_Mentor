@@ -75,7 +75,7 @@
                                                        th:id="${'part-' + part.name()}"
                                                        class="part-checkbox"/>
                                                 <label th:for="${'part-' + part.name()}"
-                                                       th:text="${part.name()}"></label>
+                                                       th:text="${part.name().replace('_', ' ')}"></label>
                                             </div>
                                         </div>
                                         <div class="block-warning" id="parts-error" style="display: none;">
@@ -153,34 +153,22 @@
                             <div class="wg-box">
                                 <div class="wg-table table-all-category">
                                     <ul class="table-title flex gap20 mb-14">
-                                        <li>
-                                            <div class="body-title">ID</div>
+                                        <li style="width: 33.33%;">
+                                            <div class="body-title">Part ID</div>
                                         </li>
-                                        <li>
+                                        <li style="width: 33.33%;">
                                             <div class="body-title">Name</div>
                                         </li>
-                                        <li>
+                                        <li style="width: 33.33%;">
                                             <div class="body-title">Tests</div>
-                                        </li>
-                                        <li>
-                                            <div class="body-title">Action</div>
                                         </li>
                                     </ul>
                                     <ul class="flex flex-column" th:each="testCount : ${testCountResponseList}">
                                         <li class="product-item gap14">
                                             <div class="flex items-center justify-between gap20 flex-grow">
-                                                <div class="body-text" th:text="${testCount.getPartId()}"></div>
-                                                <div class="body-text" th:text="${testCount.getPartName()}"></div>
-                                                <div class="body-text" th:text="${testCount.getTests()}"></div>
-                                                <div class="list-icon-function">
-                                                    <a class="item edit"
-                                                       th:href="@{/admin/brands/edit/{id}(id=${testCount.getPartId()})}">
-                                                        <i class="icon-edit-3"></i>
-                                                    </a>
-                                                    <a class="item confirm-text-delete">
-                                                        <i class="icon-trash-2"></i>
-                                                    </a>
-                                                </div>
+                                                <div class="body-text" style="width: 33.33%;" th:text="${testCount.getPartId()}"></div>
+                                                <div class="body-text" style="width: 33.33%;" th:text="${testCount.getPartName()}"></div>
+                                                <div class="body-text" style="width: 33.33%;" th:text="${testCount.getTests()}"></div>
                                             </div>
                                         </li>
                                     </ul>
