@@ -65,9 +65,15 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto p-6">
-        <div class="flex justify-end space-x-4 mb-4">
-            <a href="/chat/admin@toeic.mentor.com" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">Chat</a>
-            <a href="/logout" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">Logout</a>
+        <div class="flex justify-between items-center mb-4">
+            <a id="back-to-section-btn" href="#" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                <span class="mr-1">&#8592;</span> Back to Section
+            </a>
+            <div class="flex space-x-4">
+                <a href="/admin" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Admin Dashboard</a>
+                <a href="/chat/admin@toeic.mentor.com" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">Chat</a>
+                <a href="/logout" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">Logout</a>
+            </div>
         </div>
         <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">TOEIC Image Analysis</h1>
 
@@ -155,7 +161,12 @@
         const resultContent = document.getElementById('result-content');
         const approveButton = document.getElementById('approve-button');
         const rejectButton = document.getElementById('reject-button');
+        const backToSectionBtn = document.getElementById('back-to-section-btn');
         let currentJsonResult = null;
+
+        // Set up Back to Section button link
+        const sectionId = document.getElementById('section-id').value;
+        backToSectionBtn.href = `/admin/sections/${sectionId}`;
 
         // Handle file selection
         imageInput.addEventListener('change', function() {
