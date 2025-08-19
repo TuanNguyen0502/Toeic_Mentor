@@ -209,16 +209,16 @@
                                     </div>
                                     <div class="wg-table table-product-list">
                                         <ul class="table-title flex gap20 mb-14">
-                                            <li>
+                                            <li style="width: 25%;">
                                                 <div class="body-title">ID</div>
                                             </li>
-                                            <li>
+                                            <li style="width: 25%;">
                                                 <div class="body-title">Name</div>
                                             </li>
-                                            <li>
+                                            <li style="width: 25%;">
                                                 <div class="body-title">Questions</div>
                                             </li>
-                                            <li>
+                                            <li style="width: 25%;">
                                                 <div class="body-title">Tests</div>
                                             </li>
                                         </ul>
@@ -226,14 +226,14 @@
                                             <li class="product-item gap14"
                                                 th:each="part : ${adminDashboardResponse.getParts()}">
                                                 <div class="flex items-center justify-between gap20 flex-grow">
-                                                    <div class="name">
+                                                    <div class="name" style="width: 25%;">
                                                         <a th:href="@{/admin/products/images/{id}(id=${part.getId()})}"
                                                            class="body-title-2"
                                                            th:text="${part.getId()}"></a>
                                                     </div>
-                                                    <div class="body-text" th:text="${part.getName()}"></div>
-                                                    <div class="body-text" th:text="${part.getQuestionCount()}"></div>
-                                                    <div class="body-text" th:text="${part.getTestCount()}"></div>
+                                                    <div class="body-text" style="width: 25%;" th:text="${part.getName()}"></div>
+                                                    <div class="body-text" style="width: 25%;" th:text="${part.getQuestionCount()}"></div>
+                                                    <div class="body-text" style="width: 25%;" th:text="${part.getTestCount()}"></div>
                                                 </div>
                                             </li>
                                         </ul>
