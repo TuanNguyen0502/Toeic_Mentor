@@ -108,9 +108,6 @@
                                                 <button type="submit" class="btn btn-primary rounded-pill flex-fill">
                                                     <i class="bi bi-search"></i> Filter
                                                 </button>
-                                                <button type="button" class="btn btn-outline-secondary rounded-pill" onclick="clearFilters()">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
                                             </div>
                                         </div>
                                     </form>
@@ -192,16 +189,6 @@
 <script th:src="@{/admin/asset/js/search.js}"></script>
 
 <script>
-function clearFilters() {
-    // Clear all form inputs
-    document.getElementById('email').value = '';
-    document.getElementById('status').value = '';
-    document.getElementById('category').value = '';
-    
-    // Submit the form to reload with cleared filters
-    document.getElementById('filterForm').submit();
-}
-
 // Auto-submit form when select elements change (optional)
 document.addEventListener('DOMContentLoaded', function() {
     const statusSelect = document.getElementById('status');
