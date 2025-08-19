@@ -3,6 +3,132 @@
 <html xmlns:th="https://www.thymeleaf.org">
 <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
 <head th:replace="~{user/fragments/head :: head('TOEIC Mentor - Home')}"></head>
+<style>
+    /* Custom styles for the Estimated TOEIC Score button */
+    .btn-gradient-primary {
+        background: linear-gradient(45deg, #4776E6, #8E54E9);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(71, 118, 230, 0.4);
+    }
+
+    .btn-gradient-primary:hover {
+        background: linear-gradient(45deg, #3A5BC4, #7241C7);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(71, 118, 230, 0.6);
+        color: white;
+    }
+
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 4px 15px rgba(71, 118, 230, 0.4);
+        }
+        50% {
+            transform: scale(1.03);
+            box-shadow: 0 8px 25px rgba(71, 118, 230, 0.6);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 4px 15px rgba(71, 118, 230, 0.4);
+        }
+    }
+
+    /* Enhanced Study Streak Card Styles */
+    .study-streak-card .card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .study-streak-card .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .study-streak-card .card-body {
+        position: relative;
+        background: linear-gradient(120deg, #f5f7fa, #e5e9f0);
+        padding: 2rem 1.5rem;
+        overflow: hidden;
+    }
+
+    .study-streak-card .card-body::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: linear-gradient(45deg, rgba(255,255,255,0), rgba(255,255,255,0.5));
+        transform: rotate(25deg);
+        pointer-events: none;
+    }
+
+    .study-streak-card .streak-title {
+        color: #4d5b7c;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .study-streak-card .streak-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+        margin: 0 auto 1rem;
+        padding: 0.5rem 1.5rem;
+        background: linear-gradient(45deg, #FF9966, #FF5E62);
+        border-radius: 50px;
+        color: white;
+        font-size: 1.8rem;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(255, 94, 98, 0.4);
+    }
+
+    .study-streak-card .streak-count span {
+        margin-right: 0.25rem;
+        font-size: 2.2rem;
+    }
+
+    .study-streak-card .streak-message {
+        color: #5a6887;
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+    .study-streak-card .streak-icon {
+        position: absolute;
+        bottom: 10px;
+        right: 15px;
+        font-size: 3rem;
+        opacity: 0.15;
+        color: #FF5E62;
+    }
+
+    /* Flame animation for streak */
+    @keyframes flicker {
+        0%, 100% { opacity: 1; }
+        25% { opacity: 0.8; }
+        50% { opacity: 0.9; }
+        75% { opacity: 0.7; }
+    }
+
+    .flame-icon {
+        color: #FF5E62;
+        animation: flicker 3s infinite;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+    }
+</style>
 <body>
 <!-- screen-bg start -->
 <div class="screen-bg"></div>
@@ -26,19 +152,20 @@
                     <div class="study-streak-card mb-4" data-animate="animate__fadeInUp">
                         <div class="card">
                             <div class="card-body text-center">
-                                <h4 class="streak-title">Current Study Streak</h4>
+                                <h4 class="streak-title"><i class="fas fa-calendar-check me-2"></i>Current Study Streak</h4>
                                 <div class="streak-count">
-                                    <span id="currentStreak">-</span> days
+                                    <i class="fas fa-fire flame-icon"></i><span id="currentStreak">-</span> days
                                 </div>
                                 <p class="streak-message mt-2">Keep learning to maintain your streak!</p>
+                                <i class="fas fa-trophy streak-icon"></i>
                             </div>
                         </div>
                     </div>
                     <!-- End Study Streak Display -->
                     <div class="score-card" data-animate="animate__fadeInUp">
                         <div class="text-center mb-4">
-                            <button id="fetchEstimatedScoreBtn" class="btn btn-style1">
-                                View My Estimated TOEIC Score
+                            <button id="fetchEstimatedScoreBtn" class="btn btn-lg btn-gradient-primary pulse-animation">
+                                <i class="fas fa-chart-line me-2"></i> View My Estimated TOEIC Score <i class="fas fa-arrow-right ms-2"></i>
                             </button>
                         </div>
                         <div id="estimatedScoreResults" class="score-results" style="display: none;">
