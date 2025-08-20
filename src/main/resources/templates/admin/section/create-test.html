@@ -140,13 +140,17 @@
                 </button>
                 <button
                     id="reject-button"
-                    class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    class="w-full mt-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                     Reject Section
                 </button>
             </div>
 
-            <div id="save-status" class="mt-2 text-center hidden"></div>
+            <div id="save-status" class="mt-4 p-2 rounded text-center hidden"></div>
+            <div id="save-loading" class="flex justify-center items-center mt-4 hidden">
+                <div class="loading-spinner mr-2"></div>
+                <span>Processing request...</span>
+            </div>
         </div>
     </div>
 
@@ -330,39 +334,98 @@
             currentJsonResult = null;
         }
 
+        // Helper function to set the loading state
+        function setLoadingState(isLoading) {
+            const saveLoading = document.getElementById('save-loading');
+            const saveStatus = document.getElementById('save-status');
+
+            // Show/hide loading spinner
+            if (isLoading) {
+                saveLoading.classList.remove('hidden');
+                saveStatus.classList.add('hidden');
+            } else {
+                saveLoading.classList.add('hidden');
+            }
+
+            // Disable/enable both buttons during processing
+            approveButton.disabled = isLoading;
+            rejectButton.disabled = isLoading;
+
+            // Visual feedback with opacity
+            approveButton.classList.toggle('opacity-50', isLoading);
+            rejectButton.classList.toggle('opacity-50', isLoading);
+
+            // Change cursor to indicate buttons are disabled
+            approveButton.classList.toggle('cursor-not-allowed', isLoading);
+            rejectButton.classList.toggle('cursor-not-allowed', isLoading);
+        }
+
+        // Helper function to show status message
+        function showStatusMessage(message, isSuccess) {
+            const saveStatus = document.getElementById('save-status');
+            saveStatus.textContent = message;
+            saveStatus.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+
+            if (isSuccess) {
+                saveStatus.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-400');
+            } else {
+                saveStatus.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-400');
+            }
+        }
+
         // Approve section
         approveButton.addEventListener('click', async function() {
             const sectionId = document.getElementById('section-id').value;
+
+            // Set loading state - disable buttons and show spinner
+            setLoadingState(true);
+
             try {
                 const response = await fetch(`/admin/chat/approve-section/${sectionId}`, {
                     method: 'PUT',
                 });
+
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.error || 'Failed to approve section');
                 }
-                alert('Section approved successfully!');
+
+                // Show success message
+                showStatusMessage('Section approved successfully!', true);
             } catch (error) {
                 console.error('Error:', error);
-                alert(error.message || 'An error occurred while approving the section.');
+                showStatusMessage(error.message || 'An error occurred while approving the section.', false);
+            } finally {
+                // Always reset loading state
+                setLoadingState(false);
             }
         });
 
         // Reject section
         rejectButton.addEventListener('click', async function() {
             const sectionId = document.getElementById('section-id').value;
+
+            // Set loading state - disable buttons and show spinner
+            setLoadingState(true);
+
             try {
                 const response = await fetch(`/admin/chat/reject-section/${sectionId}`, {
                     method: 'PUT',
                 });
+
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.error || 'Failed to reject section');
                 }
-                alert('Section rejected successfully!');
+
+                // Show success message
+                showStatusMessage('Section rejected successfully!', true);
             } catch (error) {
                 console.error('Error:', error);
-                alert(error.message || 'An error occurred while rejecting the section.');
+                showStatusMessage(error.message || 'An error occurred while rejecting the section.', false);
+            } finally {
+                // Always reset loading state
+                setLoadingState(false);
             }
         });
     </script>
