@@ -73,7 +73,7 @@ public class GoalServiceImpl implements IGoalService {
                         .actualValue(goal.getActualValue())
                         .unit(goal.getUnit().name())
                         .part(goal.getPart() != null ? goal.getPart() : 0)
-                        .status(goal.getStatus().name())
+                        .status(goal.getStatus().name().replace("_", " "))
                         .build())
                 .toList();
     }
