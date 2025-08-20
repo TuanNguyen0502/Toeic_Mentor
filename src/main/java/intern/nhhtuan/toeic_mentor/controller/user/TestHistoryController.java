@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,8 +25,8 @@ public class TestHistoryController {
     @GetMapping("")
     public String getTestHistories(
             Model model,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAtStart,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAtEnd,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdAtStart,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdAtEnd,
             @RequestParam(required = false) Boolean completed,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -36,8 +37,13 @@ public class TestHistoryController {
         try {
             Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
+            // Convert LocalDate to LocalDateTime for service call if dates are provided
+            LocalDateTime startDateTime = createdAtStart != null ? createdAtStart.atStartOfDay() : null;
+            // Add one day to the end date to include the whole day in the query
+            LocalDateTime endDateTime = createdAtEnd != null ? createdAtEnd.plusDays(1).atStartOfDay() : null;
+
             testHistoryResponses = testService.getTestHistoryResponses(
-                    email, createdAtStart, createdAtEnd, completed, page, size, sortBy, direction
+                    email, startDateTime, endDateTime, completed, page, size, sortBy, direction
             );
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());

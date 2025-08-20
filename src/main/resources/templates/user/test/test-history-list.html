@@ -20,12 +20,12 @@
                 <form th:action="@{/test-histories}" method="get" class="row g-3">
                     <div class="col-md-3">
                         <label for="createdAtStart" class="form-label">From Date</label>
-                        <input type="datetime-local" class="form-control" id="createdAtStart" name="createdAtStart"
+                        <input type="date" class="form-control" id="createdAtStart" name="createdAtStart"
                                th:value="${param.createdAtStart}">
                     </div>
                     <div class="col-md-3">
                         <label for="createdAtEnd" class="form-label">To Date</label>
-                        <input type="datetime-local" class="form-control" id="createdAtEnd" name="createdAtEnd"
+                        <input type="date" class="form-control" id="createdAtEnd" name="createdAtEnd"
                                th:value="${param.createdAtEnd}">
                     </div>
                     <div class="col-md-2">
