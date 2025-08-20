@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Controller(value = "adminRatingController")
@@ -26,8 +27,8 @@ public class RatingController {
     public String getChatbotFeedbacks(
             Model model,
             @RequestParam(required = false) EChatbotRating rating,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAtStart,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAtEnd,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdAtStart,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdAtEnd,
             @RequestParam(required = false) String userEmail,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -36,8 +37,12 @@ public class RatingController {
     ) {
         Page<ChatbotRatingResponse> ratings;
         try {
+            // Convert LocalDate to LocalDateTime for service call if dates are provided
+            LocalDateTime startDateTime = createdAtStart != null ? createdAtStart.atStartOfDay() : null;
+            // Add one day to the end date to include the whole day in the query
+            LocalDateTime endDateTime = createdAtEnd != null ? createdAtEnd.plusDays(1).atStartOfDay() : null;
             ratings = chatbotRatingService.getChatbotRatings(
-                    rating, createdAtStart, createdAtEnd, userEmail, page, size, sortBy, direction
+                    rating, startDateTime, endDateTime, userEmail, page, size, sortBy, direction
             );
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
