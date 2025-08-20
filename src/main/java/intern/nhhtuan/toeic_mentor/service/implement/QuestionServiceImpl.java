@@ -166,20 +166,26 @@ public class QuestionServiceImpl implements IQuestionService {
             }
             EPart partName = getPartName(part);
 
+            // Created a local partQuestions list inside the loop to store questions for each part
+            List<Question> partQuestions = new ArrayList<>();
+
             // If no topics are specified, fetch all questions for the part
             if (request.getTopic().size() == 0) {
-                questions = questionRepository.findDistinctByPart_NameAndStatus(partName, EQuestionStatus.APPROVED);
+                partQuestions = questionRepository.findDistinctByPart_NameAndStatus(partName, EQuestionStatus.APPROVED);
             } else {
-                questions = questionRepository.findDistinctByPart_NameAndTagsAndStatus(partName, request.getTopic(), EQuestionStatus.APPROVED);
-                if (questions.size() < request.getQuestion_count()) {
+                partQuestions = questionRepository.findDistinctByPart_NameAndTagsAndStatus(partName, request.getTopic(), EQuestionStatus.APPROVED);
+                if (partQuestions.size() < request.getQuestion_count()) {
                     List<Question> temp = questionRepository.findDistinctByPart_NameAndStatus(
                             partName,
                             EQuestionStatus.APPROVED,
-                            Limit.of(request.getQuestion_count() - questions.size())
+                            Limit.of(request.getQuestion_count() - partQuestions.size())
                     );
-                    questions.addAll(temp);
+                    partQuestions.addAll(temp);
                 }
             }
+
+            // Add questions from this part to the main list
+            questions.addAll(partQuestions);
         }
 
         // Shuffle and limit
