@@ -237,15 +237,7 @@
                                      (${option.key == answer.correctAnswer ? 'border-success bg-success-subtle' :
                                      (option.key == answer.userAnswer && option.key != answer.correctAnswer ? 'border-danger bg-danger-subtle' : '')})">
                                     <div class="me-2">
-                                        <span class="badge rounded-pill text-white"
-                                          th:class="${
-                                              option.key == answer.correctAnswer ? 'bg-success text-white' :
-                                              (option.key == answer.userAnswer && option.key != answer.correctAnswer ? 'bg-danger text-white' :
-                                              (option.key == 'A' ? 'bg-primary text-white' :
-                                              (option.key == 'B' ? 'bg-info text-white' :
-                                              (option.key == 'C' ? 'bg-warning text-white' : 'bg-dark text-white'))))
-                                          }"
-                                          th:text="${option.key}">A</span>
+                                        <span th:text="${option.key}">A</span>
                                     </div>
                                     <div th:utext="${option.value}" class="flex-grow-1">Option text</div>
                                     <div>
