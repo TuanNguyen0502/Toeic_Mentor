@@ -92,9 +92,6 @@
                                         <li style="width:33%; min-width: 120px;">
                                             <div class="body-title">Tests</div>
                                         </li>
-                                        <li style="width: 10%; min-width: 80px;">
-                                            <div class="body-title">Action</div>
-                                        </li>
                                     </ul>
                                     <ul class="list">
                                         <li class="user-item gap14" th:each="part : ${parts}">
@@ -108,16 +105,6 @@
                                                      th:text="${part.getQuestionCount()}"></div>
                                                 <div class="body-text" style="width: 33%; min-width: 150px"
                                                      th:text="${part.getTestCount()}"></div>
-                                            </div>
-                                            <div class="list-icon-function" style="width: 10%">
-<!--                                                <div class="item eye">-->
-<!--                                                    <a class="icon-eye"-->
-<!--                                                       th:href="@{/admin/part/{id}(id=${part.getId()})}"></a>-->
-<!--                                                </div>-->
-<!--                                                <div class="item edit">-->
-<!--                                                    <a class="icon-edit"-->
-<!--                                                       th:href="@{'/staff/orders/' + ${eachOrder.id} + '?status=true'}"></a>-->
-<!--                                                </div>-->
                                             </div>
                                         </li>
                                     </ul>
