@@ -103,7 +103,7 @@ public class SectionController {
         }
         try {
             sectionService.update(id, sectionUpdateDTO);
-            return "redirect:/admin/sections/question/" + id;
+            return "redirect:/admin/sections/" + id;
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             return "admin/section/update-section";
